@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import Modal from "../components/Modal";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import {
   GlobalStyle,
   Input,
@@ -722,6 +723,7 @@ const Perfil = () => {
             >
                 <p style={{ textAlign: 'center', fontSize: '1.1rem' }}>{errorMessage}</p>
             </Modal>
+
         </>
     );
 };

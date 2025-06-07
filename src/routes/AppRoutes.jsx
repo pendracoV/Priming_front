@@ -7,7 +7,6 @@ import AdminUserCreate from '../admin/AdminUserCreate';
 
 // Páginas públicas
 import Login from '../pages/Login';
-import Register from '../pages/Register';
 
 // Páginas privadas comunes
 import Perfil from '../pages/Perfil';
@@ -60,7 +59,6 @@ export default function AppRoutes() {
         {/* 1) PÚBLICAS (login / registro) */}
         <Route element={<PublicRoute restricted={true} />}>
           <Route path="/login"     element={<Login />} />
-          <Route path="/registro"  element={<Register />} />
         </Route>
 
         {/* 2) PRIVADAS (cualquier usuario autenticado) */}

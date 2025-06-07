@@ -205,10 +205,6 @@ const Login = () => {
               {isSubmitting ? "Iniciando sesión..." : "Iniciar Sesión"}
             </Button>
           </form>
-
-          <Label>
-            ¿No tienes una cuenta? <RegisterLink to="/registro">Regístrate</RegisterLink>
-          </Label>
         </FormContainer>
       </Container>
     </>

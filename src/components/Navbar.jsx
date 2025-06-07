@@ -285,7 +285,6 @@ const Navbar = () => {
       return [
         ...publicRoutes,
         { path: '/login', label: 'Iniciar Sesión' },
-        { path: '/registro', label: 'Registrarse' }
       ];
     }
 

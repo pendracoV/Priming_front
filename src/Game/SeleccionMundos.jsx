@@ -6,6 +6,7 @@ import GameBackground from '../components/GameBackground';
 import islandImage from '../../public/images/island.png';
 import pirateIslandImage from '../../public/images/pirate-island.png';
 // Importamos el GlobalStyle para mantener la consistencia de fuentes
+import Navbar from '../components/Navbar';
 import { GlobalStyle } from '../styles/styles';
 
 // Paleta de colores basada en el mockup
@@ -164,6 +165,7 @@ const SeleccionMundos = () => {
   return (
     <>
       <GlobalStyle />
+      <Navbar />
       <GameBackground maxWidth="1200px">
         <MainContainer>
           <Title>Selecciona tu mundo</Title>
