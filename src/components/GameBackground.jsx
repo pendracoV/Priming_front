@@ -16,22 +16,21 @@ const colors = {
 
 // Contenedor principal
 export const GameContainer = styled.div`
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100vw;
-    height: 100vh;
-    margin: 0;
-    padding: 0;
-    position: fixed;
-    top: 0;
-    left: 0;
-    overflow: hidden;
-    background: url(${backgroundImage}) no-repeat center center / cover;
-    
-    /* Si no tienes una imagen de fondo adecuada, puedes usar este gradiente como alternativa */
-    /* background: linear-gradient(180deg, ${colors.lightPurple} 0%, ${colors.blue} 100%); */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  background: ${({ backgroundImage }) =>
+    `url(${backgroundImage}) no-repeat center center / cover`};
 `;
+
 
 
 
@@ -49,11 +48,11 @@ export const GameContentContainer = styled.div`
 const GameBackground = ({ 
   children, 
   title, 
-  maxWidth,
+  maxWidth, 
+  backgroundImage
 }) => {
   return (
-    <GameContainer>
-      {/* Contenedor del contenido principal */}
+    <GameContainer backgroundImage={backgroundImage}>
       <GameContentContainer maxWidth={maxWidth}>
         {title}
         {children}
@@ -61,5 +60,6 @@ const GameBackground = ({
     </GameContainer>
   );
 };
+
 
 export default GameBackground;

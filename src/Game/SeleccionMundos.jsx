@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Importamos useNavigate para la redirección
 import styled from 'styled-components';
 import GameBackground from '../components/GameBackground';
+import fondoSeleccion from '../../public/images/Background.png';
 // Importamos las imágenes directamente desde public
 import islandImage from '../../public/images/island.png';
 import pirateIslandImage from '../../public/images/pirate-island.png';
@@ -166,7 +167,7 @@ const SeleccionMundos = () => {
     <>
       <GlobalStyle />
       <Navbar />
-      <GameBackground maxWidth="1200px">
+      <GameBackground maxWidth="1200px" backgroundImage={fondoSeleccion}>
         <MainContainer>
           <Title>Selecciona tu mundo</Title>
           <CardsContainer>

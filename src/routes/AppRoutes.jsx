@@ -18,6 +18,7 @@ import SeleccionMundos from '../Game/SeleccionMundos';
 import NivelCognados from '../Game/levels/NivelCognados';
 import NivelParesMinimos from '../Game/levels/NivelParesMinimos';
 import Encuesta from '../Game/Encuesta';
+import Registro from '../pages/Register';
 
 // ─── Middlewares de Ruta ───────────────────────────────────────────────────────
 
@@ -83,6 +84,7 @@ export default function AppRoutes() {
 
         {/* 3) CATCH-ALL: redirigir a login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="/registro" element={<Registro />} />
 
       </Routes>
     </BrowserRouter>
