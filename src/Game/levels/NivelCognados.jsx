@@ -1,4 +1,3 @@
-// Sistema de Comparación de Audio para NivelCognados.jsx - Versión Actualizada
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -6,6 +5,7 @@ import { AuthContext } from '../../context/AuthContext';
 import { getNivelConfig } from '../data/nivelesConfig';
 import coinImage from '../../../public/images/coin.png';
 import GameBackground from '../../components/GameBackground';
+import { GlobalStyle } from '../../styles/styles';
 
 // Utility Functions
 const shuffleArray = (array) => {
@@ -44,10 +44,48 @@ const NivelCognados = () => {
   // Refs
   const currentAudioRef = useRef(null);
   const audioTimeoutRef = useRef(null);
+  const [levelConfig, setLevelConfig] = useState(null); 
+
+  // ⭐ FUNCIÓN PARA RESETEAR TODOS LOS ESTADOS
+  const resetAllStates = () => {
+    if (nivel === '1') {
+      setScore(200);
+    }
+    setCorrectSelections(0);
+    setTotalSelections(0);
+    setIsTraining(nivel === '1');
+    setAudioPlayed(0);
+    setShowSuccessMessage(false);
+    setLastSelectedSelector(null);
+    setIsPlayingAudio(false);
+    setComparedSelectors([]);
+    setDisabledSelectors([]);
+    setHighlightedSelector(null);
+    setShowSuccessAlert(false);
+    setInstructionsCompleted(false);
+    setIsPlayingInstructions(false);
+    setShowEndGameAlert(false);
+    setEndGameMessage('');
+    setEndGameType('');
+    setRemainingTime(0); // Se actualizará con la configuración del nivel
+  };
 
   // Game State
-  const [levelConfig, setLevelConfig] = useState(null);
-  const [score, setScore] = useState(200);
+  const [score, setScore] = useState(() => {
+    
+    if (dificultad === 'facil' && nivel === '1') {
+      return 200;
+    }
+    
+    if (user) {
+      const savedProgress = localStorage.getItem(`progress_cognados_${dificultad}_${user.id}`);
+      if (savedProgress) {
+        const progress = JSON.parse(savedProgress);
+        return progress.accumulatedScore || 200;
+      }
+    }
+    return 200;
+  });
   const [correctSelections, setCorrectSelections] = useState(0);
   const [totalSelections, setTotalSelections] = useState(0);
   const [remainingTime, setRemainingTime] = useState(0);
@@ -77,7 +115,7 @@ const NivelCognados = () => {
   const SCORE_RESTART_AUDIO = "/sounds/feedback/repeticion.mp3";
   const SUCCESS_LEVEL_AUDIO = "/sounds/feedback/exito.mp3"; 
 
-  // Game Logic Functions
+  // ⭐ FUNCIÓN MODIFICADA PARA REINICIO COMPLETO
   const closeEndGameAlert = () => {
     setShowEndGameAlert(false);
     
@@ -91,10 +129,25 @@ const NivelCognados = () => {
         navigate('/seleccion-mundo');
       }
     } else {
-      restartLevel();
+      if (dificultad === 'facil') {
+        // ⭐ LIMPIAR COMPLETAMENTE EL PROGRESO
+        if (user) {
+          localStorage.removeItem(`progress_cognados_${dificultad}_${user.id}`);
+        }
+        
+        // ⭐ RESETEAR ESTADOS ANTES DE NAVEGAR
+        resetAllStates();
+        
+        // ⭐ NAVEGAR CON FORZAR REMOUNT
+        navigate('/seleccion-mundo'); // Primero ir a otra ruta
+        setTimeout(() => {
+          navigate(`/nivel/cognados/${dificultad}/1`); // Luego regresar al nivel 1
+        }, 100);
+      } else {
+        restartLevel();
+      }
     }
   };
-
 
   const closeSuccessAlert = () => {
     setShowSuccessAlert(false);
@@ -109,24 +162,9 @@ const NivelCognados = () => {
     }
   };
 
-  
-
   const restartLevel = () => {
-    // Reset all game states
-    setScore(200);
-    setCorrectSelections(0);
-    setTotalSelections(0);
-    setIsTraining(true);
-    setAudioPlayed(0);
-    setShowSuccessMessage(false);
-    setLastSelectedSelector(null);
-    setIsPlayingAudio(false);
-    setComparedSelectors([]);
-    setDisabledSelectors([]);
-    setHighlightedSelector(null);
-    setShowSuccessAlert(false);
-    setInstructionsCompleted(false);
-    setIsPlayingInstructions(false);
+    // ⭐ USAR LA FUNCIÓN DE RESETEO
+    resetAllStates();
     
     // Clean up audio
     if (currentAudioRef.current) {
@@ -160,46 +198,71 @@ const NivelCognados = () => {
   // Audio Functions
   const playAudioWithQueue = async (audioPath, callback = null) => {
     if (!audioPath || isPlayingAudio) return;
-
+  
     setIsPlayingAudio(true);
     
     try {
+      
       if (currentAudioRef.current) {
         currentAudioRef.current.pause();
         currentAudioRef.current.currentTime = 0;
+        currentAudioRef.current.removeEventListener('ended', () => {});
+        currentAudioRef.current.removeEventListener('error', () => {});
       }
-
+  
+      if (audioTimeoutRef.current) {
+        clearTimeout(audioTimeoutRef.current);
+      }
+  
       const audio = new Audio(audioPath);
       currentAudioRef.current = audio;
       audio.volume = levelConfig?.audioSettings?.masterVolume || 0.8;
       
       const duration = await getAudioDuration(audioPath);
-      await audio.play();
+      
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        await playPromise;
+      }
       
       audioTimeoutRef.current = setTimeout(() => {
         setIsPlayingAudio(false);
-        if (callback) callback();
+        if (callback && typeof callback === 'function') {
+          callback();
+        }
       }, duration + 100);
       
     } catch (error) {
       console.error('Error reproducing audio:', error);
       setIsPlayingAudio(false);
+      if (callback && typeof callback === 'function') {
+        callback();
+      }
     }
   };
 
   const playInitialInstructions = async () => {
     setIsPlayingInstructions(true);
-    const instructionsAudioPath = `/sounds/instrucciones/cognados_facil_instrucciones.mp3`;
+    const instructionsAudioPath = levelConfig?.instructionsAudio || 
+    `/sounds/instrucciones/instrucciones${nivel}.mp3`;
     
     try {
       await playAudioWithQueue(instructionsAudioPath, () => {
         setIsPlayingInstructions(false);
         setInstructionsCompleted(true);
+
+        if (nivel !== '1') {
+          setIsTraining(false);
+        }
       });
     } catch (error) {
       console.error('Error reproducing instructions:', error);
       setIsPlayingInstructions(false);
       setInstructionsCompleted(true);
+
+      if (nivel !== '1') {
+        setIsTraining(false);
+      }
     }
   };
 
@@ -230,6 +293,7 @@ const NivelCognados = () => {
       }
     }
   };
+
   const handleSelectorSelection = async (selector) => {
     if (isTraining || disabledSelectors.includes(selector.id) || showEndGameAlert) return;
     
@@ -244,11 +308,11 @@ const NivelCognados = () => {
       evaluateComparison(selector);
     });
   };
+
   const evaluateComparison = (selector) => {
     const scoringConfig = selector.scoring || { pointsOnCorrect: 10, pointsOnIncorrect: -10 };
     setDisabledSelectors(prev => [...prev, selector.id]);
     
-    // ⭐ CALCULAR LOS NUEVOS VALORES
     const newTotalSelections = totalSelections + 1;
     let newScore = score;
     let newCorrectSelections = correctSelections;
@@ -261,7 +325,6 @@ const NivelCognados = () => {
       setCorrectSelections(newCorrectSelections);
       setComparedSelectors(prev => [...prev, selector.id]);
       
-      // ⭐ PASAR LOS VALORES CALCULADOS
       if (newCorrectSelections === 8 || newTotalSelections >= 16) {
         checkForNextLevelButton(newTotalSelections, newCorrectSelections, newScore);
         setTimeout(() => {
@@ -269,8 +332,7 @@ const NivelCognados = () => {
         }, 500);
       }
       
-      showFloatingText('¡Correcto! +10 monedas', '#4CAF50', 1500);
-      createParticleEffect(300, 300, '#4CAF50', 8);
+      showFloatingText('¡Correcto! +10 monedas', '#4CAF50', 1500)
       setShowSuccessMessage(true);
       setTimeout(() => setShowSuccessMessage(false), 1500);
       playAudioWithQueue(VICTORY_AUDIO);
@@ -278,7 +340,6 @@ const NivelCognados = () => {
       newScore = score + scoringConfig.pointsOnIncorrect;
       setScore(newScore);
       
-      // ⭐ TAMBIÉN EVALUAR EN CASO DE ERROR
       if (newTotalSelections >= 16) {
         checkForNextLevelButton(newTotalSelections, newCorrectSelections, newScore);
       }
@@ -294,12 +355,11 @@ const NivelCognados = () => {
 
   const checkForNextLevelButton = (newTotalSelections, newCorrectSelections, newScore) => { 
     setTimeout(() => {
-      const requiredScore = 200 + (8 * 10 * 0.8); // 264 puntos
+      const requiredScore = 200 + (8 * 10 * 0.8);
       
       if (newCorrectSelections === 8 && newScore >= requiredScore) {
         setShowSuccessAlert(true);
       }
-      
       else if (newTotalSelections >= 16) {
         setTimeout(() => {
           evaluateLevel(newCorrectSelections, newScore); 
@@ -317,50 +377,49 @@ const NivelCognados = () => {
         difficulty: dificultad,
         level: nivel,
         score: score,
+        accumulatedScore: score, 
         timestamp: new Date().toISOString()
       };
       localStorage.setItem(`progress_cognados_${dificultad}_${userId}`, JSON.stringify(progress));
     }
   };
 
-// ⭐ RECIBIR LOS VALORES COMO PARÁMETROS
-const evaluateLevel = (currentCorrectSelections = correctSelections, currentScore = score) => {
-  if (!levelConfig) return;
-  
-  const requiredScore = 200 + (8 * 10 * 0.8); // 264 puntos
-  saveProgress();
-  
-  // ⭐ USAR LOS VALORES PASADOS
-  if (currentCorrectSelections === 8 && currentScore >= requiredScore) {
-    const currentLevel = parseInt(nivel);
-    const maxLevels = dificultad === 'facil' ? 10 : 5;
+  const evaluateLevel = (currentCorrectSelections = correctSelections, currentScore = score) => {
+    if (!levelConfig) return;
     
-    if (currentLevel < maxLevels) {
-      setEndGameMessage(`¡Excelente! Has completado el nivel ${nivel} con ${currentCorrectSelections} aciertos y ${currentScore} monedas. ¡Pasas al siguiente nivel!`);
+    const requiredScore = 200 + (8 * 10 * 0.8);
+    saveProgress();
+    
+    if (currentCorrectSelections === 8 && currentScore >= requiredScore) {
+      const currentLevel = parseInt(nivel);
+      const maxLevels = dificultad === 'facil' ? 10 : 5;
+      
+      if (currentLevel < maxLevels) {
+        setEndGameMessage(`¡Excelente! Has completado el nivel ${nivel} con ${currentCorrectSelections} aciertos y ${currentScore} monedas. ¡Pasas al siguiente nivel!`);
+      } else {
+        setEndGameMessage(`¡Felicidades! Has completado todos los niveles de la dificultad ${dificultad}. ¡Eres increíble!`);
+      }
+      setEndGameType('success');
+      setShowEndGameAlert(true);
     } else {
-      setEndGameMessage(`¡Felicidades! Has completado todos los niveles de la dificultad ${dificultad}. ¡Eres increíble!`);
+      let failureReason = '';
+      if (currentCorrectSelections < 8) {
+        failureReason = `Solo completaste ${currentCorrectSelections} de 8 elementos correctos de los 16 totales.`;
+      }
+      if (currentScore < requiredScore) {
+        if (failureReason) failureReason += ' ';
+        failureReason += `Tu puntaje fue ${currentScore} monedas (necesitas mínimo ${requiredScore} monedas para avanzar).`;
+      }
+      
+      setEndGameMessage(`Nivel no completado. El nivel se reiniciará para que puedas intentarlo de nuevo.`);
+      setEndGameType('score_failure');
+      setShowEndGameAlert(true);
+      
+      setTimeout(() => {
+        playAudioWithQueue(SCORE_RESTART_AUDIO);
+      }, 500);
     }
-    setEndGameType('success');
-    setShowEndGameAlert(true);
-  } else {
-    let failureReason = '';
-    if (currentCorrectSelections < 8) {
-      failureReason = `Solo completaste ${currentCorrectSelections} de 8 elementos correctos de los 16 totales.`;
-    }
-    if (currentScore < requiredScore) {
-      if (failureReason) failureReason += ' ';
-      failureReason += `Tu puntaje fue ${currentScore} monedas (necesitas mínimo ${requiredScore} monedas para avanzar).`;
-    }
-    
-    setEndGameMessage(`Nivel no completado.El nivel se reiniciará para que puedas intentarlo de nuevo.`);
-    setEndGameType('score_failure');
-    setShowEndGameAlert(true);
-    
-    setTimeout(() => {
-      playAudioWithQueue(SCORE_RESTART_AUDIO);
-    }, 500);
-  }
-};
+  };
 
   const handleTimeOut = () => {
     const requiredScore = 200 + (8 * 10 * 0.8);
@@ -368,7 +427,6 @@ const evaluateLevel = (currentCorrectSelections = correctSelections, currentScor
     setEndGameType('timeout');
     setShowEndGameAlert(true);
     
-    // Reproducir audio específico para reinicio por tiempo
     setTimeout(() => {
       playAudioWithQueue(TIMEOUT_RESTART_AUDIO);
     }, 500);
@@ -376,7 +434,7 @@ const evaluateLevel = (currentCorrectSelections = correctSelections, currentScor
 
   // Navigation Functions
   const goToSurvey = () => {
-    if (showEndGameAlert || showSuccessAlert) return; // No permitir navegación si hay alerta activa
+    if (showEndGameAlert || showSuccessAlert) return;
     
     saveProgress();
     navigate('/encuesta', { 
@@ -390,7 +448,7 @@ const evaluateLevel = (currentCorrectSelections = correctSelections, currentScor
   };
 
   const goToNextLevel = () => {
-    if (showEndGameAlert) return; // No permitir navegación si hay alerta activa
+    if (showEndGameAlert) return;
     
     saveProgress();
     const currentLevel = parseInt(nivel);
@@ -505,6 +563,7 @@ const evaluateLevel = (currentCorrectSelections = correctSelections, currentScor
     injectAnimationCSS();
   }, []);
 
+  // ⭐ USEEFFECT PRINCIPAL MODIFICADO PARA REINICIO COMPLETO
   useEffect(() => {
     const config = getNivelConfig('cognados', dificultad, nivel);
     if (config) {
@@ -514,25 +573,120 @@ const evaluateLevel = (currentCorrectSelections = correctSelections, currentScor
         ...config,
         selectables: shuffledSelectables
       });
+      
+
+      setTimeout(() => {
+        setComparedSelectors([]);
+        setDisabledSelectors([]);
+        setLastSelectedSelector(null);
+        setHighlightedSelector(null);
+      }, 100);
+      
       setRemainingTime(config.tiempoMaximo);
       
-      if (user) {
-        const userId = user.id;
-        localStorage.setItem(`progress_cognados_${dificultad}_${userId}`, JSON.stringify({
-          gameType: 'cognados',
-          difficulty: dificultad,
-          level: nivel,
-          score: 200,
-          timestamp: new Date().toISOString()
-        }));
-      }
-      
+
       if (dificultad === 'facil') {
-        playInitialInstructions();
+        if (user) {
+          const userId = user.id;
+          
+
+// ⭐ SIEMPRE REINICIAR EN NIVEL 1 DE DIFICULTAD FÁCIL
+          if (nivel === '1') {
+            // Limpiar progreso y resetear estados
+            localStorage.removeItem(`progress_cognados_${dificultad}_${userId}`);
+            
+            // ⭐ CREAR PROGRESO FRESCO
+            const freshProgress = {
+              gameType: 'cognados',
+              difficulty: dificultad,
+              level: nivel,
+              score: 200,
+              accumulatedScore: 200,
+              timestamp: new Date().toISOString()
+            };
+            localStorage.setItem(`progress_cognados_${dificultad}_${userId}`, JSON.stringify(freshProgress));
+            
+            // ⭐ RESETEAR TODOS LOS ESTADOS
+            resetAllStates();
+            setRemainingTime(config.tiempoMaximo); // Restaurar tiempo después del reset
+          } else {
+            // Para otros niveles, mantener progreso normal
+            const savedProgress = localStorage.getItem(`progress_cognados_${dificultad}_${userId}`);
+            const progress = savedProgress ? JSON.parse(savedProgress) : {
+              gameType: 'cognados',
+              difficulty: dificultad,
+              level: nivel,
+              score: 200,
+              accumulatedScore: 200,
+              timestamp: new Date().toISOString()
+            };
+            localStorage.setItem(`progress_cognados_${dificultad}_${userId}`, JSON.stringify(progress));
+          }
+        }
+        
+
+        setTimeout(() => {
+          playInitialInstructions();
+        }, 500);
       } else {
-        setInstructionsCompleted(true);
+        // ⭐ PARA OTROS NIVELES, MANTENER PUNTAJE ACUMULADO PERO RESETEAR ESTADOS DEL JUEGO
+        const savedProgress = localStorage.getItem(`progress_cognados_${dificultad}_${userId}`);
+        if (savedProgress) {
+          const progress = JSON.parse(savedProgress);
+          // Mantener puntaje acumulado pero resetear estados de juego
+          const currentScore = progress.accumulatedScore || 200;
+          
+          // ⭐ RESETEAR COMPLETAMENTE TODOS LOS ESTADOS DE JUEGO EXCEPTO EL SCORE
+          setCorrectSelections(0);
+          setTotalSelections(0);
+          setComparedSelectors([]);
+          setDisabledSelectors([]);
+          setLastSelectedSelector(null);
+          setHighlightedSelector(null);
+          setIsTraining(false);
+          setAudioPlayed(0);
+          setShowSuccessMessage(false);
+          setIsPlayingAudio(false);
+          setShowSuccessAlert(false);
+          setInstructionsCompleted(false);
+          setIsPlayingInstructions(false);
+          setShowEndGameAlert(false);
+          setEndGameMessage('');
+          setEndGameType('');
+          
+          // Mantener el score acumulado
+          setScore(currentScore);
+        } else {
+          // Si no hay progreso guardado, crear uno con puntaje base
+          const progress = {
+            gameType: 'cognados',
+            difficulty: dificultad,
+            level: nivel,
+            score: 200,
+            accumulatedScore: 200,
+            timestamp: new Date().toISOString()
+          };
+          localStorage.setItem(`progress_cognados_${dificultad}_${userId}`, JSON.stringify(progress));
+          
+          // ⭐ RESETEAR ESTADOS PARA NUEVO PROGRESO
+          setCorrectSelections(0);
+          setTotalSelections(0);
+          setComparedSelectors([]);
+          setDisabledSelectors([]);
+          setLastSelectedSelector(null);
+          setHighlightedSelector(null);
+          setIsTraining(false);
+          setAudioPlayed(0);
+        }
       }
     }
+
+  return () => {
+    setComparedSelectors([]);
+    setDisabledSelectors([]);
+    setLastSelectedSelector(null);
+    setHighlightedSelector(null);
+  };
   }, [dificultad, nivel, user]);
 
   useEffect(() => {
@@ -558,15 +712,108 @@ const evaluateLevel = (currentCorrectSelections = correctSelections, currentScor
   // Render
   if (!levelConfig) {
     return (
-      <LoadingContainer>
-        <LoadingText>Cargando nivel...</LoadingText>
-      </LoadingContainer>
+      <div style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        margin: 0,
+        padding: 0,
+        display: 'flex', 
+        flexDirection: 'column',
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        background: 'linear-gradient(135deg,rgb(22, 48, 131) 0%,rgb(173, 180, 248) 100%)',
+        fontFamily: 'Comic Sans MS, cursive',
+        zIndex: 9999
+      }}>
+        <div style={{
+          display: 'flex',
+          gap: '10px',
+          marginBottom: '30px'
+        }}>
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              style={{
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                backgroundColor: ['#ff6b6b', '#4ecdc4', '#45b7d1'][i],
+                animation: `bounce 1.4s infinite ease-in-out both`,
+                animationDelay: `${i * 0.16}s`
+              }}
+            />
+          ))}
+        </div>
+
+        <div style={{
+          color: '#ffffff',
+          fontSize: '24px',
+          fontWeight: 'bold',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+          animation: 'pulse 2s infinite'
+        }}>
+           Cargando nivel... 
+        </div>
+
+        <div style={{
+          width: '200px',
+          height: '8px',
+          backgroundColor: 'rgba(255,255,255,0.3)',
+          borderRadius: '10px',
+          marginTop: '20px',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            width: '100%',
+            height: '100%',
+            background: 'linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4)',
+            borderRadius: '10px',
+            animation: 'slide 2s infinite'
+          }} />
+        </div>
+
+        <style jsx>{`
+          @keyframes bounce {
+            0%, 80%, 100% { 
+              transform: scale(0);
+            } 
+            40% { 
+              transform: scale(1);
+            }
+          }
+
+          @keyframes pulse {
+            0%, 100% {
+              opacity: 1;
+              transform: scale(1);
+            }
+            50% {
+              opacity: 0.7;
+              transform: scale(1.05);
+            }
+          }
+
+          @keyframes slide {
+            0% {
+              transform: translateX(-100%);
+            }
+            100% {
+              transform: translateX(100%);
+            }
+          }
+        `}</style>
+      </div>
     );
   }
 
+
   return (
     <>
-      <GameBackground backgroundImage="/images/fondo_isla.png">
+    <GlobalStyle />
+  <GameBackground backgroundImage={levelConfig.backgroundImage}>  
         <GameContainer>
           <TopRightPanel>
             <ScoreContainer>
@@ -599,7 +846,7 @@ const evaluateLevel = (currentCorrectSelections = correctSelections, currentScor
           <SelectablesContainer>
             {levelConfig.selectables.map((selector, index) => (
               <Selectable 
-                key={selector.id}
+              key={`${selector.id}-${nivel}-${index}`}
                 index={index}
                 selected={comparedSelectors.includes(selector.id)}
                 highlighted={highlightedSelector === selector.id}
@@ -644,7 +891,7 @@ const evaluateLevel = (currentCorrectSelections = correctSelections, currentScor
           {isTraining && instructionsCompleted && !showEndGameAlert && (
             <TrainingOverlay>
               <TrainingText>
-                HAZ CLICK EN EL COCODRILO DE ARRIBA
+                HAZ CLICK EN LA IMAGEN DE ARRIBA
                 <TrainingCounter>{audioPlayed}/10</TrainingCounter>
                 <div style={{ 
                   fontSize: '16px', 
@@ -657,11 +904,7 @@ const evaluateLevel = (currentCorrectSelections = correctSelections, currentScor
             </TrainingOverlay>
           )}
           
-          {showSuccessMessage && !showEndGameAlert && (
-            <SuccessMessage>
-              <SuccessText>¡Correcto! +10 monedas</SuccessText>
-            </SuccessMessage>
-          )}
+
           
         </GameContainer>
 
@@ -709,6 +952,7 @@ const GameContainer = styled.div`
   margin: 0;
   padding: 0;
   z-index: 0;
+  font-family: 'Manrope', sans-serif;
 `;
 
 const TopRightPanel = styled.div`
@@ -742,6 +986,7 @@ const ScoreText = styled.span`
   font-size: 20px;
   font-weight: bold;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  font-family: 'Manrope', sans-serif;
 `;
 
 const TimeContainer = styled.div`
@@ -758,6 +1003,7 @@ const TimeText = styled.span`
   font-size: 20px;
   font-weight: bold;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  font-family: 'Manrope', sans-serif;
 `;
 
 const IslandContainer = styled.div`
@@ -916,19 +1162,7 @@ const StatusIndicator = styled.div`
   border: 2px solid white;
 `;
 
-const LoadingContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #0a0a2a;
-`;
 
-const LoadingText = styled.p`
-  color: white;
-  font-size: 24px;
-  font-weight: bold;
-`;
 
 const InstructionsOverlay = styled.div`
   position: absolute;
@@ -954,6 +1188,7 @@ const InstructionsText = styled.div`
   text-align: center;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   border: 3px solid #fc7500;
+  font-family: 'Manrope', sans-serif;
 `;
 
 const TrainingOverlay = styled.div`
@@ -982,6 +1217,7 @@ const TrainingText = styled.div`
   pointer-events: auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   border: 3px solid #fc7500;
+  font-family: 'Manrope', sans-serif;
 `;
 
 const TrainingCounter = styled.div`
@@ -989,6 +1225,7 @@ const TrainingCounter = styled.div`
   font-weight: bold;
   margin-top: 15px;
   color: #fc7500;
+  font-family: 'Manrope', sans-serif;
 `;
 
 const SuccessMessage = styled.div`
@@ -1014,6 +1251,7 @@ const SuccessText = styled.div`
   color: white;
   font-size: 22px;
   font-weight: bold;
+  font-family: 'Manrope', sans-serif;
 `;
 
 const EndGameAlertOverlay = styled.div`
@@ -1048,6 +1286,7 @@ const EndGameAlertText = styled.div`
   margin-bottom: 30px;
   line-height: 1.6;
   font-weight: 500;
+  font-family: 'Manrope', sans-serif;
 `;
 
 const EndGameAlertButton = styled.button`
@@ -1108,6 +1347,7 @@ const SuccessAlertText = styled.div`
   margin-bottom: 30px;
   line-height: 1.6;
   font-weight: 500;
+  font-family: 'Manrope', sans-serif;
 `;
 
 const SuccessAlertButton = styled.button`
