@@ -48,12 +48,10 @@ const NivelCognados = () => {
 
   // ⭐ FUNCIÓN PARA RESETEAR TODOS LOS ESTADOS
   const resetAllStates = () => {
-    if (nivel === '1') {
-      setScore(200);
-    }
+    setScore(nivel === '1' ? 200 : score); 
     setCorrectSelections(0);
     setTotalSelections(0);
-    setIsTraining(nivel === '1');
+    setIsTraining(true);
     setAudioPlayed(0);
     setShowSuccessMessage(false);
     setLastSelectedSelector(null);
@@ -186,11 +184,7 @@ const NivelCognados = () => {
       setRemainingTime(levelConfig.tiempoMaximo);
       
       setTimeout(() => {
-        if (dificultad === 'facil') {
-          playInitialInstructions();
-        } else {
-          setInstructionsCompleted(true);
-        }
+        playInitialInstructions();
       }, 100);
     }
   };
@@ -243,26 +237,19 @@ const NivelCognados = () => {
 
   const playInitialInstructions = async () => {
     setIsPlayingInstructions(true);
-    const instructionsAudioPath = levelConfig?.instructionsAudio || 
-    `/sounds/instrucciones/instrucciones${nivel}.mp3`;
+    const instructionsAudioPath = `/sounds/instrucciones/instrucciones${nivel}.mp3`;
     
     try {
       await playAudioWithQueue(instructionsAudioPath, () => {
         setIsPlayingInstructions(false);
         setInstructionsCompleted(true);
 
-        if (nivel !== '1') {
-          setIsTraining(false);
-        }
       });
     } catch (error) {
       console.error('Error reproducing instructions:', error);
       setIsPlayingInstructions(false);
       setInstructionsCompleted(true);
-
-      if (nivel !== '1') {
-        setIsTraining(false);
-      }
+      
     }
   };
 
@@ -327,9 +314,13 @@ const NivelCognados = () => {
       
       if (newCorrectSelections === 8 || newTotalSelections >= 16) {
         checkForNextLevelButton(newTotalSelections, newCorrectSelections, newScore);
-        setTimeout(() => {
-          playAudioWithQueue(SUCCESS_LEVEL_AUDIO);
-        }, 500);
+        
+        const requiredScore = 200 + (8 * 10 * 0.8);
+        if (newCorrectSelections === 8 && newScore >= requiredScore) {
+          setTimeout(() => {
+            playAudioWithQueue(SUCCESS_LEVEL_AUDIO);
+          }, 500);
+        }
       }
       
       showFloatingText('¡Correcto! +10 monedas', '#4CAF50', 1500)
@@ -590,12 +581,11 @@ const NivelCognados = () => {
           const userId = user.id;
           
 
-// ⭐ SIEMPRE REINICIAR EN NIVEL 1 DE DIFICULTAD FÁCIL
           if (nivel === '1') {
             // Limpiar progreso y resetear estados
             localStorage.removeItem(`progress_cognados_${dificultad}_${userId}`);
             
-            // ⭐ CREAR PROGRESO FRESCO
+            // CREAR PROGRESO FRESCO
             const freshProgress = {
               gameType: 'cognados',
               difficulty: dificultad,
@@ -606,7 +596,7 @@ const NivelCognados = () => {
             };
             localStorage.setItem(`progress_cognados_${dificultad}_${userId}`, JSON.stringify(freshProgress));
             
-            // ⭐ RESETEAR TODOS LOS ESTADOS
+            // RESETEAR TODOS LOS ESTADOS
             resetAllStates();
             setRemainingTime(config.tiempoMaximo); // Restaurar tiempo después del reset
           } else {
@@ -623,11 +613,8 @@ const NivelCognados = () => {
             localStorage.setItem(`progress_cognados_${dificultad}_${userId}`, JSON.stringify(progress));
           }
         }
-        
 
-        setTimeout(() => {
-          playInitialInstructions();
-        }, 500);
+
       } else {
         // ⭐ PARA OTROS NIVELES, MANTENER PUNTAJE ACUMULADO PERO RESETEAR ESTADOS DEL JUEGO
         const savedProgress = localStorage.getItem(`progress_cognados_${dificultad}_${userId}`);
@@ -643,7 +630,7 @@ const NivelCognados = () => {
           setDisabledSelectors([]);
           setLastSelectedSelector(null);
           setHighlightedSelector(null);
-          setIsTraining(false);
+          setIsTraining(true);
           setAudioPlayed(0);
           setShowSuccessMessage(false);
           setIsPlayingAudio(false);
@@ -668,18 +655,15 @@ const NivelCognados = () => {
           };
           localStorage.setItem(`progress_cognados_${dificultad}_${userId}`, JSON.stringify(progress));
           
-          // ⭐ RESETEAR ESTADOS PARA NUEVO PROGRESO
-          setCorrectSelections(0);
-          setTotalSelections(0);
-          setComparedSelectors([]);
-          setDisabledSelectors([]);
-          setLastSelectedSelector(null);
-          setHighlightedSelector(null);
-          setIsTraining(false);
-          setAudioPlayed(0);
+          resetAllStates();
         }
       }
     }
+    
+    setTimeout(() => {
+      playInitialInstructions();
+    }, 500);
+    
 
   return () => {
     setComparedSelectors([]);
@@ -687,7 +671,7 @@ const NivelCognados = () => {
     setLastSelectedSelector(null);
     setHighlightedSelector(null);
   };
-  }, [dificultad, nivel, user]);
+}, [dificultad, nivel, user]);
 
   useEffect(() => {
     let timer;

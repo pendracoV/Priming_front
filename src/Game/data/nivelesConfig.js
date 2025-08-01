@@ -176,7 +176,7 @@ export const cognadosFacilNivel3 = createLevelConfig({
   instructionsAudio: '/sounds/instrucciones/instrucciones3.mp3',
   
   indicatorImage: '/images/cognados/nivel3/dragon.png',
-  indicadorAudio: '/sounds/cognados/facil/nivel3/indicador.mp3',
+  indicatorAudio: '/sounds/cognados/facil/nivel3/indicador.mp3',
   
   selectableImage: '/images/cognados/nivel3/cat.png',
   
@@ -189,7 +189,7 @@ export const cognadosFacilNivel4 = createLevelConfig({
   instructionsAudio: '/sounds/instrucciones/instrucciones4.mp3',
   
   indicatorImage: '/images/cognados/nivel4/robot.png',
-  indicadorAudio: '/sounds/cognados/facil/nivel4/indicador.mp3',
+  indicatorAudio: '/sounds/cognados/facil/nivel4/indicador.mp3',
   
   selectableImage: '/images/cognados/nivel4/book.png',
   
@@ -203,7 +203,7 @@ export const cognadosFacilNivel5 = createLevelConfig({
   instructionsAudio: '/sounds/instrucciones/instrucciones5.mp3',
   
   indicatorImage: '/images/cognados/nivel5/unicornio.png',
-  indicadorAudio: '/sounds/cognados/facil/nivel5/indicador.mp3',
+  indicatorAudio: '/sounds/cognados/facil/nivel5/indicador.mp3',
   
   selectableImage: '/images/cognados/nivel5/flower.png',
   
@@ -216,7 +216,7 @@ export const cognadosFacilNivel6 = createLevelConfig({
   instructionsAudio: '/sounds/instrucciones/instrucciones6.mp3',
   
   indicatorImage: '/images/cognados/nivel6/phoenix.png',
-  indicadorAudio: '/sounds/cognados/facil/nivel6/indicador.mp3',
+  indicatorAudio: '/sounds/cognados/facil/nivel6/indicador.mp3',
   
   selectableImage: '/images/cognados/nivel6/heart.png',
   
@@ -229,7 +229,7 @@ export const cognadosFacilNivel7 = createLevelConfig({
   instructionsAudio: '/sounds/instrucciones/instrucciones7.mp3',
   
   indicatorImage: '/images/cognados/nivel7/mago.png',
-  indicadorAudio: '/sounds/cognados/facil/nivel7/indicador.mp3',
+  indicatorAudio: '/sounds/cognados/facil/nivel7/indicador.mp3',
   
   selectableImage: '/images/cognados/nivel7/star.png',
   
@@ -242,7 +242,7 @@ export const cognadosFacilNivel8 = createLevelConfig({
   instructionsAudio: '/sounds/instrucciones/instrucciones8.mp3',
   
   indicatorImage: '/images/cognados/nivel8/elfo.png',
-  indicadorAudio: '/sounds/cognados/facil/nivel8/indicador.mp3',
+  indicatorAudio: '/sounds/cognados/facil/nivel8/indicador.mp3',
   
   selectableImage: '/images/cognados/nivel8/tree.png',
   
@@ -255,7 +255,7 @@ export const cognadosFacilNivel9 = createLevelConfig({
   instructionsAudio: '/sounds/instrucciones/instrucciones9.mp3',
   
   indicatorImage: '/images/cognados/nivel9/titan.png',
-  indicadorAudio: '/sounds/cognados/facil/nivel9/indicador.mp3',
+  indicatorAudio: '/sounds/cognados/facil/nivel9/indicador.mp3',
   
   selectableImage: '/images/cognados/nivel9/sun.png',
   
@@ -268,7 +268,7 @@ export const cognadosFacilNivel10 = createLevelConfig({
   instructionsAudio: '/sounds/instrucciones/instrucciones10.mp3',
   
   indicatorImage: '/images/cognados/nivel10/guardian.png',
-  indicadorAudio: '/sounds/cognados/facil/nivel10/indicador.mp3',
+  indicatorAudio: '/sounds/cognados/facil/nivel10/indicador.mp3',
   
   selectableImage: '/images/cognados/nivel10/moon.png',
   
@@ -280,7 +280,7 @@ export const cognadosFacilNivel10 = createLevelConfig({
 const cognadosMedioNivel1 = createLevelConfig({
   tiempoMaximo: 150, // Menos tiempo para mayor dificultad
   indicatorImage: '/images/cognados/medio/nivel1/indicador.png',
-  indicadorAudio: '/sounds/cognados/medio/nivel1/indicador.mp3',
+  indicatorAudio: '/sounds/cognados/medio/nivel1/indicador.mp3',
   selectableImage: '/images/cognados/medio/nivel1/elemento.png',
   correctAudio: '/sounds/cognados/medio/nivel1/correcto.mp3',
   incorrectAudio: '/sounds/cognados/medio/nivel1/incorrecto.mp3'
@@ -290,7 +290,7 @@ const cognadosMedioNivel1 = createLevelConfig({
 const cognadosDificilNivel1 = createLevelConfig({
   tiempoMaximo: 120, // Tiempo más limitado
   indicatorImage: '/images/cognados/dificil/nivel1/indicador.png',
-  indicadorAudio: '/sounds/cognados/dificil/nivel1/indicador.mp3',
+  indicatorAudio: '/sounds/cognados/dificil/nivel1/indicador.mp3',
   selectableImage: '/images/cognados/dificil/nivel1/elemento.png',
   correctAudio: '/sounds/cognados/dificil/nivel1/correcto.mp3',
   incorrectAudio: '/sounds/cognados/dificil/nivel1/incorrecto.mp3'
