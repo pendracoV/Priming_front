@@ -48,7 +48,25 @@ const NivelCognados = () => {
 
   // ⭐ FUNCIÓN PARA RESETEAR TODOS LOS ESTADOS
   const resetAllStates = () => {
-    setScore(nivel === '1' ? 200 : score); 
+    // Calcular el score inicial correcto para el nivel actual
+    const getCorrectInitialScore = () => {
+      if (dificultad === 'facil') {
+        if (nivel === '1') {
+          return 200;
+        } else if (user) {
+          const savedProgress = localStorage.getItem(`progress_cognados_${dificultad}_${user.id}`);
+          if (savedProgress) {
+            const progress = JSON.parse(savedProgress);
+            return progress.accumulatedScore || 200;
+          }
+        }
+      }
+      return score; // Para otras dificultades, mantener score actual
+    };
+    
+    const correctInitialScore = getCorrectInitialScore();
+    setScore(correctInitialScore);
+    
     setCorrectSelections(0);
     setTotalSelections(0);
     setIsTraining(true);
@@ -65,16 +83,29 @@ const NivelCognados = () => {
     setShowEndGameAlert(false);
     setEndGameMessage('');
     setEndGameType('');
-    setRemainingTime(0); // Se actualizará con la configuración del nivel
+    setRemainingTime(0);
   };
 
   // Game State
   const [score, setScore] = useState(() => {
-    
-    if (dificultad === 'facil' && nivel === '1') {
-      return 200;
+    // Para todos los niveles de dificultad fácil, iniciar con 200 base
+    if (dificultad === 'facil') {
+      if (nivel === '1') {
+        return 200;
+      } else {
+        // Para niveles 2-10, usar el acumulado pero asegurar mínimo base
+        if (user) {
+          const savedProgress = localStorage.getItem(`progress_cognados_${dificultad}_${user.id}`);
+          if (savedProgress) {
+            const progress = JSON.parse(savedProgress);
+            // Asegurar que el puntaje base para el nivel actual sea el acumulado
+            return progress.accumulatedScore || 200;
+          }
+        }
+        return 200;
+      }
     }
-    
+
     if (user) {
       const savedProgress = localStorage.getItem(`progress_cognados_${dificultad}_${user.id}`);
       if (savedProgress) {
@@ -346,9 +377,14 @@ const NivelCognados = () => {
 
   const checkForNextLevelButton = (newTotalSelections, newCorrectSelections, newScore) => { 
     setTimeout(() => {
-      const requiredScore = 200 + (8 * 10 * 0.8);
+      const scoreAtStartOfLevel = getCurrentLevelInitialScore();
+      const maxPossiblePoints = 8 * 10; // 80 puntos máximos
+      const requiredPercentage = 0.8; // 80%
+      const requiredAdditionalPoints = maxPossiblePoints * requiredPercentage; // 64 puntos
+      const requiredFinalScore = scoreAtStartOfLevel + requiredAdditionalPoints;
       
-      if (newCorrectSelections === 8 && newScore >= requiredScore) {
+      
+      if (newCorrectSelections === 8 && newScore >= requiredFinalScore) {
         setShowSuccessAlert(true);
       }
       else if (newTotalSelections >= 16) {
@@ -378,10 +414,42 @@ const NivelCognados = () => {
   const evaluateLevel = (currentCorrectSelections = correctSelections, currentScore = score) => {
     if (!levelConfig) return;
     
-    const requiredScore = 200 + (8 * 10 * 0.8);
+    // ✅ OBTENER EL SCORE CON EL QUE SE INICIÓ ESTE NIVEL (no el anterior)
+    const getCurrentLevelInitialScore = () => {
+      if (dificultad === 'facil') {
+        if (nivel === '1') {
+          return 200;
+        } else {
+          // Para niveles 2+, el score inicial es el que teníamos al empezar este nivel
+          // Lo obtenemos del localStorage ANTES de que se modifique por este nivel
+          if (user) {
+            const savedProgress = localStorage.getItem(`progress_cognados_${dificultad}_${user.id}`);
+            if (savedProgress) {
+              const progress = JSON.parse(savedProgress);
+              return progress.accumulatedScore || 200;
+            }
+          }
+          return 200;
+        }
+      }
+      return 200;
+    };
+    
+    // ✅ MEJOR ENFOQUE: Calcular basado en el score que deberíamos tener
+    // Si empezamos con X puntos, y hay 8 aciertos posibles de 10 puntos cada uno,
+    // necesitamos al menos 80% de esos 80 puntos = 64 puntos adicionales
+    const scoreAtStartOfLevel = getCurrentLevelInitialScore();
+    const maxPossiblePoints = 8 * 10; // 80 puntos máximos
+    const requiredPercentage = 0.8; // 80%
+    const requiredAdditionalPoints = maxPossiblePoints * requiredPercentage; // 64 puntos
+    const requiredFinalScore = scoreAtStartOfLevel + requiredAdditionalPoints;
+    
     saveProgress();
     
-    if (currentCorrectSelections === 8 && currentScore >= requiredScore) {
+    
+    
+    
+    if (currentCorrectSelections === 8 && currentScore >= requiredFinalScore) {
       const currentLevel = parseInt(nivel);
       const maxLevels = dificultad === 'facil' ? 10 : 5;
       
@@ -397,12 +465,12 @@ const NivelCognados = () => {
       if (currentCorrectSelections < 8) {
         failureReason = `Solo completaste ${currentCorrectSelections} de 8 elementos correctos de los 16 totales.`;
       }
-      if (currentScore < requiredScore) {
+      if (currentScore < requiredFinalScore) {
         if (failureReason) failureReason += ' ';
-        failureReason += `Tu puntaje fue ${currentScore} monedas (necesitas mínimo ${requiredScore} monedas para avanzar).`;
+        failureReason += `Tu puntaje fue ${currentScore} monedas (necesitas mínimo ${requiredFinalScore} monedas para avanzar).`;
       }
       
-      setEndGameMessage(`Nivel no completado. El nivel se reiniciará para que puedas intentarlo de nuevo.`);
+      setEndGameMessage(`Nivel no completado. ${failureReason} El nivel se reiniciará para que puedas intentarlo de nuevo.`);
       setEndGameType('score_failure');
       setShowEndGameAlert(true);
       
@@ -410,6 +478,25 @@ const NivelCognados = () => {
         playAudioWithQueue(SCORE_RESTART_AUDIO);
       }, 500);
     }
+  };
+
+
+  const getCurrentLevelInitialScore = () => {
+    if (dificultad === 'facil') {
+      if (nivel === '1') {
+        return 200;
+      } else {
+        if (user) {
+          const savedProgress = localStorage.getItem(`progress_cognados_${dificultad}_${user.id}`);
+          if (savedProgress) {
+            const progress = JSON.parse(savedProgress);
+            return progress.accumulatedScore || 200;
+          }
+        }
+        return 200;
+      }
+    }
+    return 200;
   };
 
   const handleTimeOut = () => {
@@ -565,7 +652,7 @@ const NivelCognados = () => {
         selectables: shuffledSelectables
       });
       
-
+      // RESETEAR ESTADOS DE JUEGO EN TODOS LOS CASOS
       setTimeout(() => {
         setComparedSelectors([]);
         setDisabledSelectors([]);
@@ -575,17 +662,14 @@ const NivelCognados = () => {
       
       setRemainingTime(config.tiempoMaximo);
       
-
       if (dificultad === 'facil') {
         if (user) {
           const userId = user.id;
           
-
           if (nivel === '1') {
-            // Limpiar progreso y resetear estados
+            // Nivel 1: Limpiar progreso y empezar fresh
             localStorage.removeItem(`progress_cognados_${dificultad}_${userId}`);
             
-            // CREAR PROGRESO FRESCO
             const freshProgress = {
               gameType: 'cognados',
               difficulty: dificultad,
@@ -596,82 +680,131 @@ const NivelCognados = () => {
             };
             localStorage.setItem(`progress_cognados_${dificultad}_${userId}`, JSON.stringify(freshProgress));
             
-            // RESETEAR TODOS LOS ESTADOS
-            resetAllStates();
-            setRemainingTime(config.tiempoMaximo); // Restaurar tiempo después del reset
+            // ✅ RESETEAR TODOS LOS ESTADOS INCLUYENDO ENTRENAMIENTO
+            setScore(200);
+            setCorrectSelections(0);
+            setTotalSelections(0);
+            setIsTraining(true); // ← IMPORTANTE
+            setAudioPlayed(0); // ← IMPORTANTE
+            setShowSuccessMessage(false);
+            setLastSelectedSelector(null);
+            setIsPlayingAudio(false);
+            setComparedSelectors([]);
+            setDisabledSelectors([]);
+            setHighlightedSelector(null);
+            setShowSuccessAlert(false);
+            setInstructionsCompleted(false); // ← IMPORTANTE
+            setIsPlayingInstructions(false);
+            setShowEndGameAlert(false);
+            setEndGameMessage('');
+            setEndGameType('');
+            setRemainingTime(config.tiempoMaximo);
+            
           } else {
-            // Para otros niveles, mantener progreso normal
+            // Niveles 2-10: Mantener progreso pero RESETEAR estados de juego
             const savedProgress = localStorage.getItem(`progress_cognados_${dificultad}_${userId}`);
-            const progress = savedProgress ? JSON.parse(savedProgress) : {
-              gameType: 'cognados',
-              difficulty: dificultad,
-              level: nivel,
-              score: 200,
-              accumulatedScore: 200,
-              timestamp: new Date().toISOString()
-            };
-            localStorage.setItem(`progress_cognados_${dificultad}_${userId}`, JSON.stringify(progress));
+            if (savedProgress) {
+              const progress = JSON.parse(savedProgress);
+              const currentScore = progress.accumulatedScore || 200;
+              
+              // ✅ RESETEAR TODOS LOS ESTADOS DE JUEGO INCLUYENDO ENTRENAMIENTO
+              setScore(currentScore);
+              setCorrectSelections(0);
+              setTotalSelections(0);
+              setIsTraining(true); // ← IMPORTANTE: También en niveles 2+
+              setAudioPlayed(0); // ← IMPORTANTE: También en niveles 2+
+              setShowSuccessMessage(false);
+              setLastSelectedSelector(null);
+              setIsPlayingAudio(false);
+              setComparedSelectors([]);
+              setDisabledSelectors([]);
+              setHighlightedSelector(null);
+              setShowSuccessAlert(false);
+              setInstructionsCompleted(false); // ← IMPORTANTE: También en niveles 2+
+              setIsPlayingInstructions(false);
+              setShowEndGameAlert(false);
+              setEndGameMessage('');
+              setEndGameType('');
+              setRemainingTime(config.tiempoMaximo);
+              
+            } else {
+              // Si no hay progreso, crear uno y resetear todo
+              const progress = {
+                gameType: 'cognados',
+                difficulty: dificultad,
+                level: nivel,
+                score: 200,
+                accumulatedScore: 200,
+                timestamp: new Date().toISOString()
+              };
+              localStorage.setItem(`progress_cognados_${dificultad}_${userId}`, JSON.stringify(progress));
+              
+              // ✅ RESETEAR COMPLETAMENTE
+              setScore(200);
+              setCorrectSelections(0);
+              setTotalSelections(0);
+              setIsTraining(true);
+              setAudioPlayed(0);
+              setShowSuccessMessage(false);
+              setLastSelectedSelector(null);
+              setIsPlayingAudio(false);
+              setComparedSelectors([]);
+              setDisabledSelectors([]);
+              setHighlightedSelector(null);
+              setShowSuccessAlert(false);
+              setInstructionsCompleted(false);
+              setIsPlayingInstructions(false);
+              setShowEndGameAlert(false);
+              setEndGameMessage('');
+              setEndGameType('');
+              setRemainingTime(config.tiempoMaximo);
+            }
           }
         }
-
-
       } else {
-        // ⭐ PARA OTROS NIVELES, MANTENER PUNTAJE ACUMULADO PERO RESETEAR ESTADOS DEL JUEGO
-        const savedProgress = localStorage.getItem(`progress_cognados_${dificultad}_${userId}`);
-        if (savedProgress) {
-          const progress = JSON.parse(savedProgress);
-          // Mantener puntaje acumulado pero resetear estados de juego
-          const currentScore = progress.accumulatedScore || 200;
-          
-          // ⭐ RESETEAR COMPLETAMENTE TODOS LOS ESTADOS DE JUEGO EXCEPTO EL SCORE
-          setCorrectSelections(0);
-          setTotalSelections(0);
-          setComparedSelectors([]);
-          setDisabledSelectors([]);
-          setLastSelectedSelector(null);
-          setHighlightedSelector(null);
-          setIsTraining(true);
-          setAudioPlayed(0);
-          setShowSuccessMessage(false);
-          setIsPlayingAudio(false);
-          setShowSuccessAlert(false);
-          setInstructionsCompleted(false);
-          setIsPlayingInstructions(false);
-          setShowEndGameAlert(false);
-          setEndGameMessage('');
-          setEndGameType('');
-          
-          // Mantener el score acumulado
-          setScore(currentScore);
-        } else {
-          // Si no hay progreso guardado, crear uno con puntaje base
-          const progress = {
-            gameType: 'cognados',
-            difficulty: dificultad,
-            level: nivel,
-            score: 200,
-            accumulatedScore: 200,
-            timestamp: new Date().toISOString()
-          };
-          localStorage.setItem(`progress_cognados_${dificultad}_${userId}`, JSON.stringify(progress));
-          
-          resetAllStates();
+        // Para otras dificultades, mantener lógica similar pero siempre resetear entrenamiento
+        if (user) {
+          const userId = user.id;
+          const savedProgress = localStorage.getItem(`progress_cognados_${dificultad}_${userId}`);
+          if (savedProgress) {
+            const progress = JSON.parse(savedProgress);
+            const currentScore = progress.accumulatedScore || 200;
+            
+            setScore(currentScore);
+            setCorrectSelections(0);
+            setTotalSelections(0);
+            setIsTraining(true); // ← SIEMPRE resetear entrenamiento
+            setAudioPlayed(0);
+            setShowSuccessMessage(false);
+            setLastSelectedSelector(null);
+            setIsPlayingAudio(false);
+            setComparedSelectors([]);
+            setDisabledSelectors([]);
+            setHighlightedSelector(null);
+            setShowSuccessAlert(false);
+            setInstructionsCompleted(false); // ← SIEMPRE resetear instrucciones
+            setIsPlayingInstructions(false);
+            setShowEndGameAlert(false);
+            setEndGameMessage('');
+            setEndGameType('');
+            setRemainingTime(config.tiempoMaximo);
+          }
         }
       }
     }
     
+    // ✅ SIEMPRE reproducir instrucciones al cargar nivel
     setTimeout(() => {
       playInitialInstructions();
     }, 500);
     
-
-  return () => {
-    setComparedSelectors([]);
-    setDisabledSelectors([]);
-    setLastSelectedSelector(null);
-    setHighlightedSelector(null);
-  };
-}, [dificultad, nivel, user]);
+    return () => {
+      setComparedSelectors([]);
+      setDisabledSelectors([]);
+      setLastSelectedSelector(null);
+      setHighlightedSelector(null);
+    };
+  }, [dificultad, nivel, user]);
 
   useEffect(() => {
     let timer;
