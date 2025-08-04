@@ -3,10 +3,10 @@
 import React, { useContext } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import AdminUserCreate from '../admin/AdminUserCreate';
 
 // Páginas públicas
 import Login from '../pages/Login';
+import Registro from '../pages/Register';
 
 // Páginas privadas comunes
 import Perfil from '../pages/Perfil';
@@ -18,7 +18,12 @@ import SeleccionMundos from '../Game/SeleccionMundos';
 import NivelCognados from '../Game/levels/NivelCognados';
 import NivelParesMinimos from '../Game/levels/NivelParesMinimos';
 import Encuesta from '../Game/Encuesta';
-import Registro from '../pages/Register';
+
+// Páginas de administrador
+import AdminLayout from '../admin/AdminLayout';
+import AdminDashboard from '../admin/AdminDashboard';
+import AdminUserCreate from '../admin/AdminUserCreate';
+import AdminUserList from '../admin/AdminUserList';
 
 // ─── Middlewares de Ruta ───────────────────────────────────────────────────────
 
@@ -34,17 +39,15 @@ const RoleRoute = ({ allowedRoles }) => {
   const { user } = useContext(AuthContext);
   if (!user) return <Navigate to="/login" replace />;
   if (!allowedRoles.includes(user.tipo_usuario)) {
-    // si no coincide el rol, volvemos al login
     return <Navigate to="/login" replace />;
   }
   return <Outlet />;
 };
 
-// Solo rutas públicas (login/registro) cuando NO hay sesión
+// Solo rutas públicas cuando NO hay sesión
 const PublicRoute = ({ restricted = false }) => {
   const { user } = useContext(AuthContext);
   if (restricted && user) {
-    // si ya está logueado, lo mandamos al perfil
     return <Navigate to="/perfil" replace />;
   }
   return <Outlet />;
@@ -56,36 +59,39 @@ export default function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        
-        {/* 1) PÚBLICAS (login / registro) */}
-        <Route element={<PublicRoute restricted={true} />}>
-          <Route path="/login"     element={<Login />} />
-        </Route>
 
-        {/* 2) PRIVADAS (cualquier usuario autenticado) */}
+        {/* 1) Rutas públicas */}
+        <Route element={<PublicRoute restricted={true} />}>
+          <Route path="/login" element={<Login />} />
+        </Route>
+        <Route path="/registro" element={<Registro />} />
+
+        {/* 2) Rutas privadas (usuario autenticado) */}
         <Route element={<PrivateRoute />}>
           <Route path="/perfil" element={<Perfil />} />
 
-          {/* 2a) Evaluador */}
+          {/* 2a) Rutas de evaluador */}
           <Route element={<RoleRoute allowedRoles={['evaluador']} />}>
             <Route path="/asignar-nino" element={<AsignarAcompanante />} />
-            <Route path="/ninoslist"     element={<NinosList />} />
+            <Route path="/ninoslist" element={<NinosList />} />
             <Route path="/seleccion-mundo" element={<SeleccionMundos />} />
-            <Route path="/nivel/cognados/:dificultad/:nivel"    element={<NivelCognados />} />
+            <Route path="/nivel/cognados/:dificultad/:nivel" element={<NivelCognados />} />
             <Route path="/nivel/pares-minimos/:dificultad/:nivel" element={<NivelParesMinimos />} />
-            <Route path="/encuesta"      element={<Encuesta />} />
+            <Route path="/encuesta" element={<Encuesta />} />
           </Route>
 
-          {/* 2b) Administrador */}
+          {/* 2b) Rutas de administrador */}
           <Route element={<RoleRoute allowedRoles={['administrador']} />}>
-            <Route path="/admin/crear-usuario" element={<AdminUserCreate />} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="crear-usuario" element={<AdminUserCreate />} />
+              <Route path="ver-usuarios" element={<AdminUserList />} />
+            </Route>
           </Route>
         </Route>
 
-        {/* 3) CATCH-ALL: redirigir a login */}
+        {/* 3) Catch-all: redirigir a login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
-        <Route path="/registro" element={<Registro />} />
-
       </Routes>
     </BrowserRouter>
   );
