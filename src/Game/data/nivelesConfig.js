@@ -70,9 +70,10 @@ const baseFeedbackConfig = {
 const createLevelConfig = (config) => ({
   // Configuraciones básicas
   tiempoMaximo: config.tiempoMaximo || 180,
-  instructionsAudio: config.instructionsAudio || '/sounds/instrucciones/instrucciones.mp3',
+  instructionsAudio: config.instructionsAudio || '/sounds/cognados/facil/instrucciones/instrucciones.mp3',
 
   backgroundImage: config.backgroundImage || '/images/fondo_isla.png',
+  successAudio: config.successAudio || '/sounds/cognados/facil/succes/success.mp3',
   
   // Indicador único por nivel
   indicators: [{
@@ -145,7 +146,7 @@ const createLevelConfig = (config) => ({
 // NIVEL 1 
 export const cognadosFacilNivel1 = createLevelConfig({
   tiempoMaximo: 180,
-  instructionsAudio: '/sounds/instrucciones/instrucciones1.mp3',
+  instructionsAudio: '/sounds/cognados/facil/instrucciones/instrucciones1.mp3',
   backgroundImage: '/images/cognados/nivel1/fondo_isla.png',
   
   indicatorImage: '/images/cognados/nivel1/cocodrilo.png',
@@ -154,7 +155,9 @@ export const cognadosFacilNivel1 = createLevelConfig({
   selectableImage: '/images/cognados/nivel1/fish.png',
   
   correctAudio: '/sounds/cognados/facil/nivel1/lemon.mp3',
-  incorrectAudio: '/sounds/cognados/facil/nivel1/limon.mp3'
+  incorrectAudio: '/sounds/cognados/facil/nivel1/limon.mp3',
+
+  successAudio: '/sounds/cognados/facil/succes/success.mp3'
 });
 
 export const cognadosFacilNivel2 = createLevelConfig({
@@ -168,7 +171,9 @@ export const cognadosFacilNivel2 = createLevelConfig({
   selectableImage: '/images/cognados/nivel2/snake.png',
   
   correctAudio: '/sounds/cognados/facil/nivel2/bananaE.mp3',
-  incorrectAudio: '/sounds/cognados/facil/nivel2/bananaS.mp3'
+  incorrectAudio: '/sounds/cognados/facil/nivel2/bananaS.mp3',
+
+  successAudio: '/sounds/cognados/facil/succes/success2.mp3'
 });
 
 export const cognadosFacilNivel3 = createLevelConfig({
@@ -181,7 +186,9 @@ export const cognadosFacilNivel3 = createLevelConfig({
   selectableImage: '/images/cognados/nivel3/cat.png',
   
   correctAudio: '/sounds/cognados/facil/nivel3/correcto.mp3',
-  incorrectAudio: '/sounds/cognados/facil/nivel3/incorrecto.mp3'
+  incorrectAudio: '/sounds/cognados/facil/nivel3/incorrecto.mp3',
+
+  successAudio: '/sounds/cognados/facil/succes/success3.mp3'
 });
 
 export const cognadosFacilNivel4 = createLevelConfig({
@@ -194,7 +201,9 @@ export const cognadosFacilNivel4 = createLevelConfig({
   selectableImage: '/images/cognados/nivel4/book.png',
   
   correctAudio: '/sounds/cognados/facil/nivel4/correcto.mp3',
-  incorrectAudio: '/sounds/cognados/facil/nivel4/incorrecto.mp3'
+  incorrectAudio: '/sounds/cognados/facil/nivel4/incorrecto.mp3',
+
+  successAudio: '/sounds/cognados/facil/succes/success.mp3'
 });
 
 
@@ -208,7 +217,9 @@ export const cognadosFacilNivel5 = createLevelConfig({
   selectableImage: '/images/cognados/nivel5/flower.png',
   
   correctAudio: '/sounds/cognados/facil/nivel5/correcto.mp3',
-  incorrectAudio: '/sounds/cognados/facil/nivel5/incorrecto.mp3'
+  incorrectAudio: '/sounds/cognados/facil/nivel5/incorrecto.mp3',
+
+  successAudio: '/sounds/cognados/facil/succes/success.mp3'
 });
 
 export const cognadosFacilNivel6 = createLevelConfig({
@@ -221,7 +232,9 @@ export const cognadosFacilNivel6 = createLevelConfig({
   selectableImage: '/images/cognados/nivel6/heart.png',
   
   correctAudio: '/sounds/cognados/facil/nivel6/correcto.mp3',
-  incorrectAudio: '/sounds/cognados/facil/nivel6/incorrecto.mp3'
+  incorrectAudio: '/sounds/cognados/facil/nivel6/incorrecto.mp3',
+
+  successAudio: '/sounds/cognados/facil/succes/success.mp3'
 });
 
 export const cognadosFacilNivel7 = createLevelConfig({
@@ -234,7 +247,9 @@ export const cognadosFacilNivel7 = createLevelConfig({
   selectableImage: '/images/cognados/nivel7/star.png',
   
   correctAudio: '/sounds/cognados/facil/nivel7/correcto.mp3',
-  incorrectAudio: '/sounds/cognados/facil/nivel7/incorrecto.mp3'
+  incorrectAudio: '/sounds/cognados/facil/nivel7/incorrecto.mp3',
+
+  successAudio: '/sounds/cognados/facil/succes/success.mp3'
 });
 
 export const cognadosFacilNivel8 = createLevelConfig({
@@ -247,7 +262,9 @@ export const cognadosFacilNivel8 = createLevelConfig({
   selectableImage: '/images/cognados/nivel8/tree.png',
   
   correctAudio: '/sounds/cognados/facil/nivel8/correcto.mp3',
-  incorrectAudio: '/sounds/cognados/facil/nivel8/incorrecto.mp3'
+  incorrectAudio: '/sounds/cognados/facil/nivel8/incorrecto.mp3',
+
+  successAudio: '/sounds/cognados/facil/succes/success.mp3'
 });
 
 export const cognadosFacilNivel9 = createLevelConfig({
@@ -260,7 +277,9 @@ export const cognadosFacilNivel9 = createLevelConfig({
   selectableImage: '/images/cognados/nivel9/sun.png',
   
   correctAudio: '/sounds/cognados/facil/nivel9/correcto.mp3',
-  incorrectAudio: '/sounds/cognados/facil/nivel9/incorrecto.mp3'
+  incorrectAudio: '/sounds/cognados/facil/nivel9/incorrecto.mp3',
+
+  successAudio: '/sounds/cognados/facil/succes/success.mp3'
 });
 
 export const cognadosFacilNivel10 = createLevelConfig({
@@ -273,7 +292,9 @@ export const cognadosFacilNivel10 = createLevelConfig({
   selectableImage: '/images/cognados/nivel10/moon.png',
   
   correctAudio: '/sounds/cognados/facil/nivel10/correcto.mp3',
-  incorrectAudio: '/sounds/cognados/facil/nivel10/incorrecto.mp3'
+  incorrectAudio: '/sounds/cognados/facil/nivel10/incorrecto.mp3',
+
+  successAudio: '/sounds/cognados/facil/succes/success.mp3'
 });
 
 // Placeholder para niveles medio (5 niveles)
