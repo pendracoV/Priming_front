@@ -4,10 +4,10 @@ import React, { useContext } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useParams } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { validateLevelAccess, getLastAccessibleLevel } from '../utils/gameValidation';
-import AdminUserCreate from '../admin/AdminUserCreate';
 
 // Páginas públicas
 import Login from '../pages/Login';
+import Registro from '../pages/Register';
 
 // Páginas privadas comunes
 import Perfil from '../pages/Perfil';
@@ -19,7 +19,12 @@ import SeleccionMundos from '../Game/SeleccionMundos';
 import NivelCognados from '../Game/levels/NivelCognados';
 import NivelParesMinimos from '../Game/levels/NivelParesMinimos';
 import Encuesta from '../Game/Encuesta';
-import Registro from '../pages/Register';
+
+// Páginas de administrador
+import AdminLayout from '../admin/AdminLayout';
+import AdminDashboard from '../admin/AdminDashboard';
+import AdminUserCreate from '../admin/AdminUserCreate';
+import AdminUserList from '../admin/AdminUserList';
 
 // ─── Middlewares de Ruta ───────────────────────────────────────────────────────
 
@@ -49,7 +54,7 @@ const PublicRoute = ({ restricted = false }) => {
   return <Outlet />;
 };
 
-// ✅ NUEVO: Middleware para proteger acceso a niveles
+// ✅ Middleware para proteger acceso a niveles
 const ProtectedLevelRoute = ({ children, gameType }) => {
   const { user } = useContext(AuthContext);
   const { dificultad, nivel } = useParams();
@@ -74,25 +79,7 @@ const ProtectedLevelRoute = ({ children, gameType }) => {
   return children;
 };
 
-// ✅ NUEVO: Wrapper específico para Cognados
-const ProtectedCognadosLevel = () => {
-  return (
-    <ProtectedLevelRoute gameType="cognados">
-      <NivelCognados />
-    </ProtectedLevelRoute>
-  );
-};
-
-// ✅ NUEVO: Wrapper específico para Pares Mínimos
-const ProtectedParesMinimosLevel = () => {
-  return (
-    <ProtectedLevelRoute gameType="pares-minimos">
-      <NivelParesMinimos />
-    </ProtectedLevelRoute>
-  );
-};
-
-// ✅ NUEVO: Middleware para validar parámetros de nivel
+// ✅ Middleware para validar parámetros de nivel
 const ValidateLevelParams = ({ children, gameType }) => {
   const { dificultad, nivel } = useParams();
 
@@ -126,7 +113,7 @@ const ValidateLevelParams = ({ children, gameType }) => {
   return children;
 };
 
-// ✅ NUEVO: Middleware combinado (Validación + Protección)
+// ✅ Middleware combinado (Validación + Protección)
 const SecureLevelRoute = ({ children, gameType }) => {
   return (
     <ValidateLevelParams gameType={gameType}>
@@ -148,6 +135,9 @@ export default function AppRoutes() {
         <Route element={<PublicRoute restricted={true} />}>
           <Route path="/login" element={<Login />} />
         </Route>
+        
+        {/* Registro público (sin restricción de sesión) */}
+        <Route path="/registro" element={<Registro />} />
 
         {/* 2) PRIVADAS (cualquier usuario autenticado) */}
         <Route element={<PrivateRoute />}>
@@ -183,14 +173,18 @@ export default function AppRoutes() {
 
           {/* 2b) Administrador */}
           <Route element={<RoleRoute allowedRoles={['administrador']} />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="crear-usuario" element={<AdminUserCreate />} />
+              <Route path="ver-usuarios" element={<AdminUserList />} />
+            </Route>
+            
+            {/* Ruta alternativa para compatibilidad */}
             <Route path="/admin/crear-usuario" element={<AdminUserCreate />} />
           </Route>
         </Route>
 
-        {/* 3) REGISTRO PÚBLICO */}
-        <Route path="/registro" element={<Registro />} />
-
-        {/* 4) REDIRECCIONES ESPECÍFICAS */}
+        {/* 3) REDIRECCIONES ESPECÍFICAS */}
         
         {/* Redirigir rutas de niveles sin parámetros válidos */}
         <Route path="/nivel" element={<Navigate to="/seleccion-mundo" replace />} />
@@ -207,7 +201,7 @@ export default function AppRoutes() {
           } 
         />
 
-        {/* 5) CATCH-ALL: redirigir a login */}
+        {/* 4) CATCH-ALL: redirigir a login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
 
       </Routes>
