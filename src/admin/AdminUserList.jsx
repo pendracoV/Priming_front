@@ -1,7 +1,8 @@
 // src/admin/AdminUserList.jsx
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import api from '../api/config';
+import axios from 'axios';
+import API_URL from '../api/config'; // string base de la API
 
 const Container = styled.div`
   padding: 20px;
@@ -40,9 +41,24 @@ function AdminUserList() {
   useEffect(() => {
     const fetchUsuarios = async () => {
       try {
-        const res = await api.get('/users'); // Asegúrate que esta ruta esté habilitada en el backend
+        const token = localStorage.getItem('token'); // tu token JWT
+        if (!token) {
+          setError('No se encontró token de autenticación');
+          return;
+        }
+
+        // Instanciar axios con la URL base
+        const api = axios.create({
+          baseURL: API_URL,
+          headers: {
+            Authorization: `Bearer ${token}` // ⚠️ importante: "Bearer "
+          }
+        });
+
+        const res = await api.get('/users'); // endpoint que retorna todos los usuarios
         setUsuarios(res.data);
       } catch (err) {
+        console.error('Error al obtener usuarios:', err);
         setError('Error al obtener la lista de usuarios');
       }
     };
