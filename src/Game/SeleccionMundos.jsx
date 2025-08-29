@@ -12,8 +12,7 @@ import { GlobalStyle } from '../styles/styles';
 
 // Paleta de colores basada en el mockup
 const colors = {
-  darkPurple: '#1e1b4b', // Fondo de las tarjetas
-  purple: '#a855f7',     // Bordes y acentos
+  darkPurple: '#1e1b4b', // Fondo de las tarjetas   // Bordes y acentos
   lightPurple: '#8b5cf6', // Gradiente superior
   blue: '#3b82f6',       // Gradiente inferior
   buttonPurple: '#934486', // Color de los botones
@@ -75,7 +74,6 @@ const GameImageContainer = styled.div`
   border-radius: 50%;
   overflow: hidden;
   margin-bottom: 20px;
-  border: 3px solid ${colors.purple};
 `;
 
 const GameImageElement = styled.img`

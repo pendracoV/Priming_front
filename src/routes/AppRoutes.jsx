@@ -16,7 +16,7 @@ import Perfil from '../pages/Perfil';
 import AsignarAcompanante from '../pages/AsignarAcompanante';
 import NinosList from '../pages/NinosListPage';
 import SeleccionMundos from '../Game/SeleccionMundos';
-import NivelCognados from '../Game/levels/NivelCognados';
+import NivelCognadosWrapper from '../wrapper/NivelCognadosWrapper';
 import NivelParesMinimos from '../Game/levels/NivelParesMinimos';
 import Encuesta from '../Game/Encuesta';
 
@@ -150,15 +150,16 @@ export default function AppRoutes() {
             <Route path="/seleccion-mundo" element={<SeleccionMundos />} />
             
             {/* ✅ RUTAS PROTEGIDAS DE NIVELES */}
+
             <Route 
               path="/nivel/cognados/:dificultad/:nivel" 
               element={
                 <SecureLevelRoute gameType="cognados">
-                  <NivelCognados />
+                  <NivelCognadosWrapper />  {/* ← Nuevo componente */}
                 </SecureLevelRoute>
               } 
             />
-            
+
             <Route 
               path="/nivel/pares-minimos/:dificultad/:nivel" 
               element={
