@@ -1,3 +1,8 @@
+// Importar configuraciones específicas por dificultad
+import { getNivelConfigMedio } from './nivelesConfigMedio';
+import { getNivelConfigDificil } from './nivelesConfigDificil';
+
+// Configuraciones base para el modo FÁCIL (mantiene la lógica actual)
 const baseGameSettings = {
   shuffleSelectables: true,
   showWordLabels: false,
@@ -61,13 +66,12 @@ const baseFeedbackConfig = {
   textDuration: 1500
 };
 
-
 /**
- * Crea la configuración completa de un nivel
+ * Crea la configuración completa de un nivel FÁCIL (mantiene lógica actual)
  * @param {Object} config - Configuración del nivel
  * @returns {Object} Configuración completa del nivel
  */
-const createLevelConfig = (config) => ({
+const createLevelConfigFacil = (config) => ({
   // Configuraciones básicas
   tiempoMaximo: config.tiempoMaximo || 180,
   instructionsAudio: config.instructionsAudio || '/sounds/cognados/facil/instrucciones/instrucciones.mp3',
@@ -133,18 +137,25 @@ const createLevelConfig = (config) => ({
     }))
   ],
   
+  // Configuración específica del modo FÁCIL
+  gameMode: 'facil',
+  trainingConfig: {
+    totalClicks: 10, // 10 clicks en el indicador
+    clicksPerIndicator: 10,
+    indicatorCount: 1
+  },
+  winCondition: {
+    requiredCorrect: 8, // 8 aciertos mínimos
+    minimumScorePercentage: 0.8 // 80% del puntaje posible
+  },
   totalCorrect: 8,
   gameSettings: baseGameSettings,
   audioSettings: baseAudioSettings,
   uiSettings: baseUISettings
 });
 
-
-// CONFIGURACIONES DE LOS 10 NIVELES - SOLO CUSTOMIZABLE: RUTAS
-
-
-// NIVEL 1 
-export const cognadosFacilNivel1 = createLevelConfig({
+// CONFIGURACIONES DE LOS 10 NIVELES FÁCIL (mantiene configuración actual)
+export const cognadosFacilNivel1 = createLevelConfigFacil({
   tiempoMaximo: 180,
   instructionsAudio: '/sounds/cognados/facil/instrucciones/instrucciones1.mp3',
   backgroundImage: '/images/cognados/nivel1/fondo_isla.png',
@@ -160,9 +171,9 @@ export const cognadosFacilNivel1 = createLevelConfig({
   successAudio: '/sounds/cognados/facil/succes/success.mp3'
 });
 
-export const cognadosFacilNivel2 = createLevelConfig({
+export const cognadosFacilNivel2 = createLevelConfigFacil({
   tiempoMaximo: 180,
-  instructionsAudio: '/sounds/instrucciones/instrucciones2.mp3',
+  instructionsAudio: '/sounds/cognados/facil/instrucciones/instrucciones2.mp3',
   backgroundImage: '/images/cognados/nivel2/fondo_2.png',
   
   indicatorImage: '/images/cognados/nivel2/cuevas.png',
@@ -176,9 +187,9 @@ export const cognadosFacilNivel2 = createLevelConfig({
   successAudio: '/sounds/cognados/facil/succes/success2.mp3'
 });
 
-export const cognadosFacilNivel3 = createLevelConfig({
+export const cognadosFacilNivel3 = createLevelConfigFacil({
   tiempoMaximo: 180,
-  instructionsAudio: '/sounds/instrucciones/instrucciones3.mp3',
+  instructionsAudio: '/sounds/cognados/facil/instrucciones/instrucciones3.mp3',
   backgroundImage: '/images/cognados/nivel3/fondo_3.png',
   
   indicatorImage: '/images/cognados/nivel3/concha.png',
@@ -192,7 +203,7 @@ export const cognadosFacilNivel3 = createLevelConfig({
   successAudio: '/sounds/cognados/facil/succes/success3.mp3'
 });
 
-export const cognadosFacilNivel4 = createLevelConfig({
+export const cognadosFacilNivel4 = createLevelConfigFacil({
   tiempoMaximo: 180,
   instructionsAudio: '/sounds/cognados/facil/instrucciones/instrucciones4.mp3',
   backgroundImage: '/images/cognados/nivel4/fondo_4.jpg',
@@ -208,8 +219,7 @@ export const cognadosFacilNivel4 = createLevelConfig({
   successAudio: '/sounds/cognados/facil/succes/success.mp3'
 });
 
-
-export const cognadosFacilNivel5 = createLevelConfig({
+export const cognadosFacilNivel5 = createLevelConfigFacil({
   tiempoMaximo: 180,
   instructionsAudio: '/sounds/cognados/facil/instrucciones/instrucciones5.mp3',
   
@@ -224,7 +234,7 @@ export const cognadosFacilNivel5 = createLevelConfig({
   successAudio: '/sounds/cognados/facil/succes/success.mp3'
 });
 
-export const cognadosFacilNivel6 = createLevelConfig({
+export const cognadosFacilNivel6 = createLevelConfigFacil({
   tiempoMaximo: 180,
   instructionsAudio: '/sounds/instrucciones/instrucciones6.mp3',
   
@@ -239,7 +249,7 @@ export const cognadosFacilNivel6 = createLevelConfig({
   successAudio: '/sounds/cognados/facil/succes/success.mp3'
 });
 
-export const cognadosFacilNivel7 = createLevelConfig({
+export const cognadosFacilNivel7 = createLevelConfigFacil({
   tiempoMaximo: 180,
   instructionsAudio: '/sounds/instrucciones/instrucciones7.mp3',
   
@@ -254,7 +264,7 @@ export const cognadosFacilNivel7 = createLevelConfig({
   successAudio: '/sounds/cognados/facil/succes/success.mp3'
 });
 
-export const cognadosFacilNivel8 = createLevelConfig({
+export const cognadosFacilNivel8 = createLevelConfigFacil({
   tiempoMaximo: 180,
   instructionsAudio: '/sounds/instrucciones/instrucciones8.mp3',
   
@@ -269,7 +279,7 @@ export const cognadosFacilNivel8 = createLevelConfig({
   successAudio: '/sounds/cognados/facil/succes/success.mp3'
 });
 
-export const cognadosFacilNivel9 = createLevelConfig({
+export const cognadosFacilNivel9 = createLevelConfigFacil({
   tiempoMaximo: 180,
   instructionsAudio: '/sounds/instrucciones/instrucciones9.mp3',
   
@@ -284,7 +294,7 @@ export const cognadosFacilNivel9 = createLevelConfig({
   successAudio: '/sounds/cognados/facil/succes/success.mp3'
 });
 
-export const cognadosFacilNivel10 = createLevelConfig({
+export const cognadosFacilNivel10 = createLevelConfigFacil({
   tiempoMaximo: 240, 
   instructionsAudio: '/sounds/instrucciones/instrucciones10.mp3',
   
@@ -297,26 +307,6 @@ export const cognadosFacilNivel10 = createLevelConfig({
   incorrectAudio: '/sounds/cognados/facil/nivel10/incorrecto.mp3',
 
   successAudio: '/sounds/cognados/facil/succes/success.mp3'
-});
-
-// Placeholder para niveles medio (5 niveles)
-const cognadosMedioNivel1 = createLevelConfig({
-  tiempoMaximo: 150, // Menos tiempo para mayor dificultad
-  indicatorImage: '/images/cognados/medio/nivel1/indicador.png',
-  indicatorAudio: '/sounds/cognados/medio/nivel1/indicador.mp3',
-  selectableImage: '/images/cognados/medio/nivel1/elemento.png',
-  correctAudio: '/sounds/cognados/medio/nivel1/correcto.mp3',
-  incorrectAudio: '/sounds/cognados/medio/nivel1/incorrecto.mp3'
-});
-
-// Placeholder para niveles difícil (5 niveles)
-const cognadosDificilNivel1 = createLevelConfig({
-  tiempoMaximo: 120, // Tiempo más limitado
-  indicatorImage: '/images/cognados/dificil/nivel1/indicador.png',
-  indicatorAudio: '/sounds/cognados/dificil/nivel1/indicador.mp3',
-  selectableImage: '/images/cognados/dificil/nivel1/elemento.png',
-  correctAudio: '/sounds/cognados/dificil/nivel1/correcto.mp3',
-  incorrectAudio: '/sounds/cognados/dificil/nivel1/incorrecto.mp3'
 });
 
 /**
@@ -340,18 +330,10 @@ export const getNivelConfig = (gameType, difficulty, level) => {
       return facilLevels[level] || null;
     } 
     else if (difficulty === 'medio') {
-      const medioLevels = {
-        '1': cognadosMedioNivel1,
-        // TODO: Agregar niveles 2-5 para medio
-      };
-      return medioLevels[level] || null;
+      return getNivelConfigMedio(level);
     } 
     else if (difficulty === 'dificil') {
-      const dificilLevels = {
-        '1': cognadosDificilNivel1,
-        // TODO: Agregar niveles 2-5 para difícil
-      };
-      return dificilLevels[level] || null;
+      return getNivelConfigDificil(level);
     }
   } 
   else if (gameType === 'pares-minimos') {
