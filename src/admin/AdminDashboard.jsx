@@ -63,7 +63,7 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <h1>Bienvenido, {user?.nombre || 'Administrador'} 👋</h1>
+      <h1>Bienvenido, {user?.nombre || 'Administrador'} </h1>
       <p>Desde aquí puedes gestionar usuarios y configurar el sistema.</p>
     <CardsContainer>
             <Card>

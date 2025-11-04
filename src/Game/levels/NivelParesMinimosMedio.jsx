@@ -3,7 +3,7 @@ import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { AuthContext } from '../../context/AuthContext';
-import { getNivelConfigMedio } from '../data/nivelesConfigMedio';
+import { getNivelConfigParesMinimosMedio } from '../data/nivelesConfigMedio';
 import coinImage from '../../../public/images/coin.png';
 import GameBackground from '../../components/GameBackground';
 import { GlobalStyle } from '../../styles/styles';
@@ -45,7 +45,7 @@ const NivelCognadoMedio = () => {
   const currentAudioRef = useRef(null);
   const audioTimeoutRef = useRef(null);
   const [levelConfig, setLevelConfig] = useState(null);
-
+  
   // 🔑 Obtener información del niño actual desde localStorage (NO del AuthContext)
   const [user, setUser] = useState(null);
   
@@ -66,19 +66,20 @@ const NivelCognadoMedio = () => {
     }
   }, [navigate]);
 
+  // FUNCIONES DE PROGRESO Y PUNTAJE MEJORADAS
   // 📥 Función para cargar progreso desde base de datos
   const loadProgressFromDatabase = async () => {
     if (!user) return null;
     
     try {
       const ninoService = (await import('../../api/ninoService')).default;
-      const response = await ninoService.getProgresoEspecifico(user.id, 'cognados', 'medio');
+      const response = await ninoService.getProgresoEspecifico(user.id, 'pares-minimos', 'medio');
       
       if (response.tiene_progreso && response.data) {
-        console.log('📥 Progreso cargado desde base de datos (medio):', response.data);
+        console.log('📥 Progreso cargado desde base de datos (Pares Mínimos - Medio):', response.data);
         
         const userId = user.id;
-        localStorage.setItem(`lastGameType_${userId}`, 'cognados');
+        localStorage.setItem(`lastGameType_${userId}`, 'pares-minimos');
         localStorage.setItem(`lastDifficulty_${userId}`, 'medio');
         localStorage.setItem(`lastLevel_${userId}`, String(response.data.current_level));
         localStorage.setItem(`accumulatedScore_${userId}`, String(response.data.accumulated_score));
@@ -92,45 +93,44 @@ const NivelCognadoMedio = () => {
     return null;
   };
 
-  // FUNCIONES DE PROGRESO Y PUNTAJE MEJORADAS
   const saveCompletedLevelProgress = async (completedLevel, finalScore) => {
     if (user) {
       const userId = user.id;
       
       const generalProgress = {
-        gameType: 'cognados',
+        gameType: 'pares-minimos',
         difficulty: 'medio',
         level: completedLevel,
         score: finalScore,
         accumulatedScore: finalScore,
         timestamp: new Date().toISOString()
       };
-      localStorage.setItem(`progress_cognados_medio_${userId}`, JSON.stringify(generalProgress));
+      localStorage.setItem(`progress_pares-minimos_medio_${userId}`, JSON.stringify(generalProgress));
       
       // TAMBIÉN GUARDAR EN CLAVES GENÉRICAS PARA SaveProgressButton y validación
       // 🔑 IMPORTANTE: Incluir userId para que cada niño tenga su propio progreso
-      localStorage.setItem(`lastGameType_${userId}`, 'cognados');
+      localStorage.setItem(`lastGameType_${userId}`, 'pares-minimos');
       localStorage.setItem(`lastDifficulty_${userId}`, 'medio');
       localStorage.setItem(`lastLevel_${userId}`, String(completedLevel));
       localStorage.setItem(`accumulatedScore_${userId}`, String(finalScore));
       
-      console.log('✅ Progreso guardado en localStorage (medio) - Nivel:', completedLevel, 'Puntaje:', finalScore, 'UserId:', userId);
+      console.log('✅ Progreso guardado en localStorage (Pares Mínimos - Medio) - Nivel:', completedLevel, 'Puntaje:', finalScore, 'UserId:', userId);
       
       // 💾 GUARDAR EN BASE DE DATOS
       try {
         const ninoService = (await import('../../api/ninoService')).default;
         await ninoService.saveProgresoEspecifico(userId, {
-          game_type: 'cognados',
+          game_type: 'pares-minimos',
           difficulty: 'medio',
           current_level: completedLevel,
           accumulated_score: finalScore
         });
-        console.log('✅ Progreso guardado en base de datos (medio)');
+        console.log('✅ Progreso guardado en base de datos (Pares Mínimos - Medio)');
       } catch (error) {
         console.error('❌ Error guardando progreso en base de datos:', error);
       }
       
-      const completedLevelsKey = `completed_levels_cognados_medio_${userId}`;
+      const completedLevelsKey = `completed_levels_pares-minimos_medio_${userId}`;
       let completedLevels = {};
       
       try {
@@ -158,7 +158,7 @@ const NivelCognadoMedio = () => {
     
     if (user) {
       const userId = user.id;
-      const completedLevelsKey = `completed_levels_cognados_medio_${userId}`;
+      const completedLevelsKey = `completed_levels_pares-minimos_medio_${userId}`;
       
       try {
         const completedLevels = localStorage.getItem(completedLevelsKey);
@@ -174,7 +174,7 @@ const NivelCognadoMedio = () => {
         console.error('Error reading completed levels:', error);
       }
       
-      const savedProgress = localStorage.getItem(`progress_cognados_medio_${userId}`);
+      const savedProgress = localStorage.getItem(`progress_pares-minimos_medio_${userId}`);
       if (savedProgress) {
         const progress = JSON.parse(savedProgress);
         return progress.accumulatedScore || 200;
@@ -249,7 +249,7 @@ const NivelCognadoMedio = () => {
   const getDefeatAudio = () => "/sounds/feedback/defeat.mp3";
   const getTimeoutRestartAudio = () => "/sounds/feedback/repeticion.mp3";
   const getScoreRestartAudio = () => "/sounds/feedback/repeticion.mp3";
-  const getSuccessAudio = () => levelConfig?.successAudio || '/sounds/cognados/facil/succes/success.mp3';
+  const getSuccessAudio = () => levelConfig?.successAudio || '/sounds/pares-minimos/facil/succes/success.mp3';
   const [selectedSelectorForComparison, setSelectedSelectorForComparison] = useState(null);
 
   // Navigation Functions - MEJORADAS
@@ -261,7 +261,7 @@ const NivelCognadoMedio = () => {
       const maxLevels = 5; // Modo medio tiene 5 niveles
       
       if (currentLevel < maxLevels) {
-        navigate(`/nivel/cognados/medio/${currentLevel + 1}`);
+        navigate(`/nivel/pares-minimos/medio/${currentLevel + 1}`);
       } else {
         navigate('/seleccion-mundo');
       }
@@ -291,7 +291,7 @@ const NivelCognadoMedio = () => {
     const maxLevels = 5;
     
     if (currentLevel < maxLevels) {
-      navigate(`/nivel/cognados/medio/${currentLevel + 1}`);
+      navigate(`/nivel/pares-minimos/medio/${currentLevel + 1}`);
     } else {
       navigate('/seleccion-mundo');
     }
@@ -408,7 +408,7 @@ const NivelCognadoMedio = () => {
 
   const playInitialInstructions = async () => {
     setIsPlayingInstructions(true);
-    const instructionsAudioPath = `/sounds/cognados/medio/instrucciones/instrucciones${nivel}.mp3`;
+    const instructionsAudioPath = `/sounds/pares-minimos/medio/instrucciones/instrucciones${nivel}.mp3`;
     
     try {
       await playAudioWithQueue(instructionsAudioPath, () => {
@@ -603,14 +603,14 @@ const NivelCognadoMedio = () => {
     if (user) {
       const userId = user.id;
       const progress = {
-        gameType: 'cognados',
+        gameType: 'pares-minimos',
         difficulty: 'medio',
         level: nivel,
         score: score,
         accumulatedScore: score, 
         timestamp: new Date().toISOString()
       };
-      localStorage.setItem(`progress_cognados_medio_${userId}`, JSON.stringify(progress));
+      localStorage.setItem(`progress_pares-minimos_medio_${userId}`, JSON.stringify(progress));
     }
   };
 
@@ -674,7 +674,7 @@ const NivelCognadoMedio = () => {
       const userId = user.id;
       
       const generalProgress = {
-        gameType: 'cognados',
+        gameType: 'pares-minimos',
         difficulty: 'medio',
         level: nivel,
         score: score,
@@ -683,18 +683,18 @@ const NivelCognadoMedio = () => {
       };
       
       // Guardar en localStorage
-      localStorage.setItem(`progress_cognados_medio_${userId}`, JSON.stringify(generalProgress));
+      localStorage.setItem(`progress_pares-minimos_medio_${userId}`, JSON.stringify(generalProgress));
       
       // 💾 GUARDAR EN BASE DE DATOS antes de ir a encuesta
       try {
         const ninoService = (await import('../../api/ninoService')).default;
         await ninoService.saveProgresoEspecifico(userId, {
-          game_type: 'cognados',
+          game_type: 'pares-minimos',
           difficulty: 'medio',
           current_level: nivel,
           accumulated_score: score
         });
-        console.log('✅ Progreso guardado en BD antes de ir a encuesta (Cognados Medio)');
+        console.log('✅ Progreso guardado en BD antes de ir a encuesta (Pares Mínimos Medio)');
       } catch (error) {
         console.error('❌ Error guardando progreso en BD antes de encuesta:', error);
       }
@@ -702,7 +702,7 @@ const NivelCognadoMedio = () => {
     
     navigate('/encuesta', { 
       state: { 
-        gameType: 'cognados', 
+        gameType: 'pares-minimos', 
         difficulty: 'medio', 
         level: nivel,
         score: score
@@ -768,20 +768,21 @@ const NivelCognadoMedio = () => {
     }
   };
 
-  // 📥 Cargar progreso desde base de datos al iniciar
+  // 🔄 Cargar progreso desde base de datos al montar componente
   useEffect(() => {
     const cargarProgreso = async () => {
       if (user && nivel) {
         const progressFromDB = await loadProgressFromDatabase();
+        
         if (progressFromDB && progressFromDB.accumulated_score) {
-          console.log('🔄 Restaurando progreso (medio): Nivel', progressFromDB.current_level, 'Puntaje', progressFromDB.accumulated_score);
+          console.log('🔄 Restaurando progreso (Pares Mínimos - Medio)');
           setScore(progressFromDB.accumulated_score);
         }
       }
     };
     
     cargarProgreso();
-  }, []); // Solo ejecutar al montar el componente
+  }, []);
 
   // Effects
   useEffect(() => {
@@ -829,7 +830,7 @@ const NivelCognadoMedio = () => {
 
   // USEEFFECT PRINCIPAL - MEJORADO
   useEffect(() => {
-    const config = getNivelConfigMedio(nivel);
+    const config = getNivelConfigParesMinimosMedio(nivel);
     if (config) {
       const selectables = config.gameSettings?.shuffleSelectables ? 
         shuffleArray(config.selectables) : config.selectables;
@@ -854,18 +855,18 @@ const NivelCognadoMedio = () => {
         
         if (nivel === '1') {
           // Limpiar progreso al empezar el nivel 1
-          localStorage.removeItem(`progress_cognados_medio_${userId}`);
-          localStorage.removeItem(`completed_levels_cognados_medio_${userId}`);
+          localStorage.removeItem(`progress_pares-minimos_medio_${userId}`);
+          localStorage.removeItem(`completed_levels_pares-minimos_medio_${userId}`);
           
           const freshProgress = {
-            gameType: 'cognados',
+            gameType: 'pares-minimos',
             difficulty: 'medio',
             level: nivel,
             score: 200,
             accumulatedScore: 200,
             timestamp: new Date().toISOString()
           };
-          localStorage.setItem(`progress_cognados_medio_${userId}`, JSON.stringify(freshProgress));
+          localStorage.setItem(`progress_pares-minimos_medio_${userId}`, JSON.stringify(freshProgress));
           
           setScore(200);
           setCorrectSelections(0);
@@ -880,7 +881,7 @@ const NivelCognadoMedio = () => {
           setHighlightedSelector(null);
           setShowSuccessAlert(false);
           setInstructionsCompleted(false); 
-          // NO resetear isPlayingInstructions aquí, se resetea en closeEndGameAlert
+          setIsPlayingInstructions(false);
           setShowEndGameAlert(false);
           setEndGameMessage('');
           setEndGameType('');
@@ -903,7 +904,7 @@ const NivelCognadoMedio = () => {
           setHighlightedSelector(null);
           setShowSuccessAlert(false);
           setInstructionsCompleted(false); 
-          // NO resetear isPlayingInstructions aquí, se resetea en closeEndGameAlert
+          setIsPlayingInstructions(false);
           setShowEndGameAlert(false);
           setEndGameMessage('');
           setEndGameType('');
@@ -913,7 +914,6 @@ const NivelCognadoMedio = () => {
       }
     }
     
-    // Reproducir instrucciones después de resetear estados
     setTimeout(() => {
       playInitialInstructions();
     }, 500);

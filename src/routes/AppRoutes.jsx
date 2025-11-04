@@ -11,6 +11,7 @@ import Registro from '../pages/Register';
 
 // Páginas privadas comunes
 import Perfil from '../pages/Perfil';
+import Inicio from '../pages/Inicio';
 
 // Páginas de evaluador
 import AsignarAcompanante from '../pages/AsignarAcompanante';
@@ -124,6 +125,25 @@ const SecureLevelRoute = ({ children, gameType }) => {
   );
 };
 
+// ✅ Redireccionamiento inteligente del home según rol
+const HomeRedirect = () => {
+  const { user } = useContext(AuthContext);
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Redirigir según el tipo de usuario
+  switch (user.tipo_usuario) {
+    case 'administrador':
+      return <Navigate to="/admin" replace />;
+    case 'evaluador':
+      return <Navigate to="/inicio" replace />;
+    default:
+      return <Navigate to="/perfil" replace />;
+  }
+};
+
 // ─── Definición de Rutas ──────────────────────────────────────────────────────
 
 export default function AppRoutes() {
@@ -142,12 +162,15 @@ export default function AppRoutes() {
         {/* 2) PRIVADAS (cualquier usuario autenticado) */}
         <Route element={<PrivateRoute />}>
           <Route path="/perfil" element={<Perfil />} />
+          <Route path="/inicio" element={<Inicio />} />
 
           {/* 2a) Evaluador */}
           <Route element={<RoleRoute allowedRoles={['evaluador']} />}>
             <Route path="/asignar-nino" element={<AsignarAcompanante />} />
+            <Route path="/ninos-list" element={<NinosList />} />
             <Route path="/ninoslist" element={<NinosList />} />
             <Route path="/seleccion-mundo" element={<SeleccionMundos />} />
+            <Route path="/seleccion-mundos" element={<SeleccionMundos />} />
             
             {/* ✅ RUTAS PROTEGIDAS DE NIVELES */}
 
@@ -192,14 +215,10 @@ export default function AppRoutes() {
         <Route path="/nivel/cognados" element={<Navigate to="/nivel/cognados/facil/1" replace />} />
         <Route path="/nivel/pares-minimos" element={<Navigate to="/nivel/pares-minimos/facil/1" replace />} />
         
-        {/* Redirigir home a perfil si está logueado, sino a login */}
+        {/* Redirigir home según el rol del usuario */}
         <Route 
           path="/" 
-          element={
-            <PrivateRoute>
-              <Navigate to="/perfil" replace />
-            </PrivateRoute>
-          } 
+          element={<HomeRedirect />} 
         />
 
         {/* 4) CATCH-ALL: redirigir a login */}

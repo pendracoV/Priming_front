@@ -38,9 +38,28 @@ const getAudioDuration = (audioPath) => {
 // Main Component
 const NivelCognadoDificil = () => {
   // Context and Routing
-  const { user } = useContext(AuthContext);
   const { nivel } = useParams();
   const navigate = useNavigate();
+  
+  // 🔑 Obtener información del niño actual desde localStorage (NO del AuthContext)
+  const [user, setUser] = useState(null);
+  
+  useEffect(() => {
+    const currentNinoStr = localStorage.getItem('currentNino');
+    if (currentNinoStr) {
+      try {
+        const ninoData = JSON.parse(currentNinoStr);
+        setUser(ninoData);
+        console.log(`👦 Niño actual cargado: ${ninoData.nombre} (ID: ${ninoData.id})`);
+      } catch (error) {
+        console.error('Error parseando currentNino:', error);
+        navigate('/ninos-list');
+      }
+    } else {
+      console.error('❌ No hay niño en sesión');
+      navigate('/ninos-list');
+    }
+  }, [navigate]);
 
   // Refs
   const currentAudioRef = useRef(null);
@@ -110,8 +129,34 @@ const NivelCognadoDificil = () => {
     }
   };
 
+  // 📥 Función para cargar progreso desde base de datos
+  const loadProgressFromDatabase = async () => {
+    if (!user) return null;
+    
+    try {
+      const ninoService = (await import('../../api/ninoService')).default;
+      const response = await ninoService.getProgresoEspecifico(user.id, 'cognados', 'dificil');
+      
+      if (response.tiene_progreso && response.data) {
+        console.log('📥 Progreso cargado desde base de datos (difícil):', response.data);
+        
+        const userId = user.id;
+        localStorage.setItem(`lastGameType_${userId}`, 'cognados');
+        localStorage.setItem(`lastDifficulty_${userId}`, 'dificil');
+        localStorage.setItem(`lastLevel_${userId}`, String(response.data.current_level));
+        localStorage.setItem(`accumulatedScore_${userId}`, String(response.data.accumulated_score));
+        
+        return response.data;
+      }
+    } catch (error) {
+      console.error('❌ Error cargando progreso desde base de datos:', error);
+    }
+    
+    return null;
+  };
+
   // FUNCIÓN PARA GUARDAR PROGRESO DE NIVEL COMPLETADO
-  const saveCompletedLevelProgress = (completedLevel, finalScore) => {
+  const saveCompletedLevelProgress = async (completedLevel, finalScore) => {
     if (user) {
       const userId = user.id;
       
@@ -124,6 +169,29 @@ const NivelCognadoDificil = () => {
         timestamp: new Date().toISOString()
       };
       localStorage.setItem(`progress_cognados_dificil_${userId}`, JSON.stringify(generalProgress));
+      
+      // TAMBIÉN GUARDAR EN CLAVES GENÉRICAS PARA SaveProgressButton y validación
+      // 🔑 IMPORTANTE: Incluir userId para que cada niño tenga su propio progreso
+      localStorage.setItem(`lastGameType_${userId}`, 'cognados');
+      localStorage.setItem(`lastDifficulty_${userId}`, 'dificil');
+      localStorage.setItem(`lastLevel_${userId}`, String(completedLevel));
+      localStorage.setItem(`accumulatedScore_${userId}`, String(finalScore));
+      
+      console.log('✅ Progreso guardado en localStorage (difícil) - Nivel:', completedLevel, 'Puntaje:', finalScore, 'UserId:', userId);
+      
+      // 💾 GUARDAR EN BASE DE DATOS
+      try {
+        const ninoService = (await import('../../api/ninoService')).default;
+        await ninoService.saveProgresoEspecifico(userId, {
+          game_type: 'cognados',
+          difficulty: 'dificil',
+          current_level: completedLevel,
+          accumulated_score: finalScore
+        });
+        console.log('✅ Progreso guardado en base de datos (difícil)');
+      } catch (error) {
+        console.error('❌ Error guardando progreso en base de datos:', error);
+      }
       
       const completedLevelsKey = `completed_levels_cognados_dificil_${userId}`;
       let completedLevels = {};
@@ -548,19 +616,37 @@ const NivelCognadoDificil = () => {
     }, 500);
   };
 
-  const goToSurvey = () => {
+  const goToSurvey = async () => {
     if (showEndGameAlert || showSuccessAlert) return;
     
-    const generalProgress = {
-      gameType: 'cognados',
-      difficulty: 'dificil',
-      level: nivel,
-      score: score,
-      accumulatedScore: score,
-      timestamp: new Date().toISOString()
-    };
     if (user) {
-      localStorage.setItem(`progress_cognados_dificil_${user.id}`, JSON.stringify(generalProgress));
+      const userId = user.id;
+      
+      const generalProgress = {
+        gameType: 'cognados',
+        difficulty: 'dificil',
+        level: nivel,
+        score: score,
+        accumulatedScore: score,
+        timestamp: new Date().toISOString()
+      };
+      
+      // Guardar en localStorage
+      localStorage.setItem(`progress_cognados_dificil_${userId}`, JSON.stringify(generalProgress));
+      
+      // 💾 GUARDAR EN BASE DE DATOS antes de ir a encuesta
+      try {
+        const ninoService = (await import('../../api/ninoService')).default;
+        await ninoService.saveProgresoEspecifico(userId, {
+          game_type: 'cognados',
+          difficulty: 'dificil',
+          current_level: nivel,
+          accumulated_score: score
+        });
+        console.log('✅ Progreso guardado en BD antes de ir a encuesta (Cognados Difícil)');
+      } catch (error) {
+        console.error('❌ Error guardando progreso en BD antes de encuesta:', error);
+      }
     }
     
     navigate('/encuesta', { 
@@ -630,6 +716,21 @@ const NivelCognadoDificil = () => {
       }, 800);
     }
   };
+
+  // 📥 Cargar progreso desde base de datos al iniciar
+  useEffect(() => {
+    const cargarProgreso = async () => {
+      if (user && nivel) {
+        const progressFromDB = await loadProgressFromDatabase();
+        if (progressFromDB && progressFromDB.accumulated_score) {
+          console.log('🔄 Restaurando progreso (difícil): Nivel', progressFromDB.current_level, 'Puntaje', progressFromDB.accumulated_score);
+          setScore(progressFromDB.accumulated_score);
+        }
+      }
+    };
+    
+    cargarProgreso();
+  }, []); // Solo ejecutar al montar el componente
 
   // Effects
   useEffect(() => {
@@ -735,7 +836,7 @@ const NivelCognadoDificil = () => {
         setHighlightedSelector(null);
         setShowSuccessAlert(false);
         setInstructionsCompleted(false); 
-        setIsPlayingInstructions(false);
+        // NO resetear isPlayingInstructions aquí, se resetea en closeEndGameAlert
         setShowEndGameAlert(false);
         setEndGameMessage('');
         setEndGameType('');
@@ -745,17 +846,37 @@ const NivelCognadoDificil = () => {
       }
     }
     
+    // Reproducir instrucciones después de resetear estados
     setTimeout(() => {
       playInitialInstructions();
     }, 500);
     
     return () => {
+      // Limpiar estado
       setComparedSelectors([]);
       setDisabledSelectors([]);
       setLastSelectedSelector(null);
       setHighlightedSelector(null);
       setCurrentActiveIndicator(null);
       setSelectedSelectorForComparison(null);
+      
+      // 🔴 IMPORTANTE: Detener todos los audios cuando sales de la pantalla
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+        currentAudioRef.current.currentTime = 0;
+        currentAudioRef.current.src = '';
+        currentAudioRef.current.load();
+        currentAudioRef.current = null;
+      }
+      
+      if (audioTimeoutRef.current) {
+        clearTimeout(audioTimeoutRef.current);
+        audioTimeoutRef.current = null;
+      }
+      
+      // Resetear flags de audio
+      setIsPlayingAudio(false);
+      setIsPlayingInstructions(false);
     };
   }, [nivel, user, navigate]);
 
@@ -906,6 +1027,12 @@ const NivelCognadoDificil = () => {
                 </TimeText>
               </TimeContainer>
             )}
+            
+            <NavigationButtons>
+              <Button onClick={goToSurvey} disabled={showEndGameAlert || showSuccessAlert}>
+                Ir a encuesta
+              </Button>
+            </NavigationButtons>
           </TopRightPanel>
 
           {/* INDICADORES TRIPLES PARA MODO DIFÍCIL */}
@@ -955,10 +1082,6 @@ const NivelCognadoDificil = () => {
               </Selectable>
             ))}
           </SelectablesContainer>
-          
-          <NavigationButtons>
-            <Button onClick={goToSurvey} disabled={showEndGameAlert || showSuccessAlert}>Ir a encuesta</Button>
-          </NavigationButtons>
           
           {isPlayingInstructions && (
             <InstructionsOverlay>

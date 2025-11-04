@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Importamos useNavigate para la redirección
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import GameBackground from '../components/GameBackground';
+import ninoService from '../api/ninoService';
 import fondoSeleccion from '../../public/images/Background.png';
 // Importamos las imágenes directamente desde public
 import islandImage from '../../public/images/island.png';
@@ -9,6 +10,7 @@ import pirateIslandImage from '../../public/images/pirate-island.png';
 // Importamos el GlobalStyle para mantener la consistencia de fuentes
 import Navbar from '../components/Navbar';
 import { GlobalStyle } from '../styles/styles';
+import Loading from '../components/Loading';
 
 // Paleta de colores basada en el mockup
 const colors = {
@@ -139,27 +141,146 @@ const PlayButton = styled.button`
 const SeleccionMundos = () => {
   const [cognatesDifficulty, setCognatesDifficulty] = useState('facil');
   const [pairsDifficulty, setPairsDifficulty] = useState('facil');
+  const [loading, setLoading] = useState(false);
+  const [ninoInfo, setNinoInfo] = useState(null);
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   
-  const handleCognatesPlay = () => {
-    // Guardar selección en localStorage
-    localStorage.setItem('lastGameType', 'cognados');
-    localStorage.setItem('lastDifficulty', cognatesDifficulty);
-    localStorage.setItem('lastLevel', '1'); // Explícitamente nivel 1
+  useEffect(() => {
+    // Cargar información del niño desde localStorage
+    const currentNinoStr = localStorage.getItem('currentNino');
     
-    // Redirige directamente al nivel 1 de Cognados con la dificultad seleccionada
-    navigate(`/nivel/cognados/${cognatesDifficulty}/1`);
+    if (currentNinoStr) {
+      try {
+        const nino = JSON.parse(currentNinoStr);
+        setNinoInfo(nino);
+      } catch (error) {
+        console.error('Error parsing current nino:', error);
+      }
+    }
+
+    // Si no hay niño en sesión, redirigir
+    const ninoId = searchParams.get('ninoId');
+    if (!ninoId && !currentNinoStr) {
+      navigate('/ninos-list');
+    }
+  }, [searchParams, navigate]);
+
+  const handleCognatesPlay = async () => {
+    if (!ninoInfo) {
+      alert('No hay información del niño en la sesión');
+      navigate('/ninos-list');
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      const userId = ninoInfo.id;
+      
+      // Verificar si existe progreso guardado
+      const progresoResponse = await ninoService.getProgresoEspecifico(
+        userId,
+        'cognados',
+        cognatesDifficulty
+      );
+
+      // 🔑 IMPORTANTE: Guardar con userId para que cada niño tenga su propio progreso
+      localStorage.setItem(`lastGameType_${userId}`, 'cognados');
+      localStorage.setItem(`lastDifficulty_${userId}`, cognatesDifficulty);
+
+      if (progresoResponse.tiene_progreso && progresoResponse.data) {
+        // Si tiene progreso, navegar al nivel guardado
+        const { current_level, accumulated_score } = progresoResponse.data;
+        
+        localStorage.setItem(`lastLevel_${userId}`, String(current_level));
+        localStorage.setItem(`accumulatedScore_${userId}`, String(accumulated_score));
+        
+        console.log(`🔄 Restaurando progreso (Cognados ${cognatesDifficulty}): Nivel ${current_level}, Puntaje ${accumulated_score}, UserId: ${userId}`);
+        navigate(`/nivel/cognados/${cognatesDifficulty}/${current_level}`);
+      } else {
+        // Si no tiene progreso, iniciar desde nivel 1
+        localStorage.setItem(`lastLevel_${userId}`, '1');
+        localStorage.setItem(`accumulatedScore_${userId}`, '200');
+        
+        console.log(`🆕 Iniciando nuevo juego (Cognados ${cognatesDifficulty}): Nivel 1, UserId: ${userId}`);
+        navigate(`/nivel/cognados/${cognatesDifficulty}/1`);
+      }
+    } catch (error) {
+      console.error('Error cargando progreso:', error);
+      // En caso de error, iniciar desde nivel 1
+      const userId = ninoInfo.id;
+      localStorage.setItem(`lastLevel_${userId}`, '1');
+      localStorage.setItem(`accumulatedScore_${userId}`, '200');
+      navigate(`/nivel/cognados/${cognatesDifficulty}/1`);
+    } finally {
+      setLoading(false);
+    }
   };
   
-  const handlePairsPlay = () => {
-    // Guardar selección en localStorage
-    localStorage.setItem('lastGameType', 'pares-minimos');
-    localStorage.setItem('lastDifficulty', pairsDifficulty);
-    localStorage.setItem('lastLevel', '1'); // Explícitamente nivel 1
+  const handlePairsPlay = async () => {
+    if (!ninoInfo) {
+      alert('No hay información del niño en la sesión');
+      navigate('/ninos-list');
+      return;
+    }
+
+    setLoading(true);
     
-    // Redirige directamente al nivel 1 de Pares Mínimos con la dificultad seleccionada
-    navigate(`/nivel/pares-minimos/${pairsDifficulty}/1`);
+    try {
+      const userId = ninoInfo.id;
+      
+      // Verificar si existe progreso guardado
+      const progresoResponse = await ninoService.getProgresoEspecifico(
+        userId,
+        'pares-minimos',
+        pairsDifficulty
+      );
+
+      // 🔑 IMPORTANTE: Guardar con userId para que cada niño tenga su propio progreso
+      localStorage.setItem(`lastGameType_${userId}`, 'pares-minimos');
+      localStorage.setItem(`lastDifficulty_${userId}`, pairsDifficulty);
+
+      if (progresoResponse.tiene_progreso && progresoResponse.data) {
+        // Si tiene progreso, navegar al nivel guardado
+        const { current_level, accumulated_score } = progresoResponse.data;
+        
+        localStorage.setItem(`lastLevel_${userId}`, String(current_level));
+        localStorage.setItem(`accumulatedScore_${userId}`, String(accumulated_score));
+        
+        console.log(`🔄 Restaurando progreso (Pares Mínimos ${pairsDifficulty}): Nivel ${current_level}, Puntaje ${accumulated_score}, UserId: ${userId}`);
+        navigate(`/nivel/pares-minimos/${pairsDifficulty}/${current_level}`);
+      } else {
+        // Si no tiene progreso, iniciar desde nivel 1
+        localStorage.setItem(`lastLevel_${userId}`, '1');
+        localStorage.setItem(`accumulatedScore_${userId}`, '200');
+        
+        console.log(`🆕 Iniciando nuevo juego (Pares Mínimos ${pairsDifficulty}): Nivel 1, UserId: ${userId}`);
+        navigate(`/nivel/pares-minimos/${pairsDifficulty}/1`);
+      }
+    } catch (error) {
+      console.error('Error cargando progreso:', error);
+      // En caso de error, iniciar desde nivel 1
+      const userId = ninoInfo.id;
+      localStorage.setItem(`lastLevel_${userId}`, '1');
+      localStorage.setItem(`accumulatedScore_${userId}`, '200');
+      navigate(`/nivel/pares-minimos/${pairsDifficulty}/1`);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <>
+        <GlobalStyle />
+        <Navbar />
+        <GameBackground maxWidth="1200px" backgroundImage={fondoSeleccion}>
+          <Loading />
+        </GameBackground>
+      </>
+    );
+  }
 
   return (
     <>
@@ -168,6 +289,11 @@ const SeleccionMundos = () => {
       <GameBackground maxWidth="1200px" backgroundImage={fondoSeleccion}>
         <MainContainer>
           <Title>Selecciona tu mundo</Title>
+          {ninoInfo && (
+            <Title style={{ fontSize: '1.5rem', marginBottom: '20px' }}>
+               ¡Hola {ninoInfo.nombre}!
+            </Title>
+          )}
           <CardsContainer>
             {/* Tarjeta de Cognados */}
             <GameCard>
