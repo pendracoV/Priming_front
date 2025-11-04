@@ -38,6 +38,7 @@ const LogoText = styled.h2`
   color: #f4f4f4;
   margin: 0;
   font-size: 1.5rem;
+  font-family: 'Manrope', sans-serif;
 `;
 
 // Navigation links container - alineados a la derecha
@@ -67,6 +68,7 @@ const NavLink = styled(Link)`
   color: #f4f4f4;
   position: relative;
   font-weight: 500;
+  font-family: 'Manrope', sans-serif;
   transition: color 0.3s ease;
 
   &:hover {
@@ -162,11 +164,14 @@ const UserAvatar = styled.div`
   justify-content: center;
   color: #fff;
   font-size: 1.2rem;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
 `;
 
 const UserName = styled.span`
   color: #f4f4f4;
   font-weight: 500;
+  font-family: 'Manrope', sans-serif;
   display: flex;
   align-items: center;
 `;
@@ -205,6 +210,7 @@ const DropdownItem = styled(Link)`
   padding: 0.75rem 1rem;
   color: #f4f4f4;
   text-decoration: none;
+  font-family: 'Manrope', sans-serif;
   transition: background-color 0.3s ease;
 
   &:hover {
@@ -229,6 +235,7 @@ const LogoutButton = styled.button`
   cursor: pointer;
   transition: background-color 0.3s ease;
   font-size: 1rem;
+  font-family: 'Manrope', sans-serif;
 
   &:hover {
     background-color: rgba(252, 117, 0, 0.2);
