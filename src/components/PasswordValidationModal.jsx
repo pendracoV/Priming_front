@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -83,11 +84,12 @@ const Subtitle = styled.p`
 
 const InputContainer = styled.div`
   margin-bottom: 1rem;
+  position: relative;
 `;
 
 const Input = styled.input`
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 3rem 0.75rem 1rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 5px;
   font-size: 1rem;
@@ -105,6 +107,34 @@ const Input = styled.input`
     outline: none;
     border-color: #fc7500;
     background-color: rgba(255, 255, 255, 0.08);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+const PasswordToggle = styled.button`
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: rgba(244, 244, 244, 0.7);
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  padding: 0.5rem;
+  outline: none;
+  transition: all 0.3s;
+
+  &:hover {
+    color: #fc7500;
   }
   
   &:disabled {
@@ -207,6 +237,7 @@ const PasswordValidationModal = ({
 }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   // Evitar scroll cuando el modal está abierto
   useEffect(() => {
@@ -240,11 +271,17 @@ const PasswordValidationModal = ({
   const handleCancel = () => {
     setPassword('');
     setError('');
+    setShowPassword(false);
     onCancel();
   };
 
   const handleModalClick = (e) => {
     e.stopPropagation();
+  };
+  
+  const togglePasswordVisibility = (e) => {
+    e.preventDefault();
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -266,7 +303,7 @@ const PasswordValidationModal = ({
           <form onSubmit={handleSubmit}>
             <InputContainer>
               <Input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Contraseña"
                 value={password}
                 onChange={(e) => {
@@ -277,6 +314,14 @@ const PasswordValidationModal = ({
                 disabled={isValidating}
                 autoFocus
               />
+              <PasswordToggle 
+                onClick={togglePasswordVisibility}
+                type="button"
+                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                disabled={isValidating}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </PasswordToggle>
             </InputContainer>
 
             {error && <ErrorMessage>{error}</ErrorMessage>}

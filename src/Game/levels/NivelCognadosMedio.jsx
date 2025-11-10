@@ -1,6 +1,6 @@
 //src/Game/levels/NivelCognadosMedio.jsx
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { AuthContext } from '../../context/AuthContext';
 import { getNivelConfigMedio } from '../data/nivelesConfigMedio';
@@ -40,11 +40,14 @@ const NivelCognadoMedio = () => {
   // Context and Routing
   const { nivel } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Refs
   const currentAudioRef = useRef(null);
   const audioTimeoutRef = useRef(null);
+  const instructionsTimeoutRef = useRef(null);
   const [levelConfig, setLevelConfig] = useState(null);
+  const previousLevelRef = useRef(nivel);
 
   // 🔑 Obtener información del niño actual desde localStorage (NO del AuthContext)
   const [user, setUser] = useState(null);
@@ -66,7 +69,48 @@ const NivelCognadoMedio = () => {
     }
   }, [navigate]);
 
-  // 📥 Función para cargar progreso desde base de datos
+  // �️ PROTECCIÓN CONTRA NAVEGACIÓN MANUAL ENTRE NIVELES
+  useEffect(() => {
+    const navigationKey = `authorized_navigation_cognados_medio_${nivel}`;
+    const isAuthorized = sessionStorage.getItem(navigationKey);
+    
+    // Si el nivel cambió desde el anterior render
+    if (previousLevelRef.current && previousLevelRef.current !== nivel) {
+      if (!isAuthorized) {
+        console.log('🚨 Navegación manual detectada (cambio de nivel) - Bloqueando');
+        // Limpiar progreso del nivel actual para forzar reinicio
+        if (user) {
+          const userId = user.id;
+          localStorage.removeItem(`progress_cognados_medio_${userId}`);
+          localStorage.removeItem(`completed_levels_cognados_medio_${userId}`);
+        }
+        // Recargar la página para reiniciar completamente el nivel
+        window.location.reload();
+        return;
+      } else {
+        // Limpiar la autorización después de usarla
+        sessionStorage.removeItem(navigationKey);
+      }
+    }
+    
+    // PRIMERA CARGA: Verificar autorización SIEMPRE
+    if (!previousLevelRef.current) {
+      // Si NO hay autorización, es navegación directa no permitida
+      if (!isAuthorized) {
+        console.log('🚨 Acceso directo sin autorización - Redirigiendo a selección de mundos');
+        // Redirigir a selección de mundos en lugar de recargar
+        navigate('/seleccion-mundo');
+        return;
+      } else {
+        // Limpiar la autorización después de usarla (una sola vez)
+        sessionStorage.removeItem(navigationKey);
+      }
+    }
+    
+    previousLevelRef.current = nivel;
+  }, [nivel, user, navigate]);
+
+  // �📥 Función para cargar progreso desde base de datos
   const loadProgressFromDatabase = async () => {
     if (!user) return null;
     
@@ -254,21 +298,52 @@ const NivelCognadoMedio = () => {
 
   // Navigation Functions - MEJORADAS
   const closeEndGameAlert = () => {
-    setShowEndGameAlert(false);
+    console.log('🔄 closeEndGameAlert llamado - NivelCognadosMedio');
     
     if (endGameType === 'success') {
+      setShowEndGameAlert(false);
       const currentLevel = parseInt(nivel);
       const maxLevels = 5; // Modo medio tiene 5 niveles
       
       if (currentLevel < maxLevels) {
-        navigate(`/nivel/cognados/medio/${currentLevel + 1}`);
+        // 🔑 Autorizar navegación al siguiente nivel
+        const nextLevel = currentLevel + 1;
+        sessionStorage.setItem(`authorized_navigation_cognados_medio_${nextLevel}`, 'true');
+        navigate(`/nivel/cognados/medio/${nextLevel}`);
       } else {
         navigate('/seleccion-mundo');
       }
     } else {
-      // En caso de falla, reiniciar el nivel manteniendo el progreso
+      console.log('❌ Reinicio por falla');
+      
+      // 1️⃣ LIMPIAR PRIMERO - Detener cualquier audio y timeout activo
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+        currentAudioRef.current.currentTime = 0;
+        currentAudioRef.current = null;
+      }
+      
+      if (audioTimeoutRef.current) {
+        clearTimeout(audioTimeoutRef.current);
+        audioTimeoutRef.current = null;
+      }
+      
+      if (instructionsTimeoutRef.current) {
+        clearTimeout(instructionsTimeoutRef.current);
+        instructionsTimeoutRef.current = null;
+      }
+      
+      // 2️⃣ RESETEAR ESTADOS INMEDIATAMENTE (antes de cualquier timeout)
+      setInstructionsCompleted(false);
+      setIsPlayingInstructions(false);
+      setShowEndGameAlert(false);
+      
+      console.log('🔧 Estados reseteados');
+      
+      // 3️⃣ Resetear el juego
       resetAllStates();
       
+      // 4️⃣ Mezclar selectables si es necesario
       if (levelConfig) {
         const shuffledSelectables = levelConfig.gameSettings?.shuffleSelectables ? 
           shuffleArray(levelConfig.selectables) : levelConfig.selectables;
@@ -277,9 +352,13 @@ const NivelCognadoMedio = () => {
           selectables: shuffledSelectables
         }));
         
-        setTimeout(() => {
+        console.log('🔀 Selectables mezclados');
+        
+        // 5️⃣ UN SOLO TIMEOUT de 500ms para reproducir instrucciones
+        instructionsTimeoutRef.current = setTimeout(() => {
+          console.log('⏰ Timeout ejecutado, llamando playInitialInstructions');
           playInitialInstructions();
-        }, 100);
+        }, 500);
       }
     }
   };
@@ -291,24 +370,53 @@ const NivelCognadoMedio = () => {
     const maxLevels = 5;
     
     if (currentLevel < maxLevels) {
-      navigate(`/nivel/cognados/medio/${currentLevel + 1}`);
+      // 🔑 Autorizar navegación al siguiente nivel
+      const nextLevel = currentLevel + 1;
+      sessionStorage.setItem(`authorized_navigation_cognados_medio_${nextLevel}`, 'true');
+      navigate(`/nivel/cognados/medio/${nextLevel}`);
     } else {
-      navigate('/seleccion-mundo');
+      // 📊 Último nivel completado - Ir a encuesta
+      navigate('/encuesta', { 
+        state: { 
+          gameType: 'cognados', 
+          difficulty: 'medio', 
+          level: nivel,
+          score: score
+        } 
+      });
     }
   };
 
   const restartLevel = () => {
-    resetAllStates();
+    console.log('🔄 restartLevel llamado - NivelCognadosMedio');
     
+    // 1️⃣ LIMPIAR PRIMERO - Detener cualquier audio y timeout activo
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       currentAudioRef.current.currentTime = 0;
+      currentAudioRef.current = null;
     }
     
     if (audioTimeoutRef.current) {
       clearTimeout(audioTimeoutRef.current);
+      audioTimeoutRef.current = null;
     }
     
+    if (instructionsTimeoutRef.current) {
+      clearTimeout(instructionsTimeoutRef.current);
+      instructionsTimeoutRef.current = null;
+    }
+    
+    // 2️⃣ RESETEAR ESTADOS INMEDIATAMENTE (antes de cualquier timeout)
+    setInstructionsCompleted(false);
+    setIsPlayingInstructions(false);
+    
+    console.log('🔧 Estados reseteados en restartLevel');
+    
+    // 3️⃣ Resetear el juego
+    resetAllStates();
+    
+    // 4️⃣ Mezclar selectables si es necesario
     if (levelConfig) {
       const shuffledSelectables = levelConfig.gameSettings?.shuffleSelectables ? 
         shuffleArray(levelConfig.selectables) : levelConfig.selectables;
@@ -317,16 +425,13 @@ const NivelCognadoMedio = () => {
         selectables: shuffledSelectables
       }));
       
-      setTimeout(() => {
-        
-        setInstructionsCompleted(false);
-        setIsPlayingInstructions(false);
-        
+      console.log('🔀 Selectables mezclados en restartLevel');
       
-        setTimeout(() => {
-          playInitialInstructions();
-        }, 200);
-      }, 300);
+      // 5️⃣ UN SOLO TIMEOUT de 500ms para reproducir instrucciones
+      instructionsTimeoutRef.current = setTimeout(() => {
+        console.log('⏰ Timeout ejecutado en restartLevel, llamando playInitialInstructions');
+        playInitialInstructions();
+      }, 500);
     }
   };
 
@@ -407,6 +512,15 @@ const NivelCognadoMedio = () => {
   };
 
   const playInitialInstructions = async () => {
+    console.log('🎵 playInitialInstructions llamado - NivelCognadosMedio');
+    
+    // Solo prevenir si se está reproduciendo activamente (no si ya completó)
+    if (isPlayingInstructions && !instructionsCompleted) {
+      console.log('🚫 Ya reproduciendo instrucciones');
+      return;
+    }
+    
+    console.log('▶️ Iniciando reproducción de instrucciones');
     setIsPlayingInstructions(true);
     const instructionsAudioPath = `/sounds/cognados/medio/instrucciones/instrucciones${nivel}.mp3`;
     
@@ -414,6 +528,7 @@ const NivelCognadoMedio = () => {
       await playAudioWithQueue(instructionsAudioPath, () => {
         setIsPlayingInstructions(false);
         setInstructionsCompleted(true);
+        console.log('✅ Instrucciones completadas');
       });
     } catch (error) {
       console.error('Error reproducing instructions:', error);
@@ -880,7 +995,7 @@ const NivelCognadoMedio = () => {
           setHighlightedSelector(null);
           setShowSuccessAlert(false);
           setInstructionsCompleted(false); 
-          // NO resetear isPlayingInstructions aquí, se resetea en closeEndGameAlert
+          // NO resetear isPlayingInstructions aquí - dejarlo en su estado inicial
           setShowEndGameAlert(false);
           setEndGameMessage('');
           setEndGameType('');
@@ -902,8 +1017,8 @@ const NivelCognadoMedio = () => {
           setDisabledSelectors([]);
           setHighlightedSelector(null);
           setShowSuccessAlert(false);
-          setInstructionsCompleted(false); 
-          // NO resetear isPlayingInstructions aquí, se resetea en closeEndGameAlert
+          setInstructionsCompleted(false);
+          // NO resetear isPlayingInstructions aquí - dejarlo en su estado inicial
           setShowEndGameAlert(false);
           setEndGameMessage('');
           setEndGameType('');
@@ -1140,30 +1255,61 @@ const NivelCognadoMedio = () => {
 
           {/* SELECTABLES CONTAINER - 9 elementos en modo medio */}
           <SelectablesContainer gameMode="medio">
-            {levelConfig.selectables.map((selector, index) => (
-              <Selectable 
-                key={`${selector.id}-${nivel}-${index}`}
-                index={index}
-                selected={comparedSelectors.includes(selector.id)}
-                highlighted={highlightedSelector === selector.id}
-                lastSelected={lastSelectedSelector?.id === selector.id && !disabledSelectors.includes(selector.id)}
-                disabled={isTraining || disabledSelectors.includes(selector.id) || showEndGameAlert}
-                onClick={() => handleSelectorSelection(selector)}
-                gameMode="medio"
-              >
-                <img src={selector.image} alt="Selector" />
-                
-                {comparedSelectors.includes(selector.id) && (
-                  <StatusIndicator>✓</StatusIndicator>
-                )}
-                {disabledSelectors.includes(selector.id) && !comparedSelectors.includes(selector.id) && (
-                  <StatusIndicator style={{backgroundColor: '#ff6b6b'}}>✗</StatusIndicator>
-                )}
-                {lastSelectedSelector?.id === selector.id && !disabledSelectors.includes(selector.id) && (
-                  <StatusIndicator style={{backgroundColor: '#fc7500'}}>🎵</StatusIndicator>
-                )}
-              </Selectable>
-            ))}
+            {/* Primera fila: 4 elementos (arriba) */}
+            <div>
+              {levelConfig.selectables.slice(0, 4).map((selector, index) => (
+                <Selectable 
+                  key={`${selector.id}-${nivel}-${index}`}
+                  index={index}
+                  selected={comparedSelectors.includes(selector.id)}
+                  highlighted={highlightedSelector === selector.id}
+                  lastSelected={lastSelectedSelector?.id === selector.id && !disabledSelectors.includes(selector.id)}
+                  disabled={isTraining || disabledSelectors.includes(selector.id) || showEndGameAlert}
+                  onClick={() => handleSelectorSelection(selector)}
+                  gameMode="medio"
+                >
+                  <img src={selector.image} alt="Selector" />
+                  
+                  {comparedSelectors.includes(selector.id) && (
+                    <StatusIndicator>✓</StatusIndicator>
+                  )}
+                  {disabledSelectors.includes(selector.id) && !comparedSelectors.includes(selector.id) && (
+                    <StatusIndicator style={{backgroundColor: '#ff6b6b'}}>✗</StatusIndicator>
+                  )}
+                  {lastSelectedSelector?.id === selector.id && !disabledSelectors.includes(selector.id) && (
+                    <StatusIndicator style={{backgroundColor: '#fc7500'}}>🎵</StatusIndicator>
+                  )}
+                </Selectable>
+              ))}
+            </div>
+            
+            {/* Segunda fila: 5 elementos (abajo) */}
+            <div>
+              {levelConfig.selectables.slice(4, 9).map((selector, index) => (
+                <Selectable 
+                  key={`${selector.id}-${nivel}-${index + 4}`}
+                  index={index + 4}
+                  selected={comparedSelectors.includes(selector.id)}
+                  highlighted={highlightedSelector === selector.id}
+                  lastSelected={lastSelectedSelector?.id === selector.id && !disabledSelectors.includes(selector.id)}
+                  disabled={isTraining || disabledSelectors.includes(selector.id) || showEndGameAlert}
+                  onClick={() => handleSelectorSelection(selector)}
+                  gameMode="medio"
+                >
+                  <img src={selector.image} alt="Selector" />
+                  
+                  {comparedSelectors.includes(selector.id) && (
+                    <StatusIndicator>✓</StatusIndicator>
+                  )}
+                  {disabledSelectors.includes(selector.id) && !comparedSelectors.includes(selector.id) && (
+                    <StatusIndicator style={{backgroundColor: '#ff6b6b'}}>✗</StatusIndicator>
+                  )}
+                  {lastSelectedSelector?.id === selector.id && !disabledSelectors.includes(selector.id) && (
+                    <StatusIndicator style={{backgroundColor: '#fc7500'}}>🎵</StatusIndicator>
+                  )}
+                </Selectable>
+              ))}
+            </div>
           </SelectablesContainer>
           
           {isPlayingInstructions && (
@@ -1217,13 +1363,15 @@ const NivelCognadoMedio = () => {
           <SuccessAlertOverlay>
             <SuccessAlertBox>
               <SuccessAlertText>
-                ¡EXCELENTE TRABAJO! Estás listo para el siguiente desafío.
+                {parseInt(nivel) === 5 
+                  ? '¡FELICIDADES! Has completado todos los niveles. Es momento de responder la encuesta.'
+                  : '¡EXCELENTE TRABAJO! Estás listo para el siguiente desafío.'}
               </SuccessAlertText>
               <SuccessAlertButton 
                 disabled={isPlayingSuccessAudio}
                 onClick={isPlayingSuccessAudio ? undefined : closeSuccessAlert}
               >
-                🚀 Siguiente Nivel
+                {parseInt(nivel) === 5 ? 'Ir a Encuesta' : 'Siguiente Nivel'}
               </SuccessAlertButton>
             </SuccessAlertBox>
           </SuccessAlertOverlay>
@@ -1367,17 +1515,37 @@ const TrainingClicksIndicator = styled.div`
 `;
 
 const SelectablesContainer = styled.div`
-  display: grid;
-  grid-template-columns: ${props => props.gameMode === 'medio' ? 'repeat(3, 1fr)' : 'repeat(8, 1fr)'};
-  grid-template-rows: ${props => props.gameMode === 'medio' ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)'};
-  gap: ${props => props.gameMode === 'medio' ? '40px' : '50px'};
-  margin-top: 40px;
-  width: 90%;
-  max-width: ${props => props.gameMode === 'medio' ? '800px' : '5000px'};
-  min-height: ${props => props.gameMode === 'medio' ? '400px' : '100px'};
-  padding: 20px;
-  justify-items: center;
+  display: ${props => props.gameMode === 'medio' ? 'flex' : 'grid'};
+  flex-direction: ${props => props.gameMode === 'medio' ? 'column' : 'row'};
   align-items: center;
+  justify-content: center;
+  grid-template-columns: ${props => props.gameMode === 'medio' ? 'none' : 'repeat(8, 1fr)'};
+  grid-template-rows: ${props => props.gameMode === 'medio' ? 'none' : 'repeat(2, 1fr)'};
+  gap: ${props => props.gameMode === 'medio' ? '60px' : '50px'};
+  margin-top: 60px;
+  margin-bottom: 40px;
+  width: 90%;
+  max-width: ${props => props.gameMode === 'medio' ? '1000px' : '5000px'};
+  padding: 20px;
+  
+  ${props => props.gameMode === 'medio' && `
+    > div:first-child {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 50px;
+      width: 100%;
+      padding-left: 70px;
+    }
+    
+    > div:last-child {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 50px;
+      width: 100%;
+    }
+  `}
 `;
 
 const Selectable = styled.div`

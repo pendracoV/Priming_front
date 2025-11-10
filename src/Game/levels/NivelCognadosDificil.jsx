@@ -1,6 +1,6 @@
 //src/Game/levels/NivelCognadosDificil.jsx
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { AuthContext } from '../../context/AuthContext';
 import { getNivelConfigDificil } from '../data/nivelesConfigDificil';
@@ -40,6 +40,7 @@ const NivelCognadoDificil = () => {
   // Context and Routing
   const { nivel } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   
   // 🔑 Obtener información del niño actual desde localStorage (NO del AuthContext)
   const [user, setUser] = useState(null);
@@ -64,7 +65,46 @@ const NivelCognadoDificil = () => {
   // Refs
   const currentAudioRef = useRef(null);
   const audioTimeoutRef = useRef(null);
+  const instructionsTimeoutRef = useRef(null);
   const [levelConfig, setLevelConfig] = useState(null);
+  const previousLevelRef = useRef(nivel);
+
+  // 🛡️ PROTECCIÓN CONTRA NAVEGACIÓN MANUAL ENTRE NIVELES
+  useEffect(() => {
+    const navigationKey = `authorized_navigation_cognados_dificil_${nivel}`;
+    const isAuthorized = sessionStorage.getItem(navigationKey);
+    
+    // Si el nivel cambió desde el anterior render
+    if (previousLevelRef.current && previousLevelRef.current !== nivel) {
+      if (!isAuthorized) {
+        console.log('🚨 Navegación manual detectada - Bloqueando');
+        // Limpiar progreso del nivel actual
+        if (user) {
+          const userId = user.id;
+          localStorage.removeItem(`progress_cognados_dificil_${userId}`);
+          localStorage.removeItem(`completed_levels_cognados_dificil_${userId}`);
+        }
+        // Recargar para reiniciar el nivel
+        window.location.reload();
+        return;
+      } else {
+        sessionStorage.removeItem(navigationKey);
+      }
+    }
+    
+    // PRIMERA CARGA: Verificar autorización SIEMPRE
+    if (!previousLevelRef.current) {
+      if (!isAuthorized) {
+        console.log('🚨 Acceso directo sin autorización - Redirigiendo a selección de mundos');
+        navigate('/seleccion-mundo');
+        return;
+      } else {
+        sessionStorage.removeItem(navigationKey);
+      }
+    }
+    
+    previousLevelRef.current = nivel;
+  }, [nivel, user, navigate]);
 
   // FUNCIÓN PARA OBTENER EL PUNTAJE CORRECTO INICIAL
   const getCorrectInitialScore = (currentLevel) => {
@@ -253,19 +293,46 @@ const NivelCognadoDificil = () => {
 
   // Navigation Functions
   const closeEndGameAlert = () => {
-    setShowEndGameAlert(false);
+    console.log('🔄 closeEndGameAlert - endGameType:', endGameType);
     
     if (endGameType === 'success') {
+      setShowEndGameAlert(false);
       const currentLevel = parseInt(nivel);
       const maxLevels = 5; // Modo difícil tiene 5 niveles
       
       if (currentLevel < maxLevels) {
-        navigate(`/nivel/cognados/dificil/${currentLevel + 1}`);
+        // 🔑 Autorizar navegación al siguiente nivel
+        const nextLevel = currentLevel + 1;
+        sessionStorage.setItem(`authorized_navigation_cognados_dificil_${nextLevel}`, 'true');
+        navigate(`/nivel/cognados/dificil/${nextLevel}`);
       } else {
         navigate('/seleccion-mundo');
       }
     } else {
-      // APLICAR LA LÓGICA: RESETEAR ESTADOS Y REPRODUCIR INSTRUCCIONES
+      console.log('🔄 Reiniciando nivel...');
+      
+      // Limpiar audios y timeouts PRIMERO
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+        currentAudioRef.current.currentTime = 0;
+      }
+      
+      if (audioTimeoutRef.current) {
+        clearTimeout(audioTimeoutRef.current);
+        audioTimeoutRef.current = null;
+      }
+      
+      if (instructionsTimeoutRef.current) {
+        clearTimeout(instructionsTimeoutRef.current);
+        instructionsTimeoutRef.current = null;
+      }
+      
+      // Resetear estados inmediatamente
+      setInstructionsCompleted(false);
+      setIsPlayingInstructions(false);
+      setShowEndGameAlert(false);
+      
+      // Luego resetear el resto de estados
       resetAllStates();
       
       if (levelConfig) {
@@ -276,9 +343,11 @@ const NivelCognadoDificil = () => {
           selectables: shuffledSelectables
         }));
         
-        setTimeout(() => {
+        // Dar tiempo para que los estados se actualicen
+        instructionsTimeoutRef.current = setTimeout(() => {
+          console.log('⏰ Timeout ejecutado - llamando playInitialInstructions');
           playInitialInstructions();
-        }, 100);
+        }, 500);
       }
     }
   };
@@ -290,15 +359,27 @@ const NivelCognadoDificil = () => {
     const maxLevels = 5;
     
     if (currentLevel < maxLevels) {
-      navigate(`/nivel/cognados/dificil/${currentLevel + 1}`);
+      // 🔑 Autorizar navegación al siguiente nivel
+      const nextLevel = currentLevel + 1;
+      sessionStorage.setItem(`authorized_navigation_cognados_dificil_${nextLevel}`, 'true');
+      navigate(`/nivel/cognados/dificil/${nextLevel}`);
     } else {
-      navigate('/seleccion-mundo');
+      // 📊 Último nivel completado - Ir a encuesta
+      navigate('/encuesta', { 
+        state: { 
+          gameType: 'cognados', 
+          difficulty: 'dificil', 
+          level: nivel,
+          score: score
+        } 
+      });
     }
   };
 
   const restartLevel = () => {
-    resetAllStates();
+    console.log('🔄 restartLevel llamado');
     
+    // Limpiar audios y timeouts PRIMERO
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       currentAudioRef.current.currentTime = 0;
@@ -306,7 +387,20 @@ const NivelCognadoDificil = () => {
     
     if (audioTimeoutRef.current) {
       clearTimeout(audioTimeoutRef.current);
+      audioTimeoutRef.current = null;
     }
+    
+    if (instructionsTimeoutRef.current) {
+      clearTimeout(instructionsTimeoutRef.current);
+      instructionsTimeoutRef.current = null;
+    }
+    
+    // Resetear estados de instrucciones inmediatamente
+    setInstructionsCompleted(false);
+    setIsPlayingInstructions(false);
+    
+    // Resetear todos los estados del juego
+    resetAllStates();
     
     if (levelConfig) {
       const shuffledSelectables = levelConfig.gameSettings?.shuffleSelectables ? 
@@ -316,9 +410,11 @@ const NivelCognadoDificil = () => {
         selectables: shuffledSelectables
       }));
       
-      setTimeout(() => {
+      // Dar tiempo para que los estados se actualicen
+      instructionsTimeoutRef.current = setTimeout(() => {
+        console.log('⏰ restartLevel timeout - llamando playInitialInstructions');
         playInitialInstructions();
-      }, 100);
+      }, 500);
     }
   };
 
@@ -382,11 +478,21 @@ const NivelCognadoDificil = () => {
   };
 
   const playInitialInstructions = async () => {
+    console.log('🎵 playInitialInstructions llamado - isPlayingInstructions:', isPlayingInstructions, 'instructionsCompleted:', instructionsCompleted);
+    
+    // NO prevenir si estamos en un reinicio - permitir que se reproduzcan las instrucciones
+    if (isPlayingInstructions && !instructionsCompleted) {
+      console.log('⏸️ Instrucciones ya reproduciéndose, evitando duplicado');
+      return;
+    }
+    
+    console.log('▶️ Iniciando reproducción de instrucciones');
     setIsPlayingInstructions(true);
     const instructionsAudioPath = `/sounds/cognados/dificil/instrucciones/instrucciones${nivel}.mp3`;
     
     try {
       await playAudioWithQueue(instructionsAudioPath, () => {
+        console.log('✅ Instrucciones completadas');
         setIsPlayingInstructions(false);
         setInstructionsCompleted(true);
       });
@@ -836,7 +942,7 @@ const NivelCognadoDificil = () => {
         setHighlightedSelector(null);
         setShowSuccessAlert(false);
         setInstructionsCompleted(false); 
-        // NO resetear isPlayingInstructions aquí, se resetea en closeEndGameAlert
+        // NO resetear isPlayingInstructions aquí - dejarlo en su estado inicial
         setShowEndGameAlert(false);
         setEndGameMessage('');
         setEndGameType('');
@@ -847,11 +953,22 @@ const NivelCognadoDificil = () => {
     }
     
     // Reproducir instrucciones después de resetear estados
-    setTimeout(() => {
+    // Limpiar timeout anterior si existe
+    if (instructionsTimeoutRef.current) {
+      clearTimeout(instructionsTimeoutRef.current);
+    }
+    
+    instructionsTimeoutRef.current = setTimeout(() => {
       playInitialInstructions();
     }, 500);
     
     return () => {
+      // Limpiar timeout de instrucciones
+      if (instructionsTimeoutRef.current) {
+        clearTimeout(instructionsTimeoutRef.current);
+        instructionsTimeoutRef.current = null;
+      }
+      
       // Limpiar estado
       setComparedSelectors([]);
       setDisabledSelectors([]);
@@ -1055,32 +1172,63 @@ const NivelCognadoDificil = () => {
             ))}
           </IndicatorsContainer>
 
-          {/* SELECTABLES CONTAINER - 9 elementos en modo difícil */}
+          {/* SELECTABLES CONTAINER - 9 elementos en modo difícil (4 arriba, 5 abajo) */}
           <SelectablesContainer gameMode="dificil">
-            {levelConfig.selectables.map((selector, index) => (
-              <Selectable 
-                key={`${selector.id}-${nivel}-${index}`}
-                index={index}
-                selected={comparedSelectors.includes(selector.id)}
-                highlighted={highlightedSelector === selector.id}
-                lastSelected={lastSelectedSelector?.id === selector.id && !disabledSelectors.includes(selector.id)}
-                disabled={isTraining || disabledSelectors.includes(selector.id) || showEndGameAlert}
-                onClick={() => handleSelectorSelection(selector)}
-                gameMode="dificil"
-              >
-                <img src={selector.image} alt="Selector" />
-                
-                {comparedSelectors.includes(selector.id) && (
-                  <StatusIndicator>✓</StatusIndicator>
-                )}
-                {disabledSelectors.includes(selector.id) && !comparedSelectors.includes(selector.id) && (
-                  <StatusIndicator style={{backgroundColor: '#ff6b6b'}}>✗</StatusIndicator>
-                )}
-                {lastSelectedSelector?.id === selector.id && !disabledSelectors.includes(selector.id) && (
-                  <StatusIndicator style={{backgroundColor: '#fc7500'}}>🎵</StatusIndicator>
-                )}
-              </Selectable>
-            ))}
+            {/* Primera fila: 4 elementos (arriba) */}
+            <div>
+              {levelConfig.selectables.slice(0, 4).map((selector, index) => (
+                <Selectable 
+                  key={`${selector.id}-${nivel}-${index}`}
+                  index={index}
+                  selected={comparedSelectors.includes(selector.id)}
+                  highlighted={highlightedSelector === selector.id}
+                  lastSelected={lastSelectedSelector?.id === selector.id && !disabledSelectors.includes(selector.id)}
+                  disabled={isTraining || disabledSelectors.includes(selector.id) || showEndGameAlert}
+                  onClick={() => handleSelectorSelection(selector)}
+                  gameMode="dificil"
+                >
+                  <img src={selector.image} alt="Selector" />
+                  
+                  {comparedSelectors.includes(selector.id) && (
+                    <StatusIndicator>✓</StatusIndicator>
+                  )}
+                  {disabledSelectors.includes(selector.id) && !comparedSelectors.includes(selector.id) && (
+                    <StatusIndicator style={{backgroundColor: '#ff6b6b'}}>✗</StatusIndicator>
+                  )}
+                  {lastSelectedSelector?.id === selector.id && !disabledSelectors.includes(selector.id) && (
+                    <StatusIndicator style={{backgroundColor: '#fc7500'}}>🎵</StatusIndicator>
+                  )}
+                </Selectable>
+              ))}
+            </div>
+            
+            {/* Segunda fila: 5 elementos (abajo) */}
+            <div>
+              {levelConfig.selectables.slice(4, 9).map((selector, index) => (
+                <Selectable 
+                  key={`${selector.id}-${nivel}-${index + 4}`}
+                  index={index + 4}
+                  selected={comparedSelectors.includes(selector.id)}
+                  highlighted={highlightedSelector === selector.id}
+                  lastSelected={lastSelectedSelector?.id === selector.id && !disabledSelectors.includes(selector.id)}
+                  disabled={isTraining || disabledSelectors.includes(selector.id) || showEndGameAlert}
+                  onClick={() => handleSelectorSelection(selector)}
+                  gameMode="dificil"
+                >
+                  <img src={selector.image} alt="Selector" />
+                  
+                  {comparedSelectors.includes(selector.id) && (
+                    <StatusIndicator>✓</StatusIndicator>
+                  )}
+                  {disabledSelectors.includes(selector.id) && !comparedSelectors.includes(selector.id) && (
+                    <StatusIndicator style={{backgroundColor: '#ff6b6b'}}>✗</StatusIndicator>
+                  )}
+                  {lastSelectedSelector?.id === selector.id && !disabledSelectors.includes(selector.id) && (
+                    <StatusIndicator style={{backgroundColor: '#fc7500'}}>🎵</StatusIndicator>
+                  )}
+                </Selectable>
+              ))}
+            </div>
           </SelectablesContainer>
           
           {isPlayingInstructions && (
@@ -1132,13 +1280,15 @@ const NivelCognadoDificil = () => {
           <SuccessAlertOverlay>
             <SuccessAlertBox>
               <SuccessAlertText>
-                ¡EXCELENTE TRABAJO! Estás listo para el siguiente desafío.
+                {parseInt(nivel) === 5 
+                  ? '¡FELICIDADES! Has completado todos los niveles. Es momento de responder la encuesta.'
+                  : '¡EXCELENTE TRABAJO! Estás listo para el siguiente desafío.'}
               </SuccessAlertText>
               <SuccessAlertButton 
                 disabled={isPlayingSuccessAudio}
                 onClick={isPlayingSuccessAudio ? undefined : closeSuccessAlert}
               >
-                🚀 Siguiente Nivel
+                {parseInt(nivel) === 5 ? 'Ir a Encuesta' : 'Siguiente Nivel'}
               </SuccessAlertButton>
             </SuccessAlertBox>
           </SuccessAlertOverlay>
@@ -1261,7 +1411,7 @@ const Indicator = styled.div`
   }
   
   img {
-    width: 300px;
+    width: 280px;
     height: auto;
     filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.4));
   }
@@ -1282,17 +1432,37 @@ const TrainingClicksIndicator = styled.div`
 `;
 
 const SelectablesContainer = styled.div`
-  display: grid;
-  grid-template-columns: ${props => props.gameMode === 'dificil' ? 'repeat(3, 1fr)' : 'repeat(8, 1fr)'};
-  grid-template-rows: ${props => props.gameMode === 'dificil' ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)'};
-  gap: ${props => props.gameMode === 'dificil' ? '35px' : '50px'};
-  margin-top: 30px;
-  width: 90%;
-  max-width: ${props => props.gameMode === 'dificil' ? '750px' : '5000px'};
-  min-height: ${props => props.gameMode === 'dificil' ? '380px' : '100px'};
-  padding: 20px;
-  justify-items: center;
+  display: ${props => props.gameMode === 'dificil' ? 'flex' : 'grid'};
+  flex-direction: ${props => props.gameMode === 'dificil' ? 'column' : 'row'};
   align-items: center;
+  justify-content: center;
+  grid-template-columns: ${props => props.gameMode === 'dificil' ? 'none' : 'repeat(8, 1fr)'};
+  grid-template-rows: ${props => props.gameMode === 'dificil' ? 'none' : 'repeat(2, 1fr)'};
+  gap: ${props => props.gameMode === 'dificil' ? '60px' : '50px'};
+  margin-top: ${props => props.gameMode === 'dificil' ? '60px' : '30px'};
+  margin-bottom: ${props => props.gameMode === 'dificil' ? '40px' : '20px'};
+  width: 90%;
+  max-width: ${props => props.gameMode === 'dificil' ? '1000px' : '5000px'};
+  padding: ${props => props.gameMode === 'dificil' ? '20px' : '20px'};
+  
+  ${props => props.gameMode === 'dificil' && `
+    > div:first-child {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 50px;
+      width: 100%;
+      padding-left: 60px;
+    }
+    
+    > div:last-child {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 50px;
+      width: 100%;
+    }
+  `}
 `;
 
 const Selectable = styled.div`
@@ -1328,8 +1498,10 @@ const Selectable = styled.div`
   }
   
   img {
-    width: ${props => props.gameMode === 'dificil' ? '110px' : '100px'};
+    width: ${props => props.gameMode === 'dificil' ? '120px' : '100px'};
     height: auto;
+    max-height: ${props => props.gameMode === 'dificil' ? '120px' : 'auto'};
+    object-fit: contain;
     transition: all 0.2s ease;
     filter: ${props => 
       props.disabled ? 'grayscale(1)' :
@@ -1339,30 +1511,28 @@ const Selectable = styled.div`
 `;
 
 const NavigationButtons = styled.div`
-  position: absolute;
-  bottom: 30px;
-  right: 30px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  z-index: 100;
+  gap: 10px;
+  margin-top: 10px;
 `;
 
 const Button = styled.button`
   background: linear-gradient(135deg, rgba(147, 68, 134, 0.9), rgba(147, 68, 134, 1));
   color: white;
   border: none;
-  border-radius: 20px;
-  padding: 12px 20px;
-  font-size: 16px;
+  border-radius: 15px;
+  padding: 10px 16px;
+  font-size: 14px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   border: 2px solid rgba(255, 255, 255, 0.2);
-  min-width: 140px;
+  width: 100%;
   opacity: ${props => props.disabled ? 0.5 : 1};
   cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  font-family: 'Manrope', sans-serif;
   
   &:hover {
     transform: ${props => props.disabled ? 'none' : 'translateY(-2px)'};

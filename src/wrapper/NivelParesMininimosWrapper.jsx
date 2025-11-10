@@ -1,21 +1,21 @@
 import { useParams } from 'react-router-dom';
-import NivelCognados from '../Game/levels/NivelCognados';
-import NivelCognadosMedio from '../Game/levels/NivelCognadosMedio';
-import NivelCognadosDificil from '../Game/levels/NivelCognadosDificil';
+import NivelParesMinimos from '../Game/levels/NivelParesMinimos';
+import NivelParesMinimosMedio from '../Game/levels/NivelParesMinimosMedio';
+// import NivelParesMinimosDificil from '../Game/levels/NivelParesMinimosDificil';
 
-const NivelCognadosWrapper = () => {
+const NivelParesMininimosWrapper = () => {
   const { dificultad } = useParams();
   
   switch(dificultad) {
     case 'facil':
-      return <NivelCognados />;
+      return <NivelParesMinimos />;
     case 'medio':
-      return <NivelCognadosMedio />;
+      return <NivelParesMinimosMedio />;
     case 'dificil':
-      return <NivelCognadosDificil/>; // o tu componente de difícil
+      return <NivelParesMinimos />; // TODO: Cambiar a NivelParesMinimosDificil cuando esté listo
     default:
-      return <NivelCognados />;
+      return <NivelParesMinimos />;
   }
 };
 
-export default NivelCognadosWrapper;
+export default NivelParesMininimosWrapper;

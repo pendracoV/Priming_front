@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { AuthContext } from '../../context/AuthContext';
 import { getNivelConfig } from '../data/nivelesConfig';
@@ -36,10 +36,13 @@ const getAudioDuration = (audioPath) => {
 const NivelCognados = () => {
   const { dificultad, nivel } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const currentAudioRef = useRef(null);
   const audioTimeoutRef = useRef(null);
+  const instructionsTimeoutRef = useRef(null);
   const [levelConfig, setLevelConfig] = useState(null);
+  const previousLevelRef = useRef(nivel);
   
   // 🔑 Obtener información del niño actual desde localStorage (NO del AuthContext)
   const [user, setUser] = useState(null);
@@ -59,7 +62,44 @@ const NivelCognados = () => {
       console.error('❌ No hay niño en sesión');
       navigate('/ninos-list');
     }
-  }, [navigate]); 
+  }, [navigate]);
+
+  // 🛡️ PROTECCIÓN CONTRA NAVEGACIÓN MANUAL ENTRE NIVELES
+  useEffect(() => {
+    const navigationKey = `authorized_navigation_cognados_${dificultad}_${nivel}`;
+    const isAuthorized = sessionStorage.getItem(navigationKey);
+    
+    // Si el nivel cambió desde el anterior render
+    if (previousLevelRef.current && previousLevelRef.current !== nivel) {
+      if (!isAuthorized) {
+        console.log('🚨 Navegación manual detectada - Bloqueando');
+        // Limpiar progreso del nivel actual
+        if (user) {
+          const userId = user.id;
+          localStorage.removeItem(`progress_cognados_${dificultad}_${userId}`);
+          localStorage.removeItem(`completed_levels_cognados_${dificultad}_${userId}`);
+        }
+        // Recargar para reiniciar el nivel
+        window.location.reload();
+        return;
+      } else {
+        sessionStorage.removeItem(navigationKey);
+      }
+    }
+    
+    // PRIMERA CARGA: Verificar autorización SIEMPRE
+    if (!previousLevelRef.current) {
+      if (!isAuthorized) {
+        console.log('🚨 Acceso directo sin autorización - Redirigiendo a selección de mundos');
+        navigate('/seleccion-mundo');
+        return;
+      } else {
+        sessionStorage.removeItem(navigationKey);
+      }
+    }
+    
+    previousLevelRef.current = nivel;
+  }, [nivel, dificultad, user, navigate]); 
 
   const saveCompletedLevelProgress = async (completedLevel, finalScore) => {
     if (user) {
@@ -247,18 +287,41 @@ const NivelCognados = () => {
   const getSuccessAudio = () => levelConfig?.successAudio || '/sounds/cognados/facil/succes/success.mp3';
 
   const closeEndGameAlert = () => {
-    setShowEndGameAlert(false);
+    console.log('🔄 closeEndGameAlert - endGameType:', endGameType);
     
     if (endGameType === 'success') {
+      setShowEndGameAlert(false);
       const currentLevel = parseInt(nivel);
       const maxLevels = 10;
       
       if (currentLevel < maxLevels) {
-        navigate(`/nivel/cognados/${dificultad}/${currentLevel + 1}`);
+        // 🔑 Autorizar navegación al siguiente nivel
+        const nextLevel = currentLevel + 1;
+        sessionStorage.setItem(`authorized_navigation_cognados_${dificultad}_${nextLevel}`, 'true');
+        navigate(`/nivel/cognados/${dificultad}/${nextLevel}`);
       } else {
         navigate('/seleccion-mundo');
       }
     } else {
+      console.log('🔄 Reiniciando nivel...');
+      
+      // Limpiar audios y timeouts PRIMERO
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+        currentAudioRef.current.currentTime = 0;
+      }
+      
+      if (audioTimeoutRef.current) {
+        clearTimeout(audioTimeoutRef.current);
+        audioTimeoutRef.current = null;
+      }
+      
+      // Resetear estados inmediatamente
+      setInstructionsCompleted(false);
+      setIsPlayingInstructions(false);
+      setShowEndGameAlert(false);
+      
+      // Luego resetear el resto de estados
       resetAllStates();
       
       if (levelConfig) {
@@ -269,9 +332,11 @@ const NivelCognados = () => {
           selectables: shuffledSelectables
         }));
         
+        // Dar tiempo para que los estados se actualicen
         setTimeout(() => {
+          console.log('⏰ Timeout ejecutado - llamando playInitialInstructions');
           playInitialInstructions();
-        }, 100);
+        }, 500);
       }
     }
   };
@@ -283,15 +348,27 @@ const NivelCognados = () => {
     const maxLevels = 10;
     
     if (currentLevel < maxLevels) {
-      navigate(`/nivel/cognados/${dificultad}/${currentLevel + 1}`);
+      // 🔑 Autorizar navegación al siguiente nivel
+      const nextLevel = currentLevel + 1;
+      sessionStorage.setItem(`authorized_navigation_cognados_${dificultad}_${nextLevel}`, 'true');
+      navigate(`/nivel/cognados/${dificultad}/${nextLevel}`);
     } else {
-      navigate('/seleccion-mundo');
+      // 📊 Último nivel completado - Ir a encuesta
+      navigate('/encuesta', { 
+        state: { 
+          gameType: 'cognados', 
+          difficulty: dificultad, 
+          level: nivel,
+          score: score
+        } 
+      });
     }
   };
 
   const restartLevel = () => {
-    resetAllStates();
+    console.log('🔄 restartLevel llamado');
     
+    // Limpiar audios y timeouts PRIMERO
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       currentAudioRef.current.currentTime = 0;
@@ -299,7 +376,15 @@ const NivelCognados = () => {
     
     if (audioTimeoutRef.current) {
       clearTimeout(audioTimeoutRef.current);
+      audioTimeoutRef.current = null;
     }
+    
+    // Resetear estados de instrucciones inmediatamente
+    setInstructionsCompleted(false);
+    setIsPlayingInstructions(false);
+    
+    // Resetear todos los estados del juego
+    resetAllStates();
     
     if (levelConfig) {
       const shuffledSelectables = levelConfig.gameSettings?.shuffleSelectables ? 
@@ -309,9 +394,11 @@ const NivelCognados = () => {
         selectables: shuffledSelectables
       }));
       
+      // Dar tiempo para que los estados se actualicen
       setTimeout(() => {
+        console.log('⏰ restartLevel timeout - llamando playInitialInstructions');
         playInitialInstructions();
-      }, 100);
+      }, 500);
     }
   };
 
@@ -391,11 +478,21 @@ const NivelCognados = () => {
   };
 
   const playInitialInstructions = async () => {
+    console.log('🎵 playInitialInstructions llamado - isPlayingInstructions:', isPlayingInstructions, 'instructionsCompleted:', instructionsCompleted);
+    
+    // NO prevenir si estamos en un reinicio
+    if (isPlayingInstructions && !instructionsCompleted) {
+      console.log('⏸️ Instrucciones ya reproduciéndose, evitando duplicado');
+      return;
+    }
+    
+    console.log('▶️ Iniciando reproducción de instrucciones');
     setIsPlayingInstructions(true);
     const instructionsAudioPath = `/sounds/cognados/facil/instrucciones/instrucciones${nivel}.mp3`;
     
     try {
       await playAudioWithQueue(instructionsAudioPath, () => {
+        console.log('✅ Instrucciones completadas');
         setIsPlayingInstructions(false);
         setInstructionsCompleted(true);
       });
@@ -832,7 +929,7 @@ const NivelCognados = () => {
           setHighlightedSelector(null);
           setShowSuccessAlert(false);
           setInstructionsCompleted(false); 
-          // NO resetear isPlayingInstructions aquí, se resetea en closeEndGameAlert
+          // NO resetear isPlayingInstructions aquí - dejarlo en su estado inicial
           setShowEndGameAlert(false);
           setEndGameMessage('');
           setEndGameType('');
@@ -852,8 +949,8 @@ const NivelCognados = () => {
           setDisabledSelectors([]);
           setHighlightedSelector(null);
           setShowSuccessAlert(false);
-          setInstructionsCompleted(false); 
-          // NO resetear isPlayingInstructions aquí, se resetea en closeEndGameAlert
+          setInstructionsCompleted(false);
+          // NO resetear isPlayingInstructions aquí - dejarlo en su estado inicial
           setShowEndGameAlert(false);
           setEndGameMessage('');
           setEndGameType('');
@@ -1143,13 +1240,15 @@ const NivelCognados = () => {
           <SuccessAlertOverlay>
             <SuccessAlertBox>
               <SuccessAlertText>
-                ¡EXCELENTE TRABAJO! Estás listo para el siguiente desafío.
+                {parseInt(nivel) === 10 
+                  ? '¡FELICIDADES! Has completado todos los niveles. Es momento de responder la encuesta.'
+                  : '¡EXCELENTE TRABAJO! Estás listo para el siguiente desafío.'}
               </SuccessAlertText>
               <SuccessAlertButton 
                 disabled={isPlayingSuccessAudio}
                 onClick={isPlayingSuccessAudio ? undefined : closeSuccessAlert}
               >
-                🚀 Siguiente Nivel
+                {parseInt(nivel) === 10 ? 'Ir a Encuesta' : 'Siguiente Nivel'}
               </SuccessAlertButton>
             </SuccessAlertBox>
           </SuccessAlertOverlay>

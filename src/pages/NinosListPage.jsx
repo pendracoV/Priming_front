@@ -28,6 +28,16 @@ const NinosListPage = () => {
   const [validationError, setValidationError] = useState('');
   const navigate = useNavigate();
 
+  // Función para limpiar localStorage de un niño específico
+  const cleanNinoLocalStorage = (ninoId) => {
+    console.log(`🧹 Limpiando localStorage para niño ${ninoId}...`);
+    localStorage.removeItem(`lastGameType_${ninoId}`);
+    localStorage.removeItem(`lastDifficulty_${ninoId}`);
+    localStorage.removeItem(`lastLevel_${ninoId}`);
+    localStorage.removeItem(`accumulatedScore_${ninoId}`);
+    console.log(`✅ localStorage limpiado para niño ${ninoId}`);
+  };
+
   useEffect(() => {
     const fetchNinos = async () => {
       try {
@@ -60,42 +70,32 @@ const NinosListPage = () => {
         const ninosConProgreso = await Promise.all(ninosData.map(async (nino) => {
           const ninoId = nino.nino_id || nino.id;
           
-          // Verificar si tiene progreso en localStorage primero (más rápido)
+          // Verificar si tiene progreso REAL solo en la base de datos
+          // NO confiar en localStorage porque puede tener datos residuales
           let tieneProgreso = false;
           
-          // Verificar localStorage con claves específicas del niño
-          const gameType = localStorage.getItem(`lastGameType_${ninoId}`);
-          const difficulty = localStorage.getItem(`lastDifficulty_${ninoId}`);
-          const currentLevel = localStorage.getItem(`lastLevel_${ninoId}`);
-          
-          if (gameType && difficulty && currentLevel) {
-            tieneProgreso = true;
-            console.log(`🎮 Niño ${ninoId} (${nino.nino_nombre || nino.nombre}) - tiene progreso en localStorage`);
-          } else {
-            // Si no está en localStorage, verificar en BD (más lento pero necesario)
-            try {
-              // Solo verificar las combinaciones más comunes primero
-              const cognadosFacil = await ninoService.getProgresoEspecifico(ninoId, 'cognados', 'facil').catch(() => null);
+          try {
+            // Solo verificar las combinaciones más comunes primero
+            const cognadosFacil = await ninoService.getProgresoEspecifico(ninoId, 'cognados', 'facil').catch(() => null);
+            
+            if (cognadosFacil && cognadosFacil.tiene_progreso) {
+              tieneProgreso = true;
+            } else {
+              // Si no está en cognados fácil, verificar otros
+              const allProgress = await Promise.all([
+                ninoService.getProgresoEspecifico(ninoId, 'cognados', 'medio').catch(() => null),
+                ninoService.getProgresoEspecifico(ninoId, 'cognados', 'dificil').catch(() => null),
+                ninoService.getProgresoEspecifico(ninoId, 'pares-minimos', 'facil').catch(() => null),
+                ninoService.getProgresoEspecifico(ninoId, 'pares-minimos', 'medio').catch(() => null),
+                ninoService.getProgresoEspecifico(ninoId, 'pares-minimos', 'dificil').catch(() => null),
+              ]);
               
-              if (cognadosFacil && cognadosFacil.tiene_progreso) {
-                tieneProgreso = true;
-              } else {
-                // Si no está en cognados fácil, verificar otros
-                const allProgress = await Promise.all([
-                  ninoService.getProgresoEspecifico(ninoId, 'cognados', 'medio').catch(() => null),
-                  ninoService.getProgresoEspecifico(ninoId, 'cognados', 'dificil').catch(() => null),
-                  ninoService.getProgresoEspecifico(ninoId, 'pares-minimos', 'facil').catch(() => null),
-                  ninoService.getProgresoEspecifico(ninoId, 'pares-minimos', 'medio').catch(() => null),
-                  ninoService.getProgresoEspecifico(ninoId, 'pares-minimos', 'dificil').catch(() => null),
-                ]);
-                
-                tieneProgreso = allProgress.some(p => p && p.tiene_progreso && p.data);
-              }
-              
-              console.log(`🎮 Niño ${ninoId} (${nino.nino_nombre || nino.nombre}) - tiene progreso en BD: ${tieneProgreso}`);
-            } catch (error) {
-              console.error(`Error verificando progreso para niño ${ninoId}:`, error);
+              tieneProgreso = allProgress.some(p => p && p.tiene_progreso && p.data);
             }
+            
+            console.log(`🎮 Niño ${ninoId} (${nino.nino_nombre || nino.nombre}) - tiene progreso en BD: ${tieneProgreso}`);
+          } catch (error) {
+            console.error(`Error verificando progreso para niño ${ninoId}:`, error);
           }
           
           return {
@@ -241,32 +241,10 @@ const NinosListPage = () => {
             return;
           }
           
-          // También verificar localStorage por si no hay conexión a BD
-          const gameType = localStorage.getItem(`lastGameType_${ninoId}`);
-          const difficulty = localStorage.getItem(`lastDifficulty_${ninoId}`);
-          const currentLevel = localStorage.getItem(`lastLevel_${ninoId}`);
-          const accumulatedScore = localStorage.getItem(`accumulatedScore_${ninoId}`);
+          // ⚠️ NO HAY PROGRESO EN BD - Limpiar localStorage para evitar datos residuales
+          console.log(`🧹 No se encontró progreso en BD para niño ${ninoId}, limpiando localStorage...`);
+          cleanNinoLocalStorage(ninoId);
           
-          console.log(`🔍 Verificando progreso en localStorage para niño ${ninoId}:`);
-          console.log('  - gameType:', gameType);
-          console.log('  - difficulty:', difficulty);
-          console.log('  - currentLevel:', currentLevel);
-          console.log('  - accumulatedScore:', accumulatedScore);
-          
-          // Si hay datos en localStorage (fallback si BD no responde)
-          if (gameType && difficulty && currentLevel && accumulatedScore) {
-            console.log('✅ Progreso encontrado en localStorage (fallback), redirigiendo al nivel', currentLevel);
-            
-            // Cerrar modal
-            setShowPasswordModal(false);
-            setSelectedNino(null);
-            
-            // Redirigir al último nivel jugado
-            const route = `/nivel/${gameType}/${difficulty}/${currentLevel}`;
-            console.log('🚀 Navegando a:', route);
-            navigate(route);
-            return;
-          }
         } catch (progressError) {
           console.log('❌ Error buscando progreso:', progressError);
         }
@@ -343,8 +321,6 @@ const NinosListPage = () => {
       
       <PageLayout 
         title={<H1>Lista de Niños Asignados</H1>}
-        // Activar hasOverflow solo si hay muchos niños en la tabla
-        hasOverflow={ninos.length > 10}
       >
         {renderContent()}
       </PageLayout>

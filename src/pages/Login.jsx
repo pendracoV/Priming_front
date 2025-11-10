@@ -127,7 +127,7 @@ const Login = () => {
         // Redirección basada en tipo_usuario (minúsculas)
         const rol = response.data.user.tipo_usuario.toLowerCase();
         if (rol === 'evaluador') {
-          navigate("/asignar-nino");
+          navigate("/inicio");
         } else if (rol === 'niño') {
           navigate("/juegos");
         } else if (rol === 'administrador') {

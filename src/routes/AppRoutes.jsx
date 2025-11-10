@@ -18,7 +18,7 @@ import AsignarAcompanante from '../pages/AsignarAcompanante';
 import NinosList from '../pages/NinosListPage';
 import SeleccionMundos from '../Game/SeleccionMundos';
 import NivelCognadosWrapper from '../wrapper/NivelCognadosWrapper';
-import NivelParesMinimos from '../Game/levels/NivelParesMinimos';
+import NivelParesMininimosWrapper from '../wrapper/NivelParesMininimosWrapper';
 import Encuesta from '../Game/Encuesta';
 
 // Páginas de administrador
@@ -105,6 +105,9 @@ const ValidateLevelParams = ({ children, gameType }) => {
   if (gameType === 'cognados' && dificultad === 'facil') {
     maxLevel = 10;
   }
+  if (gameType === 'pares-minimos' && dificultad === 'facil') {
+    maxLevel = 10;
+  }
 
   if (nivelNumerico > maxLevel) {
     console.log(`🚫 Nivel fuera de rango: ${nivel} (máximo: ${maxLevel})`);
@@ -187,7 +190,7 @@ export default function AppRoutes() {
               path="/nivel/pares-minimos/:dificultad/:nivel" 
               element={
                 <SecureLevelRoute gameType="pares-minimos">
-                  <NivelParesMinimos />
+                  <NivelParesMininimosWrapper />
                 </SecureLevelRoute>
               } 
             />

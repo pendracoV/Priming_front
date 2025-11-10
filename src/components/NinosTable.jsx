@@ -2,20 +2,53 @@ import React from 'react';
 import styled from 'styled-components';
 import { Button } from '../styles/styles';
 
+// Contenedor con scroll interno
+const TableContainer = styled.div`
+  width: 100%;
+  max-height: 500px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid rgba(204, 204, 204, 0.3);
+  border-radius: 8px;
+  background: rgba(26, 26, 26, 0.5);
+  margin-top: 20px;
+  
+  /* Estilos del scrollbar */
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(106, 106, 106, 0.3);
+    border-radius: 10px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #fc7500;
+    border-radius: 10px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: #e56700;
+  }
+`;
+
 // Estilos para la tabla
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
 `;
 
 const TableHeader = styled.th`
-  background: rgba(106, 106, 106, 0.7);
+  background: rgba(106, 106, 106, 0.9);
   color: #f4f4f4;
   padding: 12px;
   text-align: left;
   font-weight: bold;
   border-bottom: 2px solid #fc7500;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 `;
 
 const TableRow = styled.tr`
@@ -69,50 +102,52 @@ const NinosTable = ({
   };
 
   return (
-    <Table>
-      <thead>
-        <tr>
-          {columns.map(column => (
-            <TableHeader key={column}>{columnTitles[column]}</TableHeader>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {ninos.map((nino, index) => {
-          // Extraemos el nombre y el ID independientemente de la estructura de datos
-          const nombre = nino.nombre || nino.nino_nombre || "Nombre no disponible";
-          const id = nino.id || nino.nino_id || `nino-${index}`;
-          
-          return (
-            <TableRow key={id}>
-              {columns.includes('nombre') && <TableCell>{nombre}</TableCell>}
-              {columns.includes('edad') && <TableCell>{nino.edad} años</TableCell>}
-              {columns.includes('grado') && <TableCell>{determinarGrado(nino.grado)}</TableCell>}
-              {columns.includes('colegio') && <TableCell>{nino.colegio}</TableCell>}
-              {columns.includes('jornada') && <TableCell>{nino.jornada}</TableCell>}
-              {columns.includes('acciones') && (
-                <TableCell>
-                  {nino.tiene_juego ? (
-                    <ActionButton 
-                      continuar 
-                      onClick={() => onContinuarJuego(id)}
-                    >
-                      Continuar juego
-                    </ActionButton>
-                  ) : (
-                    <ActionButton 
-                      onClick={() => onIniciarJuego(id)}
-                    >
-                      Iniciar juego
-                    </ActionButton>
-                  )}
-                </TableCell>
-              )}
-            </TableRow>
-          );
-        })}
-      </tbody>
-    </Table>
+    <TableContainer>
+      <Table>
+        <thead>
+          <tr>
+            {columns.map(column => (
+              <TableHeader key={column}>{columnTitles[column]}</TableHeader>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {ninos.map((nino, index) => {
+            // Extraemos el nombre y el ID independientemente de la estructura de datos
+            const nombre = nino.nombre || nino.nino_nombre || "Nombre no disponible";
+            const id = nino.id || nino.nino_id || `nino-${index}`;
+            
+            return (
+              <TableRow key={id}>
+                {columns.includes('nombre') && <TableCell>{nombre}</TableCell>}
+                {columns.includes('edad') && <TableCell>{nino.edad} años</TableCell>}
+                {columns.includes('grado') && <TableCell>{determinarGrado(nino.grado)}</TableCell>}
+                {columns.includes('colegio') && <TableCell>{nino.colegio}</TableCell>}
+                {columns.includes('jornada') && <TableCell>{nino.jornada}</TableCell>}
+                {columns.includes('acciones') && (
+                  <TableCell>
+                    {nino.tiene_juego ? (
+                      <ActionButton 
+                        continuar 
+                        onClick={() => onContinuarJuego(id)}
+                      >
+                        Continuar juego
+                      </ActionButton>
+                    ) : (
+                      <ActionButton 
+                        onClick={() => onIniciarJuego(id)}
+                      >
+                        Iniciar juego
+                      </ActionButton>
+                    )}
+                  </TableCell>
+                )}
+              </TableRow>
+            );
+          })}
+        </tbody>
+      </Table>
+    </TableContainer>
   );
 };
 
