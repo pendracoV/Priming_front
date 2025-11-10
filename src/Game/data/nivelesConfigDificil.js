@@ -212,95 +212,95 @@ const createLevelConfigDificil = (config) => ({
 // CONFIGURACIONES DE LOS 5 NIVELES DIFÍCIL
 export const cognadosDificilNivel1 = createLevelConfigDificil({
   tiempoMaximo: 90,
-  instructionsAudio: '/sounds/cognados/facil/instrucciones/instrucciones1.mp3',
-  backgroundImage: '/images/cognados/nivel1/fondo_isla.png',
+  instructionsAudio: '/sounds/cognados/dificil/instrucciones/instrucciones1.mp3',
+  backgroundImage: '/images/cognados/dificil/nivel1/fondo_1.jpeg',
   
-  indicator1Image: '/images/cognados/dificil/nivel1/indicador1.png',
-  indicator1Audio: '/sounds/cognados/dificil/nivel1/audio1.mp3',
+  indicator1Image: '/images/cognados/dificil/nivel1/gancho1.png',
+  indicator1Audio: '/sounds/cognados/dificil/nivel1/bananaE.mp3',
   
-  indicator2Image: '/images/cognados/dificil/nivel1/indicador2.png',
-  indicator2Audio: '/sounds/cognados/dificil/nivel1/audio2.mp3',
+  indicator2Image: '/images/cognados/dificil/nivel1/gancho2.png',
+  indicator2Audio: '/sounds/cognados/dificil/nivel1/bananaS.mp3',
   
-  indicator3Image: '/images/cognados/dificil/nivel1/indicador3.png',
-  indicator3Audio: '/sounds/cognados/dificil/nivel1/audio3.mp3',
-  
-  selectableImage: '/images/cognados/dificil/nivel1/seleccionable.png',
-  
+  indicator3Image: '/images/cognados/dificil/nivel1/gancho3.png',
+  indicator3Audio: '/sounds/cognados/dificil/nivel1/lemon.mp3',
+
+  selectableImage: '/images/cognados/dificil/nivel1/camisa.gif',
+
   successAudio: '/sounds/cognados/dificil/succes/success1.mp3'
 });
 
 export const cognadosDificilNivel2 = createLevelConfigDificil({
   tiempoMaximo: 90,
-  instructionsAudio: '/sounds/cognados/facil/instrucciones/instrucciones2.mp3',
-  backgroundImage: '/images/cognados/dificil/nivel2/fondo2.jpg',
+  instructionsAudio: '/sounds/cognados/dificil/instrucciones/instrucciones2.mp3',
+  backgroundImage: '/images/cognados/dificil/nivel2/fondo_2.jpeg',
   
-  indicator1Image: '/images/cognados/dificil/nivel2/indicador1.png',
-  indicator1Audio: '/sounds/cognados/dificil/nivel2/audio1.mp3',
+  indicator1Image: '/images/cognados/dificil/nivel2/maleta1.png',
+  indicator1Audio: '/sounds/cognados/dificil/nivel2/gorilaS.mp3',
   
-  indicator2Image: '/images/cognados/dificil/nivel2/indicador2.png',
-  indicator2Audio: '/sounds/cognados/dificil/nivel2/audio2.mp3',
+  indicator2Image: '/images/cognados/dificil/nivel2/maleta2.png',
+  indicator2Audio: '/sounds/cognados/dificil/nivel2/gorilaE.mp3',
   
-  indicator3Image: '/images/cognados/dificil/nivel2/indicador3.png',
-  indicator3Audio: '/sounds/cognados/dificil/nivel2/audio3.mp3',
+  indicator3Image: '/images/cognados/dificil/nivel2/maleta3.png',
+  indicator3Audio: '/sounds/cognados/dificil/nivel2/jirafaE.mp3',
   
-  selectableImage: '/images/cognados/dificil/nivel2/seleccionable.png',
+  selectableImage: '/images/cognados/dificil/nivel2/sombrero.gif',
   
   successAudio: '/sounds/cognados/dificil/succes/success2.mp3'
 });
 
 export const cognadosDificilNivel3 = createLevelConfigDificil({
   tiempoMaximo: 90,
-  instructionsAudio: '/sounds/cognados/facil/instrucciones/instrucciones3.mp3',
-  backgroundImage: '/images/cognados/dificil/nivel3/fondo3.jpg',
+  instructionsAudio: '/sounds/cognados/dificil/instrucciones/instrucciones3.mp3',
+  backgroundImage: '/images/cognados/dificil/nivel3/fondo_3.jpeg',
   
-  indicator1Image: '/images/cognados/dificil/nivel3/indicador1.png',
-  indicator1Audio: '/sounds/cognados/dificil/nivel3/audio1.mp3',
+  indicator1Image: '/images/cognados/dificil/nivel3/brujula1.png',
+  indicator1Audio: '/sounds/cognados/dificil/nivel3/cocoE.mp3',
   
-  indicator2Image: '/images/cognados/dificil/nivel3/indicador2.png',
-  indicator2Audio: '/sounds/cognados/dificil/nivel3/audio2.mp3',
+  indicator2Image: '/images/cognados/dificil/nivel3/brujula2.png',
+  indicator2Audio: '/sounds/cognados/dificil/nivel3/delfinE.mp3',
   
-  indicator3Image: '/images/cognados/dificil/nivel3/indicador3.png',
-  indicator3Audio: '/sounds/cognados/dificil/nivel3/audio3.mp3',
+  indicator3Image: '/images/cognados/dificil/nivel3/brujula3.png',
+  indicator3Audio: '/sounds/cognados/dificil/nivel3/delfinS.mp3',
   
-  selectableImage: '/images/cognados/dificil/nivel3/seleccionable.png',
+  selectableImage: '/images/cognados/dificil/nivel3/estrella.gif',
   
   successAudio: '/sounds/cognados/dificil/succes/success3.mp3'
 });
 
 export const cognadosDificilNivel4 = createLevelConfigDificil({
   tiempoMaximo: 90,
-  instructionsAudio: '/sounds/cognados/facil/instrucciones/instrucciones4.mp3',
-  backgroundImage: '/images/cognados/dificil/nivel4/fondo4.jpg',
+  instructionsAudio: '/sounds/cognados/dificil/instrucciones/instrucciones4.mp3',
+  backgroundImage: '/images/cognados/dificil/nivel4/fondo_4.jpeg',
   
-  indicator1Image: '/images/cognados/dificil/nivel4/indicador1.png',
-  indicator1Audio: '/sounds/cognados/dificil/nivel4/audio1.mp3',
+  indicator1Image: '/images/cognados/dificil/nivel4/mapa1.png',
+  indicator1Audio: '/sounds/cognados/dificil/nivel4/hipopotamoS.mp3',
   
-  indicator2Image: '/images/cognados/dificil/nivel4/indicador2.png',
-  indicator2Audio: '/sounds/cognados/dificil/nivel4/audio2.mp3',
+  indicator2Image: '/images/cognados/dificil/nivel4/mapa2.png',
+  indicator2Audio: '/sounds/cognados/dificil/nivel4/hipopotamoE.mp3',
   
-  indicator3Image: '/images/cognados/dificil/nivel4/indicador3.png',
-  indicator3Audio: '/sounds/cognados/dificil/nivel4/audio3.mp3',
+  indicator3Image: '/images/cognados/dificil/nivel4/mapa3.png',
+  indicator3Audio: '/sounds/cognados/dificil/nivel4/cocodriloE.mp3',
   
-  selectableImage: '/images/cognados/dificil/nivel4/seleccionable.png',
+  selectableImage: '/images/cognados/dificil/nivel4/cinta.gif',
   
   successAudio: '/sounds/cognados/dificil/succes/success4.mp3'
 });
 
 export const cognadosDificilNivel5 = createLevelConfigDificil({
   tiempoMaximo: 90,
-  instructionsAudio: '/sounds/cognados/facil/instrucciones/instrucciones5.mp3',
-  backgroundImage: '/images/cognados/dificil/nivel5/fondo5.jpg',
+  instructionsAudio: '/sounds/cognados/dificil/instrucciones/instrucciones5.mp3',
+  backgroundImage: '/images/cognados/dificil/nivel5/fondo_5.jpeg',
   
-  indicator1Image: '/images/cognados/dificil/nivel5/indicador1.png',
-  indicator1Audio: '/sounds/cognados/dificil/nivel5/audio1.mp3',
+  indicator1Image: '/images/cognados/dificil/nivel5/barco1.png',
+  indicator1Audio: '/sounds/cognados/dificil/nivel5/mangoE.mp3',
   
-  indicator2Image: '/images/cognados/dificil/nivel5/indicador2.png',
-  indicator2Audio: '/sounds/cognados/dificil/nivel5/audio2.mp3',
+  indicator2Image: '/images/cognados/dificil/nivel5/barco2.png',
+  indicator2Audio: '/sounds/cognados/dificil/nivel5/mangoS.mp3',
   
-  indicator3Image: '/images/cognados/dificil/nivel5/indicador3.png',
-  indicator3Audio: '/sounds/cognados/dificil/nivel5/audio3.mp3',
+  indicator3Image: '/images/cognados/dificil/nivel5/barco3.png',
+  indicator3Audio: '/sounds/cognados/dificil/nivel5/mandarina.mp3',
   
-  selectableImage: '/images/cognados/dificil/nivel5/seleccionable.png',
+  selectableImage: '/images/cognados/dificil/nivel5/tornillo.gif',
   
   successAudio: '/sounds/cognados/dificil/succes/success5.mp3'
 });

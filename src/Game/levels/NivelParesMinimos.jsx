@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { AuthContext } from '../../context/AuthContext';
 import { getNivelConfigParesMinimos } from '../data/nivelesConfigParesMinimos';
@@ -36,13 +36,49 @@ const getAudioDuration = (audioPath) => {
 const NivelParesMinimos = () => {
   const { dificultad, nivel } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const previousLevelRef = useRef(nivel);
 
   const currentAudioRef = useRef(null);
   const audioTimeoutRef = useRef(null);
+  const instructionsTimeoutRef = useRef(null);
   const [levelConfig, setLevelConfig] = useState(null);
   
   // 🔑 Obtener información del niño actual desde localStorage (NO del AuthContext)
   const [user, setUser] = useState(null);
+
+  // 🔒 PROTECCIÓN DE NAVEGACIÓN DESHABILITADA TEMPORALMENTE
+  // useEffect(() => {
+  //   const navigationKey = `authorized_navigation_pares_${dificultad}_${nivel}`;
+  //   const isAuthorized = sessionStorage.getItem(navigationKey);
+  //   
+  //   if (previousLevelRef.current && previousLevelRef.current !== nivel) {
+  //     if (!isAuthorized) {
+  //       console.log('🚨 Navegación manual detectada - Bloqueando');
+  //       if (user) {
+  //         const userId = user.id;
+  //         localStorage.removeItem(`progress_pares-minimos_${dificultad}_${userId}`);
+  //         localStorage.removeItem(`completed_levels_pares-minimos_${dificultad}_${userId}`);
+  //       }
+  //       window.location.reload();
+  //       return;
+  //     } else {
+  //       sessionStorage.removeItem(navigationKey);
+  //       previousLevelRef.current = nivel;
+  //     }
+  //   }
+  //   
+  //   if (!previousLevelRef.current) {
+  //     if (!isAuthorized) {
+  //       console.log('🚨 Acceso directo sin autorización - Redirigiendo a selección de mundos');
+  //       navigate('/seleccion-mundo');
+  //       return;
+  //     } else {
+  //       sessionStorage.removeItem(navigationKey);
+  //       previousLevelRef.current = nivel;
+  //     }
+  //   }
+  // }, [nivel, dificultad, user, navigate]);
   
   useEffect(() => {
     const currentNinoStr = localStorage.getItem('currentNino');
@@ -246,20 +282,50 @@ const NivelParesMinimos = () => {
   const getSuccessAudio = () => levelConfig?.successAudio || '/sounds/feedback/success.mp3';
 
   const closeEndGameAlert = () => {
-    setShowEndGameAlert(false);
+    console.log('🔄 closeEndGameAlert llamado - NivelParesMinimos');
     
     if (endGameType === 'success') {
+      setShowEndGameAlert(false);
       const currentLevel = parseInt(nivel);
       const maxLevels = 10;
       
       if (currentLevel < maxLevels) {
-        navigate(`/nivel/pares-minimos/${dificultad}/${currentLevel + 1}`);
+        const nextLevel = currentLevel + 1;
+        navigate(`/nivel/pares-minimos/${dificultad}/${nextLevel}`);
       } else {
         navigate('/seleccion-mundo');
       }
     } else {
+      console.log('❌ Reinicio por falla');
+      
+      // 1️⃣ LIMPIAR PRIMERO - Detener cualquier audio y timeout activo
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+        currentAudioRef.current.currentTime = 0;
+        currentAudioRef.current = null;
+      }
+      
+      if (audioTimeoutRef.current) {
+        clearTimeout(audioTimeoutRef.current);
+        audioTimeoutRef.current = null;
+      }
+      
+      if (instructionsTimeoutRef.current) {
+        clearTimeout(instructionsTimeoutRef.current);
+        instructionsTimeoutRef.current = null;
+      }
+      
+      // 2️⃣ RESETEAR ESTADOS INMEDIATAMENTE (antes de cualquier timeout)
+      setInstructionsCompleted(false);
+      setIsPlayingInstructions(false);
+      setShowEndGameAlert(false);
+      
+      console.log('🔧 Estados reseteados');
+      
+      // 3️⃣ Resetear el juego
       resetAllStates();
       
+      // 4️⃣ Mezclar selectables si es necesario
       if (levelConfig) {
         const shuffledSelectables = levelConfig.gameSettings?.shuffleSelectables ? 
           shuffleArray(levelConfig.selectables) : levelConfig.selectables;
@@ -268,9 +334,13 @@ const NivelParesMinimos = () => {
           selectables: shuffledSelectables
         }));
         
-        setTimeout(() => {
+        console.log('🔀 Selectables mezclados');
+        
+        // 5️⃣ UN SOLO TIMEOUT de 500ms para reproducir instrucciones
+        instructionsTimeoutRef.current = setTimeout(() => {
+          console.log('⏰ Timeout ejecutado, llamando playInitialInstructions');
           playInitialInstructions();
-        }, 100);
+        }, 500);
       }
     }
   };
@@ -279,27 +349,63 @@ const NivelParesMinimos = () => {
     setShowSuccessAlert(false);
     saveCompletedLevelProgress(nivel, score);
     const currentLevel = parseInt(nivel);
-    const maxLevels = 10;
     
-    if (currentLevel < maxLevels) {
-      navigate(`/nivel/pares-minimos/${dificultad}/${currentLevel + 1}`);
+    // Determinar el máximo de niveles según la dificultad
+    let maxLevels;
+    if (dificultad === 'facil') {
+      maxLevels = 10;
+    } else if (dificultad === 'medio' || dificultad === 'dificil') {
+      maxLevels = 5;
+    }
+    
+    // Si es el último nivel, ir a la encuesta
+    if (currentLevel >= maxLevels) {
+      navigate('/encuesta', { 
+        state: { 
+          fromGame: true,
+          gameType: 'pares-minimos',
+          difficulty: dificultad,
+          finalScore: score,
+          completedLevel: nivel
+        }
+      });
     } else {
-      navigate('/seleccion-mundo');
+      // Si no es el último nivel, ir al siguiente
+      const nextLevel = currentLevel + 1;
+      navigate(`/nivel/pares-minimos/${dificultad}/${nextLevel}`);
     }
   };
 
   const restartLevel = () => {
-    resetAllStates();
+    console.log('🔄 restartLevel llamado - NivelParesMinimos');
     
+    // 1️⃣ LIMPIAR PRIMERO - Detener cualquier audio y timeout activo
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       currentAudioRef.current.currentTime = 0;
+      currentAudioRef.current = null;
     }
     
     if (audioTimeoutRef.current) {
       clearTimeout(audioTimeoutRef.current);
+      audioTimeoutRef.current = null;
     }
     
+    if (instructionsTimeoutRef.current) {
+      clearTimeout(instructionsTimeoutRef.current);
+      instructionsTimeoutRef.current = null;
+    }
+    
+    // 2️⃣ RESETEAR ESTADOS INMEDIATAMENTE (antes de cualquier timeout)
+    setInstructionsCompleted(false);
+    setIsPlayingInstructions(false);
+    
+    console.log('🔧 Estados reseteados en restartLevel');
+    
+    // 3️⃣ Resetear el juego
+    resetAllStates();
+    
+    // 4️⃣ Mezclar selectables si es necesario
     if (levelConfig) {
       const shuffledSelectables = levelConfig.gameSettings?.shuffleSelectables ? 
         shuffleArray(levelConfig.selectables) : levelConfig.selectables;
@@ -308,9 +414,13 @@ const NivelParesMinimos = () => {
         selectables: shuffledSelectables
       }));
       
-      setTimeout(() => {
+      console.log('🔀 Selectables mezclados en restartLevel');
+      
+      // 5️⃣ UN SOLO TIMEOUT de 500ms para reproducir instrucciones
+      instructionsTimeoutRef.current = setTimeout(() => {
+        console.log('⏰ Timeout ejecutado en restartLevel, llamando playInitialInstructions');
         playInitialInstructions();
-      }, 100);
+      }, 500);
     }
   };
 
@@ -386,13 +496,30 @@ const NivelParesMinimos = () => {
   };
 
   const playInitialInstructions = async () => {
+    console.log('🎵 playInitialInstructions llamado - NivelParesMinimos');
+    
+    // Solo prevenir si se está reproduciendo activamente
+    if (isPlayingInstructions) {
+      console.log('🚫 Ya reproduciendo instrucciones');
+      return;
+    }
+    
+    // ✅ Usar la ruta de instrucciones del levelConfig
+    if (!levelConfig || !levelConfig.instructionsAudio) {
+      console.error('❌ No hay configuración de instrucciones disponible');
+      setInstructionsCompleted(true);
+      return;
+    }
+    
+    console.log('▶️ Iniciando reproducción de instrucciones');
+    console.log('📁 Ruta de audio:', levelConfig.instructionsAudio);
     setIsPlayingInstructions(true);
-    const instructionsAudioPath = `/sounds/pares-minimos/facil/instrucciones/instrucciones${nivel}.mp3`;
     
     try {
-      await playAudioWithQueue(instructionsAudioPath, () => {
+      await playAudioWithQueue(levelConfig.instructionsAudio, () => {
         setIsPlayingInstructions(false);
         setInstructionsCompleted(true);
+        console.log('✅ Instrucciones completadas - Pares Mínimos');
       });
     } catch (error) {
       console.error('Error reproducing instructions:', error);
@@ -535,9 +662,13 @@ const NivelParesMinimos = () => {
       const winCondition = levelConfig?.winCondition || { requiredCorrect: 8, minimumScorePercentage: 0.8 };
       const scoringConfig = levelConfig?.baseScoringConfig || { pointsOnCorrect: 10 };
       
+      // Calcular el puntaje requerido: 80% de los puntos obtenidos (no del máximo posible)
+      const pointsGained = newScore - scoreAtStartOfLevel;
       const maxPossiblePoints = winCondition.requiredCorrect * scoringConfig.pointsOnCorrect;
       const requiredAdditionalPoints = maxPossiblePoints * winCondition.minimumScorePercentage;
       const requiredFinalScore = scoreAtStartOfLevel + requiredAdditionalPoints;
+      
+      console.log(`📊 Verificación 80%: Puntaje inicial: ${scoreAtStartOfLevel}, Puntos ganados: ${pointsGained}, Requeridos: ${requiredAdditionalPoints}, Puntaje actual: ${newScore}, Puntaje requerido: ${requiredFinalScore}`);
       
       if (newCorrectSelections === winCondition.requiredCorrect && newScore >= requiredFinalScore) {
         setShowSuccessAlert(true);
@@ -568,9 +699,12 @@ const NivelParesMinimos = () => {
     const winCondition = levelConfig?.winCondition || { requiredCorrect: 8, minimumScorePercentage: 0.8 };
     const scoringConfig = levelConfig?.baseScoringConfig || { pointsOnCorrect: 10 };
     
+    const pointsGained = currentScore - scoreAtStartOfLevel;
     const maxPossiblePoints = winCondition.requiredCorrect * scoringConfig.pointsOnCorrect;
     const requiredAdditionalPoints = maxPossiblePoints * winCondition.minimumScorePercentage;
     const requiredFinalScore = scoreAtStartOfLevel + requiredAdditionalPoints;
+    
+    console.log(`📊 evaluateLevel - Puntaje inicial: ${scoreAtStartOfLevel}, Puntos ganados: ${pointsGained}, Requeridos: ${requiredAdditionalPoints}, Puntaje actual: ${currentScore}, Puntaje requerido: ${requiredFinalScore}`);
     
     if (currentCorrectSelections === winCondition.requiredCorrect && currentScore >= requiredFinalScore) {
       saveCompletedLevelProgress(nivel, currentScore);
@@ -713,20 +847,20 @@ const NivelParesMinimos = () => {
     }
   };
 
-  // 📥 Cargar progreso desde base de datos al iniciar
-  useEffect(() => {
-    const cargarProgreso = async () => {
-      if (user && nivel) {
-        const progressFromDB = await loadProgressFromDatabase();
-        if (progressFromDB && progressFromDB.accumulated_score) {
-          console.log('🔄 Restaurando progreso (Pares Mínimos): Nivel', progressFromDB.current_level, 'Puntaje', progressFromDB.accumulated_score);
-          setScore(progressFromDB.accumulated_score);
-        }
-      }
-    };
-    
-    cargarProgreso();
-  }, []); // Solo ejecutar al montar el componente
+  // 📥 CARGA DE PROGRESO DESHABILITADA TEMPORALMENTE
+  // useEffect(() => {
+  //   const cargarProgreso = async () => {
+  //     if (user && nivel) {
+  //       const progressFromDB = await loadProgressFromDatabase();
+  //       if (progressFromDB && progressFromDB.accumulated_score) {
+  //         console.log('🔄 Restaurando progreso (Pares Mínimos): Nivel', progressFromDB.current_level, 'Puntaje', progressFromDB.accumulated_score);
+  //         setScore(progressFromDB.accumulated_score);
+  //       }
+  //     }
+  //   };
+  //   
+  //   cargarProgreso();
+  // }, []); // Solo ejecutar al montar el componente
 
   useEffect(() => {
     const injectAnimationCSS = () => {
@@ -772,12 +906,16 @@ const NivelParesMinimos = () => {
   }, []);
 
   useEffect(() => {
+    console.log('🔍 useEffect ejecutándose - nivel:', nivel, 'dificultad:', dificultad);
+    
     if (dificultad !== 'facil') {
       navigate('/seleccion-mundo');
       return;
     }
 
     const config = getNivelConfigParesMinimos(nivel);
+    console.log('📦 Config obtenida para nivel', nivel, ':', config ? 'EXISTE' : 'NO EXISTE');
+    
     if (config) {
       const selectables = config.gameSettings?.shuffleSelectables ? 
         shuffleArray(config.selectables) : config.selectables;
@@ -856,10 +994,6 @@ const NivelParesMinimos = () => {
       }
     }
     
-    setTimeout(() => {
-      playInitialInstructions();
-    }, 500);
-    
     return () => {
       setComparedSelectors([]);
       setDisabledSelectors([]);
@@ -879,10 +1013,31 @@ const NivelParesMinimos = () => {
         audioTimeoutRef.current = null;
       }
       
+      if (instructionsTimeoutRef.current) {
+        clearTimeout(instructionsTimeoutRef.current);
+        instructionsTimeoutRef.current = null;
+      }
+      
       setIsPlayingAudio(false);
       setIsPlayingInstructions(false);
     };
-  }, [dificultad, nivel, user, navigate]);
+  }, [dificultad, nivel]); // ✅ Solo depende de dificultad y nivel
+
+  // 🎵 useEffect separado para reproducir instrucciones cuando levelConfig esté listo
+  useEffect(() => {
+    if (levelConfig && !instructionsCompleted && !isPlayingInstructions) {
+      console.log('🎯 levelConfig cargado, preparando instrucciones...');
+      const instructionsTimer = setTimeout(() => {
+        playInitialInstructions();
+      }, 500);
+      
+      return () => {
+        if (instructionsTimer) {
+          clearTimeout(instructionsTimer);
+        }
+      };
+    }
+  }, [levelConfig]); // ✅ Se ejecuta cuando levelConfig cambia
 
   useEffect(() => {
     let timer;
@@ -1132,13 +1287,41 @@ const NivelParesMinimos = () => {
           <SuccessAlertOverlay>
             <SuccessAlertBox>
               <SuccessAlertText>
-                ¡EXCELENTE TRABAJO! Estás listo para el siguiente desafío.
+                {(() => {
+                  const currentLevel = parseInt(nivel);
+                  let maxLevels;
+                  if (dificultad === 'facil') {
+                    maxLevels = 10;
+                  } else if (dificultad === 'medio' || dificultad === 'dificil') {
+                    maxLevels = 5;
+                  }
+                  
+                  if (currentLevel >= maxLevels) {
+                    return '¡FELICIDADES! Has completado todos los niveles. ¡Es hora de responder la encuesta!';
+                  } else {
+                    return '¡EXCELENTE TRABAJO! Estás listo para el siguiente desafío.';
+                  }
+                })()}
               </SuccessAlertText>
               <SuccessAlertButton 
                 disabled={isPlayingSuccessAudio}
                 onClick={isPlayingSuccessAudio ? undefined : closeSuccessAlert}
               >
-                🚀 Siguiente Nivel
+                {(() => {
+                  const currentLevel = parseInt(nivel);
+                  let maxLevels;
+                  if (dificultad === 'facil') {
+                    maxLevels = 10;
+                  } else if (dificultad === 'medio' || dificultad === 'dificil') {
+                    maxLevels = 5;
+                  }
+                  
+                  if (currentLevel >= maxLevels) {
+                    return 'Ir a Encuesta';
+                  } else {
+                    return 'Siguiente Nivel';
+                  }
+                })()}
               </SuccessAlertButton>
             </SuccessAlertBox>
           </SuccessAlertOverlay>
@@ -1261,10 +1444,10 @@ const SelectablesContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   grid-template-rows: repeat(2, 1fr);
-  gap: 50px;
-  margin-top: 60px;
-  width: 90%;
-  max-width: 5000px;
+  gap: 25px;
+  margin-top: 150px;
+  width: 85%;
+  max-width: 1300px;
   min-height: 100px;
   padding: 20px;
   justify-items: center;
@@ -1304,7 +1487,7 @@ const Selectable = styled.div`
   }
   
   img {
-    width: 100px;
+    width: 95px;
     height: auto;
     transition: all 0.2s ease;
     filter: ${props => 

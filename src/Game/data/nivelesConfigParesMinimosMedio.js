@@ -70,12 +70,12 @@ const createLevelConfigParesMinimosMedio = (config) => ({
   backgroundImage: config.backgroundImage || '/images/pirate-island.png',
   successAudio: config.successAudio || '/sounds/feedback/success.mp3',
   
-  // 2 indicadores para nivel medio
   indicators: [
     {
       id: 1,
       image: config.indicator1Image,
       audio: config.indicator1Audio,
+      group: 'group1',
       animations: {
         hover: { scale: 1.1, duration: 0.2, ease: 'ease-out' },
         click: { scale: 0.95, duration: 0.1, ease: 'ease-in' },
@@ -95,6 +95,7 @@ const createLevelConfigParesMinimosMedio = (config) => ({
       id: 2,
       image: config.indicator2Image,
       audio: config.indicator2Audio,
+      group: 'group2',
       animations: {
         hover: { scale: 1.1, duration: 0.2, ease: 'ease-out' },
         click: { scale: 0.95, duration: 0.1, ease: 'ease-in' },
@@ -112,14 +113,16 @@ const createLevelConfigParesMinimosMedio = (config) => ({
     }
   ],
   
-  // 16 selectables: 8 para indicador 1 + 8 para indicador 2
+  // MEDIO: 9 selectables (4 del indicador 1 + 5 del indicador 2)
+  // Todos son CORRECTOS - solo necesitan coincidir con el indicador correcto
   selectables: [
-    // 4 correctos para indicador 1
+    // 4 elementos del indicador 1
     ...Array.from({ length: 4 }, (_, index) => ({
-      id: index + 1,
+      id: `group1_${index + 1}`,
       image: config.selectableImage,
       isCorrect: true,
       indicatorId: 1,
+      group: 'group1',
       audio: config.correct1Audio,
       scoring: baseScoringConfig,
       animations: correctElementAnimations,
@@ -131,29 +134,13 @@ const createLevelConfigParesMinimosMedio = (config) => ({
       }
     })),
     
-    // 4 incorrectos para indicador 1
-    ...Array.from({ length: 4 }, (_, index) => ({
-      id: index + 5,
-      image: config.selectableImage,
-      isCorrect: false,
-      indicatorId: 1,
-      audio: config.incorrect1Audio,
-      scoring: baseScoringConfig,
-      animations: incorrectElementAnimations,
-      feedback: {
-        ...baseFeedbackConfig,
-        correctSound: config.correct1Audio,
-        incorrectSound: config.incorrect1Audio,
-        textColor: '#ff6b6b'
-      }
-    })),
-    
-    // 4 correctos para indicador 2
-    ...Array.from({ length: 4 }, (_, index) => ({
-      id: index + 9,
+    // 5 elementos del indicador 2
+    ...Array.from({ length: 5 }, (_, index) => ({
+      id: `group2_${index + 1}`,
       image: config.selectableImage,
       isCorrect: true,
       indicatorId: 2,
+      group: 'group2',
       audio: config.correct2Audio,
       scoring: baseScoringConfig,
       animations: correctElementAnimations,
@@ -162,23 +149,6 @@ const createLevelConfigParesMinimosMedio = (config) => ({
         correctSound: config.correct2Audio,
         incorrectSound: config.incorrect2Audio,
         textColor: '#4CAF50'
-      }
-    })),
-    
-    // 4 incorrectos para indicador 2
-    ...Array.from({ length: 4 }, (_, index) => ({
-      id: index + 13,
-      image: config.selectableImage,
-      isCorrect: false,
-      indicatorId: 2,
-      audio: config.incorrect2Audio,
-      scoring: baseScoringConfig,
-      animations: incorrectElementAnimations,
-      feedback: {
-        ...baseFeedbackConfig,
-        correctSound: config.correct2Audio,
-        incorrectSound: config.incorrect2Audio,
-        textColor: '#ff6b6b'
       }
     }))
   ],
@@ -190,12 +160,12 @@ const createLevelConfigParesMinimosMedio = (config) => ({
     indicatorCount: 2
   },
   winCondition: {
-    requiredCorrect: 8, // 4 por cada indicador
+    requiredCorrect: 9, // Todos los selectables (4 + 5)
     minimumScorePercentage: 0.8
   },
-  totalCorrect: 8,
-  totalIncorrect: 8,
-  totalSelectables: 16,
+  totalCorrect: 9, // 4 del indicador 1 + 5 del indicador 2
+  totalIncorrect: 0, // No hay incorrectos en medio
+  totalSelectables: 9,
   
   gameSettings: baseGameSettings,
   audioSettings: baseAudioSettings,
@@ -211,78 +181,78 @@ export const getNivelConfigParesMinimosMedio = (nivel) => {
   const configs = {
     '1': createLevelConfigParesMinimosMedio({
       tiempoMaximo: 240,
-      indicator1Image: '/images/pares-minimos/medio/nivel1/indicador1.png',
-      indicator1Audio: '/sounds/pares-minimos/medio/nivel1/indicador1.mp3',
-      indicator2Image: '/images/pares-minimos/medio/nivel1/indicador2.png',
-      indicator2Audio: '/sounds/pares-minimos/medio/nivel1/indicador2.mp3',
-      selectableImage: '/images/pares-minimos/medio/nivel1/selector.png',
-      correct1Audio: '/sounds/pares-minimos/medio/nivel1/correcto1.mp3',
-      incorrect1Audio: '/sounds/pares-minimos/medio/nivel1/incorrecto1.mp3',
-      correct2Audio: '/sounds/pares-minimos/medio/nivel1/correcto2.mp3',
-      incorrect2Audio: '/sounds/pares-minimos/medio/nivel1/incorrecto2.mp3',
-      instructionsAudio: '/sounds/pares-minimos/medio/instrucciones/instrucciones1.mp3',
-      successAudio: '/sounds/feedback/success.mp3',
-      backgroundImage: '/images/pirate-island.png'
+      indicator1Image: '/images/paresminimos/medio/nivel1/pajaro1.png',
+      indicator1Audio: '/sounds/paresminimos/medio/nivel1/sun.mp3',
+      indicator2Image: '/images/paresminimos/medio/nivel1/pajaro2.png',
+      indicator2Audio: '/sounds/paresminimos/medio/nivel1/van.mp3',
+      selectableImage: '/images/paresminimos/medio/nivel1/rama.gif',
+      correct1Audio: '/sounds/paresminimos/medio/nivel1/sun.mp3',
+      incorrect1Audio: '/sounds/paresminimos/medio/nivel1/van.mp3',
+      correct2Audio: '/sounds/paresminimos/medio/nivel1/van.mp3',
+      incorrect2Audio: '/sounds/paresminimos/medio/nivel1/sun.mp3',
+      instructionsAudio: '/sounds/paresminimos/medio/instrucciones/instrucciones1.mp3',
+      successAudio: '/sounds/paresminimos/medio/success/success1.mp3',
+      backgroundImage: '/images/paresminimos/medio/nivel1/fondo_1.jpeg'
     }),
     '2': createLevelConfigParesMinimosMedio({
       tiempoMaximo: 240,
-      indicator1Image: '/images/pares-minimos/medio/nivel2/indicador1.png',
-      indicator1Audio: '/sounds/pares-minimos/medio/nivel2/indicador1.mp3',
-      indicator2Image: '/images/pares-minimos/medio/nivel2/indicador2.png',
-      indicator2Audio: '/sounds/pares-minimos/medio/nivel2/indicador2.mp3',
-      selectableImage: '/images/pares-minimos/medio/nivel2/selector.png',
-      correct1Audio: '/sounds/pares-minimos/medio/nivel2/correcto1.mp3',
-      incorrect1Audio: '/sounds/pares-minimos/medio/nivel2/incorrecto1.mp3',
-      correct2Audio: '/sounds/pares-minimos/medio/nivel2/correcto2.mp3',
-      incorrect2Audio: '/sounds/pares-minimos/medio/nivel2/incorrecto2.mp3',
-      instructionsAudio: '/sounds/pares-minimos/medio/instrucciones/instrucciones2.mp3',
-      successAudio: '/sounds/feedback/success.mp3',
-      backgroundImage: '/images/pirate-island.png'
+      indicator1Image: '/images/paresminimos/medio/nivel2/camino1.png',
+      indicator1Audio: '/sounds/paresminimos/medio/nivel2/back.mp3',
+      indicator2Image: '/images/paresminimos/medio/nivel2/camino2.png',
+      indicator2Audio: '/sounds/paresminimos/medio/nivel2/sack.mp3',
+      selectableImage: '/images/paresminimos/medio/nivel2/tortuga.gif',
+      correct1Audio: '/sounds/paresminimos/medio/nivel2/back.mp3',
+      incorrect1Audio: '/sounds/pares-minimos/medio/nivel2/sack.mp3',
+      correct2Audio: '/sounds/paresminimos/medio/nivel2/sack.mp3',
+      incorrect2Audio: '/sounds/paresminimos/medio/nivel2/back.mp3',
+      instructionsAudio: '/sounds/paresminimos/medio/instrucciones/instrucciones2.mp3',
+      successAudio: '/sounds/paresminimos/medio/success/success2.mp3',
+      backgroundImage: '/images/paresminimos/medio/nivel2/fondo_2.jpeg'
     }),
     '3': createLevelConfigParesMinimosMedio({
       tiempoMaximo: 240,
-      indicator1Image: '/images/pares-minimos/medio/nivel3/indicador1.png',
-      indicator1Audio: '/sounds/pares-minimos/medio/nivel3/indicador1.mp3',
-      indicator2Image: '/images/pares-minimos/medio/nivel3/indicador2.png',
-      indicator2Audio: '/sounds/pares-minimos/medio/nivel3/indicador2.mp3',
-      selectableImage: '/images/pares-minimos/medio/nivel3/selector.png',
-      correct1Audio: '/sounds/pares-minimos/medio/nivel3/correcto1.mp3',
-      incorrect1Audio: '/sounds/pares-minimos/medio/nivel3/incorrecto1.mp3',
-      correct2Audio: '/sounds/pares-minimos/medio/nivel3/correcto2.mp3',
-      incorrect2Audio: '/sounds/pares-minimos/medio/nivel3/incorrecto2.mp3',
-      instructionsAudio: '/sounds/pares-minimos/medio/instrucciones/instrucciones3.mp3',
-      successAudio: '/sounds/feedback/success.mp3',
-      backgroundImage: '/images/pirate-island.png'
+      indicator1Image: '/images/paresminimos/medio/nivel3/bote1.png',
+      indicator1Audio: '/sounds/paresminimos/medio/nivel3/tall.mp3',
+      indicator2Image: '/images/paresminimos/medio/nivel3/bote2.png',
+      indicator2Audio: '/sounds/paresminimos/medio/nivel3/ball.mp3',
+      selectableImage: '/images/paresminimos/medio/nivel3/remos.gif',
+      correct1Audio: '/sounds/paresminimos/medio/nivel3/tall.mp3',
+      incorrect1Audio: '/sounds/paresminimos/medio/nivel3/ball.mp3',
+      correct2Audio: '/sounds/paresminimos/medio/nivel3/ball.mp3',
+      incorrect2Audio: '/sounds/paresminimos/medio/nivel3/tall.mp3',
+      instructionsAudio: '/sounds/paresminimos/medio/instrucciones/instrucciones3.mp3',
+      successAudio: '/sounds/paresminimos/medio/success/success3.mp3',
+      backgroundImage: '/images/paresminimos/medio/nivel3/fondo_3.jpeg'
     }),
     '4': createLevelConfigParesMinimosMedio({
       tiempoMaximo: 240,
-      indicator1Image: '/images/pares-minimos/medio/nivel4/indicador1.png',
-      indicator1Audio: '/sounds/pares-minimos/medio/nivel4/indicador1.mp3',
-      indicator2Image: '/images/pares-minimos/medio/nivel4/indicador2.png',
-      indicator2Audio: '/sounds/pares-minimos/medio/nivel4/indicador2.mp3',
-      selectableImage: '/images/pares-minimos/medio/nivel4/selector.png',
-      correct1Audio: '/sounds/pares-minimos/medio/nivel4/correcto1.mp3',
-      incorrect1Audio: '/sounds/pares-minimos/medio/nivel4/incorrecto1.mp3',
-      correct2Audio: '/sounds/pares-minimos/medio/nivel4/correcto2.mp3',
-      incorrect2Audio: '/sounds/pares-minimos/medio/nivel4/incorrecto2.mp3',
-      instructionsAudio: '/sounds/pares-minimos/medio/instrucciones/instrucciones4.mp3',
-      successAudio: '/sounds/feedback/success.mp3',
-      backgroundImage: '/images/pirate-island.png'
+      indicator1Image: '/images/paresminimos/medio/nivel4/paisaje1.png',
+      indicator1Audio: '/sounds/paresminimos/medio/nivel4/dead.mp3',
+      indicator2Image: '/images/paresminimos/medio/nivel4/paisaje2.png',
+      indicator2Audio: '/sounds/paresminimos/medio/nivel4/red.mp3',
+      selectableImage: '/images/paresminimos/medio/nivel4/camara.gif',
+      correct1Audio: '/sounds/paresminimos/medio/nivel4/dead.mp3',
+      incorrect1Audio: '/sounds/paresminimos/medio/nivel4/red.mp3',
+      correct2Audio: '/sounds/paresminimos/medio/nivel4/red.mp3',
+      incorrect2Audio: '/sounds/paresminimos/medio/nivel4/dead.mp3',
+      instructionsAudio: '/sounds/paresminimos/medio/instrucciones/instrucciones4.mp3',
+      successAudio: '/sounds/paresminimos/medio/success/success4.mp3',
+      backgroundImage: '/images/paresminimos/medio/nivel4/fondo_4.jpeg'
     }),
     '5': createLevelConfigParesMinimosMedio({
       tiempoMaximo: 240,
-      indicator1Image: '/images/pares-minimos/medio/nivel5/indicador1.png',
-      indicator1Audio: '/sounds/pares-minimos/medio/nivel5/indicador1.mp3',
-      indicator2Image: '/images/pares-minimos/medio/nivel5/indicador2.png',
-      indicator2Audio: '/sounds/pares-minimos/medio/nivel5/indicador2.mp3',
-      selectableImage: '/images/pares-minimos/medio/nivel5/selector.png',
-      correct1Audio: '/sounds/pares-minimos/medio/nivel5/correcto1.mp3',
-      incorrect1Audio: '/sounds/pares-minimos/medio/nivel5/incorrecto1.mp3',
-      correct2Audio: '/sounds/pares-minimos/medio/nivel5/correcto2.mp3',
-      incorrect2Audio: '/sounds/pares-minimos/medio/nivel5/incorrecto2.mp3',
-      instructionsAudio: '/sounds/pares-minimos/medio/instrucciones/instrucciones5.mp3',
-      successAudio: '/sounds/feedback/success.mp3',
-      backgroundImage: '/images/pirate-island.png'
+      indicator1Image: '/images/paresminimos/medio/nivel5/colchon1.png',
+      indicator1Audio: '/sounds/paresminimos/medio/nivel5/beep.mp3',
+      indicator2Image: '/images/paresminimos/medio/nivel5/colchon2.png',
+      indicator2Audio: '/sounds/paresminimos/medio/nivel5/deep.mp3',
+      selectableImage: '/images/paresminimos/medio/nivel5/sabana.gif',
+      correct1Audio: '/sounds/paresminimos/medio/nivel5/beep.mp3',
+      incorrect1Audio: '/sounds/paresminimos/medio/nivel5/deep.mp3',
+      correct2Audio: '/sounds/paresminimos/medio/nivel5/deep.mp3',
+      incorrect2Audio: '/sounds/paresminimos/medio/nivel5/beep.mp3',
+      instructionsAudio: '/sounds/paresminimos/medio/instrucciones/instrucciones5.mp3',
+      successAudio: '/sounds/paresminimos/medio/success/success5.mp3',
+      backgroundImage: '/images/paresminimos/medio/nivel5/fondo_5.jpeg'
     })
   };
 
