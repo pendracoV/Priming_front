@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import NivelParesMinimos from '../Game/levels/NivelParesMinimos';
 import NivelParesMinimosMedio from '../Game/levels/NivelParesMinimosMedio';
-// import NivelParesMinimosDificil from '../Game/levels/NivelParesMinimosDificil';
+import NivelParesMinimosDificil from '../Game/levels/NivelParesMinimosDificil';
 
 const NivelParesMininimosWrapper = () => {
   const { dificultad } = useParams();
@@ -12,7 +12,7 @@ const NivelParesMininimosWrapper = () => {
     case 'medio':
       return <NivelParesMinimosMedio />;
     case 'dificil':
-      return <NivelParesMinimos />; // TODO: Cambiar a NivelParesMinimosDificil cuando esté listo
+      return <NivelParesMinimosDificil />;
     default:
       return <NivelParesMinimos />;
   }

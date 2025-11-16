@@ -46,7 +46,6 @@ const RoleRoute = ({ allowedRoles }) => {
   return <Outlet />;
 };
 
-// Solo rutas públicas (login/registro) cuando NO hay sesión
 const PublicRoute = ({ restricted = false }) => {
   const { user } = useContext(AuthContext);
   if (restricted && user) {
@@ -55,7 +54,6 @@ const PublicRoute = ({ restricted = false }) => {
   return <Outlet />;
 };
 
-// ✅ Middleware para proteger acceso a niveles
 const ProtectedLevelRoute = ({ children, gameType }) => {
   const { user } = useContext(AuthContext);
   const { dificultad, nivel } = useParams();
@@ -64,14 +62,12 @@ const ProtectedLevelRoute = ({ children, gameType }) => {
   const canAccess = validateLevelAccess(user, gameType, dificultad, nivel);
   
   if (!canAccess) {
-    console.log(`🚫 Acceso denegado al nivel ${gameType}/${dificultad}/${nivel}`);
     
     // Obtener el último nivel al que SÍ puede acceder
     const lastAccessibleLevel = getLastAccessibleLevel(user, gameType, dificultad);
     
     // Redirigir al último nivel válido
     const redirectPath = `/nivel/${gameType}/${dificultad}/${lastAccessibleLevel}`;
-    console.log(`↩️ Redirigiendo a: ${redirectPath}`);
     
     return <Navigate to={redirectPath} replace />;
   }
@@ -80,7 +76,6 @@ const ProtectedLevelRoute = ({ children, gameType }) => {
   return children;
 };
 
-// ✅ Middleware para validar parámetros de nivel
 const ValidateLevelParams = ({ children, gameType }) => {
   const { dificultad, nivel } = useParams();
 
@@ -90,13 +85,11 @@ const ValidateLevelParams = ({ children, gameType }) => {
 
   // Verificar dificultad válida
   if (!validDifficulties.includes(dificultad)) {
-    console.log(`🚫 Dificultad inválida: ${dificultad}`);
     return <Navigate to="/seleccion-mundo" replace />;
   }
 
   // Verificar nivel numérico válido
   if (isNaN(nivelNumerico) || nivelNumerico < 1) {
-    console.log(`🚫 Nivel inválido: ${nivel}`);
     return <Navigate to={`/nivel/${gameType}/facil/1`} replace />;
   }
 
@@ -110,14 +103,12 @@ const ValidateLevelParams = ({ children, gameType }) => {
   }
 
   if (nivelNumerico > maxLevel) {
-    console.log(`🚫 Nivel fuera de rango: ${nivel} (máximo: ${maxLevel})`);
     return <Navigate to={`/nivel/${gameType}/${dificultad}/${maxLevel}`} replace />;
   }
 
   return children;
 };
 
-// ✅ Middleware combinado (Validación + Protección)
 const SecureLevelRoute = ({ children, gameType }) => {
   return (
     <ValidateLevelParams gameType={gameType}>
@@ -128,7 +119,6 @@ const SecureLevelRoute = ({ children, gameType }) => {
   );
 };
 
-// ✅ Redireccionamiento inteligente del home según rol
 const HomeRedirect = () => {
   const { user } = useContext(AuthContext);
   
@@ -232,12 +222,10 @@ export default function AppRoutes() {
   );
 }
 
-// ✅ FUNCIONES DE UTILIDAD ADICIONALES
 
 // Función para logging de navegación (opcional, para debugging)
 export const logNavigation = (from, to, reason = '') => {
   if (process.env.NODE_ENV === 'development') {
-    console.log(`🧭 Navegación: ${from} → ${to} ${reason ? `(${reason})` : ''}`);
   }
 };
 
@@ -255,11 +243,9 @@ export const cleanInvalidLevelStates = (user) => {
       
       if (Date.now() - data.sessionTimestamp > maxAge) {
         localStorage.removeItem(key);
-        console.log(`🗑️ Estado de juego expirado eliminado: ${key}`);
       }
     } catch (error) {
       localStorage.removeItem(key);
-      console.log(`🗑️ Estado de juego corrupto eliminado: ${key}`);
     }
   });
 };

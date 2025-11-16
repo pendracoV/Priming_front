@@ -139,7 +139,6 @@ const Login = () => {
         throw new Error("Respuesta inválida del servidor");
       }
     } catch (err) {
-      console.error("Error en inicio de sesión:", err);
       setErrors({
         general: err.response?.data?.error || "Error al iniciar sesión. Intenta nuevamente."
       });

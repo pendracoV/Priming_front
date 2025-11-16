@@ -44,7 +44,6 @@ export const AuthProvider = ({ children }) => {
             logout();
           }
         } catch (error) {
-          console.error('Error verificando token:', error);
           logout();
         }
       }

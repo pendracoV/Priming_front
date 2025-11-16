@@ -261,7 +261,6 @@ const Register = () => {
                 "Ir a iniciar sesión"
             );
         } catch (error) {
-            console.error("Error en el registro:", error);
             
             // Cerrar modal de carga
             closeModal();

@@ -152,36 +152,36 @@ export const getNivelConfigParesMinimos = (nivel) => {
   const configs = {
     '1': createLevelConfigParesMinimos({
       tiempoMaximo: 180,
-      indicatorImage: '/images/paresminimos/medio/nivel1/pajaro1.png',
-      indicatorAudio: '/sounds/paresminimos/medio/nivel1/bee.mp3',
-      selectableImage: '/images/paresminimos/medio/nivel1/rama.gif',
-      correctAudio: '/sounds/paresminimos/medio/nivel1/bee.mp3',
-      incorrectAudio: '/sounds/paresminimos/medio/nivel1/pea.mp3',
-      instructionsAudio: '/sounds/paresminimos/medio/instrucciones/instrucciones1.mp3',
-      successAudio: '/sounds/paresminimos/medio/success/success1.mp3',
-      backgroundImage: '/images/paresminimos/medio/nivel1/fondo_1.jpeg'
+      indicatorImage: '/images/paresminimos/facil/nivel1/pirata.png',
+      indicatorAudio: '/sounds/paresminimos/facil/nivel1/bee.mp3',
+      selectableImage: '/images/paresminimos/facil/nivel1/bloqueador.gif',
+      correctAudio: '/sounds/paresminimos/facil/nivel1/bee.mp3',
+      incorrectAudio: '/sounds/paresminimos/facil/nivel1/pea.mp3',
+      instructionsAudio: '/sounds/paresminimos/facil/instrucciones/instrucciones1.mp3',
+      successAudio: '/sounds/paresminimos/facil/success/success1.mp3',
+      backgroundImage: '/images/paresminimos/facil/nivel1/fondo_1.jpeg'
     }),
     '2': createLevelConfigParesMinimos({
       tiempoMaximo: 180,
-      indicatorImage: '/images/paresminimos/medio/nivel2/calamar.png',
-      indicatorAudio: '/sounds/paresminimos/medio/nivel2/trash.mp3',
-      selectableImage: '/images/paresminimos/medio/nivel2/medusa.gif',
-      correctAudio: '/sounds/paresminimos/medio/nivel2/trash.mp3',
-      incorrectAudio: '/sounds/paresminimos/medio/nivel2/crash.mp3',
-      instructionsAudio: '/sounds/paresminimos/medio/instrucciones/instrucciones2.mp3',
-      successAudio: '/sounds/paresminimos/medio/success/success2.mp3',
-      backgroundImage: '/images/paresminimos/medio/nivel2/fondo_2.jpeg'
+      indicatorImage: '/images/paresminimos/facil/nivel2/calamar.png',
+      indicatorAudio: '/sounds/paresminimos/facil/nivel2/trash.mp3',
+      selectableImage: '/images/paresminimos/facil/nivel2/medusa.gif',
+      correctAudio: '/sounds/paresminimos/facil/nivel2/trash.mp3',
+      incorrectAudio: '/sounds/paresminimos/facil/nivel2/crash.mp3',
+      instructionsAudio: '/sounds/paresminimos/facil/instrucciones/instrucciones2.mp3',
+      successAudio: '/sounds/paresminimos/facil/success/success2.mp3',
+      backgroundImage: '/images/paresminimos/facil/nivel2/fondo_2.jpeg'
     }),
     '3': createLevelConfigParesMinimos({
       tiempoMaximo: 180,
-      indicatorImage: '/images/paresminimos/medio/nivel3/cañon.png',
-      indicatorAudio: '/sounds/paresminimos/medio/nivel3/bark.mp3',
-      selectableImage: '/images/paresminimos/medio/nivel3/bomba.gif',
-      correctAudio: '/sounds/paresminimos/medio/nivel3/bark.mp3',
-      incorrectAudio: '/sounds/paresminimos/medio/nivel3/park.mp3',
-      instructionsAudio: '/sounds/paresminimos/medio/instrucciones/instrucciones3.mp3',
-      successAudio: '/sounds/paresminimos/medio/success/success3.mp3',
-      backgroundImage: '/images/paresminimos/medio/nivel3/fondo_3.jpeg'
+      indicatorImage: '/images/paresminimos/facil/nivel3/cañon.png',
+      indicatorAudio: '/sounds/paresminimos/facil/nivel3/bark.mp3',
+      selectableImage: '/images/paresminimos/facil/nivel3/bomba.gif',
+      correctAudio: '/sounds/paresminimos/facil/nivel3/bark.mp3',
+      incorrectAudio: '/sounds/paresminimos/facil/nivel3/park.mp3',
+      instructionsAudio: '/sounds/paresminimos/facil/instrucciones/instrucciones3.mp3',
+      successAudio: '/sounds/paresminimos/facil/success/success3.mp3',
+      backgroundImage: '/images/paresminimos/facil/nivel3/fondo_3.jpeg'
     }),
     '4': createLevelConfigParesMinimos({
       tiempoMaximo: 180,

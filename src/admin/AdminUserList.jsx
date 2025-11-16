@@ -134,7 +134,6 @@ function AdminUserList() {
 
       setUsuarios(res.data);
     } catch (err) {
-      console.error('Error al obtener usuarios:', err);
       setError('Error al obtener la lista de usuarios');
     }
   };
@@ -175,7 +174,6 @@ function AdminUserList() {
       setModalOpen(true);
 
     } catch (err) {
-      console.error('Error al eliminar usuario:', err);
 
       setModalConfig({
         title: "Error",
@@ -222,7 +220,6 @@ function AdminUserList() {
       setModalOpen(true);
 
     } catch (err) {
-      console.error('Error al actualizar usuario:', err);
 
       setModalConfig({
         title: "Error",

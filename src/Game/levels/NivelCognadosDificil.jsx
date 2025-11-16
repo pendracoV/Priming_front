@@ -42,7 +42,6 @@ const NivelCognadoDificil = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // 🔑 Obtener información del niño actual desde localStorage (NO del AuthContext)
   const [user, setUser] = useState(null);
   
   useEffect(() => {
@@ -51,13 +50,10 @@ const NivelCognadoDificil = () => {
       try {
         const ninoData = JSON.parse(currentNinoStr);
         setUser(ninoData);
-        console.log(`👦 Niño actual cargado: ${ninoData.nombre} (ID: ${ninoData.id})`);
       } catch (error) {
-        console.error('Error parseando currentNino:', error);
         navigate('/ninos-list');
       }
     } else {
-      console.error('❌ No hay niño en sesión');
       navigate('/ninos-list');
     }
   }, [navigate]);
@@ -69,7 +65,6 @@ const NivelCognadoDificil = () => {
   const [levelConfig, setLevelConfig] = useState(null);
   const previousLevelRef = useRef(nivel);
 
-  // 🛡️ PROTECCIÓN CONTRA NAVEGACIÓN MANUAL ENTRE NIVELES
   useEffect(() => {
     const navigationKey = `authorized_navigation_cognados_dificil_${nivel}`;
     const isAuthorized = sessionStorage.getItem(navigationKey);
@@ -77,7 +72,6 @@ const NivelCognadoDificil = () => {
     // Si el nivel cambió desde el anterior render
     if (previousLevelRef.current && previousLevelRef.current !== nivel) {
       if (!isAuthorized) {
-        console.log('🚨 Navegación manual detectada - Bloqueando');
         // Limpiar progreso del nivel actual
         if (user) {
           const userId = user.id;
@@ -95,7 +89,6 @@ const NivelCognadoDificil = () => {
     // PRIMERA CARGA: Verificar autorización SIEMPRE
     if (!previousLevelRef.current) {
       if (!isAuthorized) {
-        console.log('🚨 Acceso directo sin autorización - Redirigiendo a selección de mundos');
         navigate('/seleccion-mundo');
         return;
       } else {
@@ -127,7 +120,6 @@ const NivelCognadoDificil = () => {
           }
         }
       } catch (error) {
-        console.error('Error reading completed levels:', error);
       }
       
       const savedProgress = localStorage.getItem(`progress_cognados_dificil_${userId}`);
@@ -169,7 +161,6 @@ const NivelCognadoDificil = () => {
     }
   };
 
-  // 📥 Función para cargar progreso desde base de datos
   const loadProgressFromDatabase = async () => {
     if (!user) return null;
     
@@ -178,7 +169,6 @@ const NivelCognadoDificil = () => {
       const response = await ninoService.getProgresoEspecifico(user.id, 'cognados', 'dificil');
       
       if (response.tiene_progreso && response.data) {
-        console.log('📥 Progreso cargado desde base de datos (difícil):', response.data);
         
         const userId = user.id;
         localStorage.setItem(`lastGameType_${userId}`, 'cognados');
@@ -189,7 +179,6 @@ const NivelCognadoDificil = () => {
         return response.data;
       }
     } catch (error) {
-      console.error('❌ Error cargando progreso desde base de datos:', error);
     }
     
     return null;
@@ -211,15 +200,12 @@ const NivelCognadoDificil = () => {
       localStorage.setItem(`progress_cognados_dificil_${userId}`, JSON.stringify(generalProgress));
       
       // TAMBIÉN GUARDAR EN CLAVES GENÉRICAS PARA SaveProgressButton y validación
-      // 🔑 IMPORTANTE: Incluir userId para que cada niño tenga su propio progreso
       localStorage.setItem(`lastGameType_${userId}`, 'cognados');
       localStorage.setItem(`lastDifficulty_${userId}`, 'dificil');
       localStorage.setItem(`lastLevel_${userId}`, String(completedLevel));
       localStorage.setItem(`accumulatedScore_${userId}`, String(finalScore));
       
-      console.log('✅ Progreso guardado en localStorage (difícil) - Nivel:', completedLevel, 'Puntaje:', finalScore, 'UserId:', userId);
       
-      // 💾 GUARDAR EN BASE DE DATOS
       try {
         const ninoService = (await import('../../api/ninoService')).default;
         await ninoService.saveProgresoEspecifico(userId, {
@@ -228,9 +214,7 @@ const NivelCognadoDificil = () => {
           current_level: completedLevel,
           accumulated_score: finalScore
         });
-        console.log('✅ Progreso guardado en base de datos (difícil)');
       } catch (error) {
-        console.error('❌ Error guardando progreso en base de datos:', error);
       }
       
       const completedLevelsKey = `completed_levels_cognados_dificil_${userId}`;
@@ -293,7 +277,6 @@ const NivelCognadoDificil = () => {
 
   // Navigation Functions
   const closeEndGameAlert = () => {
-    console.log('🔄 closeEndGameAlert - endGameType:', endGameType);
     
     if (endGameType === 'success') {
       setShowEndGameAlert(false);
@@ -301,7 +284,6 @@ const NivelCognadoDificil = () => {
       const maxLevels = 5; // Modo difícil tiene 5 niveles
       
       if (currentLevel < maxLevels) {
-        // 🔑 Autorizar navegación al siguiente nivel
         const nextLevel = currentLevel + 1;
         sessionStorage.setItem(`authorized_navigation_cognados_dificil_${nextLevel}`, 'true');
         navigate(`/nivel/cognados/dificil/${nextLevel}`);
@@ -309,7 +291,6 @@ const NivelCognadoDificil = () => {
         navigate('/seleccion-mundo');
       }
     } else {
-      console.log('🔄 Reiniciando nivel...');
       
       // Limpiar audios y timeouts PRIMERO
       if (currentAudioRef.current) {
@@ -345,7 +326,6 @@ const NivelCognadoDificil = () => {
         
         // Dar tiempo para que los estados se actualicen
         instructionsTimeoutRef.current = setTimeout(() => {
-          console.log('⏰ Timeout ejecutado - llamando playInitialInstructions');
           playInitialInstructions();
         }, 500);
       }
@@ -359,7 +339,6 @@ const NivelCognadoDificil = () => {
     const maxLevels = 5;
     
     if (currentLevel < maxLevels) {
-      // 🔑 Autorizar navegación al siguiente nivel
       const nextLevel = currentLevel + 1;
       sessionStorage.setItem(`authorized_navigation_cognados_dificil_${nextLevel}`, 'true');
       navigate(`/nivel/cognados/dificil/${nextLevel}`);
@@ -377,7 +356,6 @@ const NivelCognadoDificil = () => {
   };
 
   const restartLevel = () => {
-    console.log('🔄 restartLevel llamado');
     
     // Limpiar audios y timeouts PRIMERO
     if (currentAudioRef.current) {
@@ -412,7 +390,6 @@ const NivelCognadoDificil = () => {
       
       // Dar tiempo para que los estados se actualicen
       instructionsTimeoutRef.current = setTimeout(() => {
-        console.log('⏰ restartLevel timeout - llamando playInitialInstructions');
         playInitialInstructions();
       }, 500);
     }
@@ -464,7 +441,6 @@ const NivelCognadoDificil = () => {
       }, duration + 100);
       
     } catch (error) {
-      console.error('Error reproducing audio:', error);
       setIsPlayingAudio(false);
 
       if (isSuccessAudio) {
@@ -478,26 +454,21 @@ const NivelCognadoDificil = () => {
   };
 
   const playInitialInstructions = async () => {
-    console.log('🎵 playInitialInstructions llamado - isPlayingInstructions:', isPlayingInstructions, 'instructionsCompleted:', instructionsCompleted);
     
     // NO prevenir si estamos en un reinicio - permitir que se reproduzcan las instrucciones
     if (isPlayingInstructions && !instructionsCompleted) {
-      console.log('⏸️ Instrucciones ya reproduciéndose, evitando duplicado');
       return;
     }
     
-    console.log('▶️ Iniciando reproducción de instrucciones');
     setIsPlayingInstructions(true);
     const instructionsAudioPath = `/sounds/cognados/dificil/instrucciones/instrucciones${nivel}.mp3`;
     
     try {
       await playAudioWithQueue(instructionsAudioPath, () => {
-        console.log('✅ Instrucciones completadas');
         setIsPlayingInstructions(false);
         setInstructionsCompleted(true);
       });
     } catch (error) {
-      console.error('Error reproducing instructions:', error);
       setIsPlayingInstructions(false);
       setInstructionsCompleted(true);
     }
@@ -740,7 +711,6 @@ const NivelCognadoDificil = () => {
       // Guardar en localStorage
       localStorage.setItem(`progress_cognados_dificil_${userId}`, JSON.stringify(generalProgress));
       
-      // 💾 GUARDAR EN BASE DE DATOS antes de ir a encuesta
       try {
         const ninoService = (await import('../../api/ninoService')).default;
         await ninoService.saveProgresoEspecifico(userId, {
@@ -749,9 +719,7 @@ const NivelCognadoDificil = () => {
           current_level: nivel,
           accumulated_score: score
         });
-        console.log('✅ Progreso guardado en BD antes de ir a encuesta (Cognados Difícil)');
       } catch (error) {
-        console.error('❌ Error guardando progreso en BD antes de encuesta:', error);
       }
     }
     
@@ -823,13 +791,11 @@ const NivelCognadoDificil = () => {
     }
   };
 
-  // 📥 Cargar progreso desde base de datos al iniciar
   useEffect(() => {
     const cargarProgreso = async () => {
       if (user && nivel) {
         const progressFromDB = await loadProgressFromDatabase();
         if (progressFromDB && progressFromDB.accumulated_score) {
-          console.log('🔄 Restaurando progreso (difícil): Nivel', progressFromDB.current_level, 'Puntaje', progressFromDB.accumulated_score);
           setScore(progressFromDB.accumulated_score);
         }
       }
@@ -977,7 +943,6 @@ const NivelCognadoDificil = () => {
       setCurrentActiveIndicator(null);
       setSelectedSelectorForComparison(null);
       
-      // 🔴 IMPORTANTE: Detener todos los audios cuando sales de la pantalla
       if (currentAudioRef.current) {
         currentAudioRef.current.pause();
         currentAudioRef.current.currentTime = 0;
@@ -1172,11 +1137,11 @@ const NivelCognadoDificil = () => {
             ))}
           </IndicatorsContainer>
 
-          {/* SELECTABLES CONTAINER - 9 elementos en modo difícil (4 arriba, 5 abajo) */}
+          {/* SELECTABLES CONTAINER - Pirámide invertida: 5 + 4 */}
           <SelectablesContainer gameMode="dificil">
-            {/* Primera fila: 4 elementos (arriba) */}
+            {/* Primera fila: 5 elementos (arriba) */}
             <div>
-              {levelConfig.selectables.slice(0, 4).map((selector, index) => (
+              {levelConfig.selectables.slice(0, 5).map((selector, index) => (
                 <Selectable 
                   key={`${selector.id}-${nivel}-${index}`}
                   index={index}
@@ -1202,12 +1167,12 @@ const NivelCognadoDificil = () => {
               ))}
             </div>
             
-            {/* Segunda fila: 5 elementos (abajo) */}
+            {/* Segunda fila: 4 elementos (abajo) */}
             <div>
-              {levelConfig.selectables.slice(4, 9).map((selector, index) => (
+              {levelConfig.selectables.slice(5, 9).map((selector, index) => (
                 <Selectable 
-                  key={`${selector.id}-${nivel}-${index + 4}`}
-                  index={index + 4}
+                  key={`${selector.id}-${nivel}-${index + 5}`}
+                  index={index + 5}
                   selected={comparedSelectors.includes(selector.id)}
                   highlighted={highlightedSelector === selector.id}
                   lastSelected={lastSelectedSelector?.id === selector.id && !disabledSelectors.includes(selector.id)}
@@ -1370,15 +1335,16 @@ const TimeText = styled.span`
 // NUEVO: Container para los tres indicadores (modo difícil)
 const IndicatorsContainer = styled.div`
   width: 100%;
-  height: 200px;
-  margin-top: ${props => props.gameMode === 'dificil' ? '180px' : '200px'};
+  height: 150px;
+  margin-top: 200px;
   margin-bottom: 5px; 
   position: relative;
   display: flex;
-  justify-content: ${props => props.gameMode === 'dificil' ? 'space-around' : 'space-around'};
+  justify-content: center;
   align-items: center;
+  gap: 15px;
   z-index: 1;
-  padding: 0 8%;
+  padding: 0 10%;
 `;
 
 const Indicator = styled.div`
@@ -1387,12 +1353,14 @@ const Indicator = styled.div`
     props.clickable ? 'pointer' : 'not-allowed'
   };
   transition: all 0.3s ease;
-  z-index: 200;
+  z-index: 1000;
   position: relative;
   opacity: ${props => 
     !props.clickable ? 0.5 :
     props.disabled ? 0.7 : 1
   };
+  padding: 0px;
+  margin: 0px;
   
   ${props => props.active && `
     filter: drop-shadow(0 0 25px rgba(252, 117, 0, 0.8));
@@ -1414,6 +1382,9 @@ const Indicator = styled.div`
     width: 280px;
     height: auto;
     filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.4));
+    display: block;
+    margin: 0;
+    padding: 0;
   }
 `;
 
@@ -1432,37 +1403,32 @@ const TrainingClicksIndicator = styled.div`
 `;
 
 const SelectablesContainer = styled.div`
-  display: ${props => props.gameMode === 'dificil' ? 'flex' : 'grid'};
-  flex-direction: ${props => props.gameMode === 'dificil' ? 'column' : 'row'};
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  grid-template-columns: ${props => props.gameMode === 'dificil' ? 'none' : 'repeat(8, 1fr)'};
-  grid-template-rows: ${props => props.gameMode === 'dificil' ? 'none' : 'repeat(2, 1fr)'};
-  gap: ${props => props.gameMode === 'dificil' ? '60px' : '50px'};
-  margin-top: ${props => props.gameMode === 'dificil' ? '60px' : '30px'};
-  margin-bottom: ${props => props.gameMode === 'dificil' ? '40px' : '20px'};
+  gap: 30px;
+  margin-top: 280px;
+  margin-bottom: 40px;
   width: 90%;
-  max-width: ${props => props.gameMode === 'dificil' ? '1000px' : '5000px'};
-  padding: ${props => props.gameMode === 'dificil' ? '20px' : '20px'};
+  max-width: 1000px;
+  padding: 20px;
   
-  ${props => props.gameMode === 'dificil' && `
-    > div:first-child {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 50px;
-      width: 100%;
-      padding-left: 60px;
-    }
-    
-    > div:last-child {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 50px;
-      width: 100%;
-    }
-  `}
+  > div:first-child {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 25px;
+    width: 100%;
+  }
+  
+  > div:last-child {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 25px;
+    width: 100%;
+  }
 `;
 
 const Selectable = styled.div`
@@ -1498,9 +1464,9 @@ const Selectable = styled.div`
   }
   
   img {
-    width: ${props => props.gameMode === 'dificil' ? '120px' : '100px'};
+    width: ${props => props.gameMode === 'dificil' ? '100px' : '100px'};
     height: auto;
-    max-height: ${props => props.gameMode === 'dificil' ? '120px' : 'auto'};
+    max-height: ${props => props.gameMode === 'dificil' ? '100px' : 'auto'};
     object-fit: contain;
     transition: all 0.2s ease;
     filter: ${props => 
@@ -1604,7 +1570,7 @@ const TrainingOverlay = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 100;
+  z-index: 50;
   pointer-events: none;
 `;
 

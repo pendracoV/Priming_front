@@ -93,11 +93,6 @@ const SaveProgressButton = ({
 
     const nino = JSON.parse(ninoStr);
     
-    console.log('🔍 Guardando progreso con valores:');
-    console.log('  - currentLevel:', currentLevel, typeof currentLevel);
-    console.log('  - accumulatedScore:', accumulatedScore, typeof accumulatedScore);
-    console.log('  - gameType:', gameType);
-    console.log('  - difficulty:', difficulty);
     
     // Crear objeto de progreso completo
     const progressData = {
@@ -112,7 +107,6 @@ const SaveProgressButton = ({
     // Guardar en localStorage con estructura especial para recuperación
     localStorage.setItem('lastSavedProgress', JSON.stringify(progressData));
     
-    // 🔑 IMPORTANTE: Actualizar localStorage con valores individuales POR NIÑO
     localStorage.setItem(`lastLevel_${nino.id}`, String(currentLevel));
     localStorage.setItem(`accumulatedScore_${nino.id}`, String(accumulatedScore));
     localStorage.setItem(`lastGameType_${nino.id}`, gameType);
@@ -129,9 +123,7 @@ const SaveProgressButton = ({
           accumulated_score: accumulatedScore
         });
 
-        console.log('✅ Progreso guardado exitosamente:', progressData);
       } catch (error) {
-        console.error('❌ Error guardando progreso en backend:', error);
         // Continuar navegando aunque falle el guardado en backend
         // El progreso en localStorage servirá como respaldo
       } finally {
