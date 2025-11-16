@@ -66,10 +66,10 @@ const baseFeedbackConfig = {
  */
 const createLevelConfigParesMinimos = (config) => ({
   tiempoMaximo: config.tiempoMaximo || 180,
-  instructionsAudio: config.instructionsAudio || '/sounds/pares-minimos/facil/instrucciones/instrucciones.mp3',
+  instructionsAudio: config.instructionsAudio || '/sounds/paresminimos/facil/instrucciones/instrucciones1.mp3',
   backgroundImage: config.backgroundImage || '/images/fondo_isla.png',
-  successAudio: config.successAudio || '/sounds/pares-minimos/facil/succes/success.mp3',
-  
+  successAudio: config.successAudio || '/sounds/paresminimos/facil/success/success.mp3',
+
   indicators: [{
     id: 1,
     image: config.indicatorImage,
@@ -152,113 +152,113 @@ export const getNivelConfigParesMinimos = (nivel) => {
   const configs = {
     '1': createLevelConfigParesMinimos({
       tiempoMaximo: 180,
-      indicatorImage: '/images/pares-minimos/nivel1/indicador.png',
-      indicatorAudio: '/sounds/pares-minimos/facil/nivel1/indicador.mp3',
-      selectableImage: '/images/pares-minimos/nivel1/selector.png',
-      correctAudio: '/sounds/pares-minimos/facil/nivel1/correcto.mp3',
-      incorrectAudio: '/sounds/pares-minimos/facil/nivel1/incorrecto.mp3',
-      instructionsAudio: '/sounds/pares-minimos/facil/instrucciones/instrucciones1.mp3',
-      successAudio: '/sounds/feedback/success.mp3',
-      backgroundImage: '/images/pirate-island.png'
+      indicatorImage: '/images/paresminimos/medio/nivel1/pajaro1.png',
+      indicatorAudio: '/sounds/paresminimos/medio/nivel1/bee.mp3',
+      selectableImage: '/images/paresminimos/medio/nivel1/rama.gif',
+      correctAudio: '/sounds/paresminimos/medio/nivel1/bee.mp3',
+      incorrectAudio: '/sounds/paresminimos/medio/nivel1/pea.mp3',
+      instructionsAudio: '/sounds/paresminimos/medio/instrucciones/instrucciones1.mp3',
+      successAudio: '/sounds/paresminimos/medio/success/success1.mp3',
+      backgroundImage: '/images/paresminimos/medio/nivel1/fondo_1.jpeg'
     }),
     '2': createLevelConfigParesMinimos({
       tiempoMaximo: 180,
-      indicatorImage: '/images/pares-minimos/nivel2/indicador.png',
-      indicatorAudio: '/sounds/pares-minimos/facil/nivel2/indicador.mp3',
-      selectableImage: '/images/pares-minimos/nivel2/selector.png',
-      correctAudio: '/sounds/pares-minimos/facil/nivel2/correcto.mp3',
-      incorrectAudio: '/sounds/pares-minimos/facil/nivel2/incorrecto.mp3',
-      instructionsAudio: '/sounds/pares-minimos/facil/instrucciones/instrucciones2.mp3',
-      successAudio: '/sounds/feedback/success.mp3',
-      backgroundImage: '/images/pirate-island.png'
+      indicatorImage: '/images/paresminimos/medio/nivel2/calamar.png',
+      indicatorAudio: '/sounds/paresminimos/medio/nivel2/trash.mp3',
+      selectableImage: '/images/paresminimos/medio/nivel2/medusa.gif',
+      correctAudio: '/sounds/paresminimos/medio/nivel2/trash.mp3',
+      incorrectAudio: '/sounds/paresminimos/medio/nivel2/crash.mp3',
+      instructionsAudio: '/sounds/paresminimos/medio/instrucciones/instrucciones2.mp3',
+      successAudio: '/sounds/paresminimos/medio/success/success2.mp3',
+      backgroundImage: '/images/paresminimos/medio/nivel2/fondo_2.jpeg'
     }),
     '3': createLevelConfigParesMinimos({
       tiempoMaximo: 180,
-      indicatorImage: '/images/pares-minimos/nivel3/indicador.png',
-      indicatorAudio: '/sounds/pares-minimos/facil/nivel3/indicador.mp3',
-      selectableImage: '/images/pares-minimos/nivel3/selector.png',
-      correctAudio: '/sounds/pares-minimos/facil/nivel3/correcto.mp3',
-      incorrectAudio: '/sounds/pares-minimos/facil/nivel3/incorrecto.mp3',
-      instructionsAudio: '/sounds/pares-minimos/facil/instrucciones/instrucciones3.mp3',
-      successAudio: '/sounds/feedback/success.mp3',
-      backgroundImage: '/images/pirate-island.png'
+      indicatorImage: '/images/paresminimos/medio/nivel3/cañon.png',
+      indicatorAudio: '/sounds/paresminimos/medio/nivel3/bark.mp3',
+      selectableImage: '/images/paresminimos/medio/nivel3/bomba.gif',
+      correctAudio: '/sounds/paresminimos/medio/nivel3/bark.mp3',
+      incorrectAudio: '/sounds/paresminimos/medio/nivel3/park.mp3',
+      instructionsAudio: '/sounds/paresminimos/medio/instrucciones/instrucciones3.mp3',
+      successAudio: '/sounds/paresminimos/medio/success/success3.mp3',
+      backgroundImage: '/images/paresminimos/medio/nivel3/fondo_3.jpeg'
     }),
     '4': createLevelConfigParesMinimos({
       tiempoMaximo: 180,
-      indicatorImage: '/images/pares-minimos/nivel4/indicador.png',
-      indicatorAudio: '/sounds/pares-minimos/facil/nivel4/indicador.mp3',
-      selectableImage: '/images/pares-minimos/nivel4/selector.png',
-      correctAudio: '/sounds/pares-minimos/facil/nivel4/correcto.mp3',
-      incorrectAudio: '/sounds/pares-minimos/facil/nivel4/incorrecto.mp3',
-      instructionsAudio: '/sounds/pares-minimos/facil/instrucciones/instrucciones4.mp3',
-      successAudio: '/sounds/feedback/success.mp3',
-      backgroundImage: '/images/pirate-island.png'
+      indicatorImage: '/images/paresminimos/facil/nivel4/chaleco1.png',
+      indicatorAudio: '/sounds/paresminimos/facil/nivel4/pen.mp3',
+      selectableImage: '/images/paresminimos/facil/nivel4/chaleco.gif',
+      correctAudio: '/sounds/paresminimos/facil/nivel4/pen.mp3',
+      incorrectAudio: '/sounds/paresminimos/facil/nivel4/ten.mp3',
+      instructionsAudio: '/sounds/paresminimos/facil/instrucciones/instrucciones4.mp3',
+      successAudio: '/sounds/paresminimos/facil/success/success4.mp3',
+      backgroundImage: '/images/paresminimos/facil/nivel4/fondo_4.jpeg'
     }),
     '5': createLevelConfigParesMinimos({
       tiempoMaximo: 180,
-      indicatorImage: '/images/pares-minimos/nivel5/indicador.png',
-      indicatorAudio: '/sounds/pares-minimos/facil/nivel5/indicador.mp3',
-      selectableImage: '/images/pares-minimos/nivel5/selector.png',
-      correctAudio: '/sounds/pares-minimos/facil/nivel5/correcto.mp3',
-      incorrectAudio: '/sounds/pares-minimos/facil/nivel5/incorrecto.mp3',
-      instructionsAudio: '/sounds/pares-minimos/facil/instrucciones/instrucciones5.mp3',
-      successAudio: '/sounds/feedback/success.mp3',
-      backgroundImage: '/images/pirate-island.png'
+      indicatorImage: '/images/paresminimos/facil/nivel5/iceberg.png',
+      indicatorAudio: '/sounds/paresminimos/facil/nivel5/big.mp3',
+      selectableImage: '/images/paresminimos/facil/nivel5/hielo.gif',
+      correctAudio: '/sounds/paresminimos/facil/nivel5/big.mp3',
+      incorrectAudio: '/sounds/paresminimos/facil/nivel5/pig.mp3',
+      instructionsAudio: '/sounds/paresminimos/facil/instrucciones/instrucciones5.mp3',
+      successAudio: '/sounds/paresminimos/facil/success/success5.mp3',
+      backgroundImage: '/images/paresminimos/facil/nivel5/fondo_5.jpeg'
     }),
     '6': createLevelConfigParesMinimos({
       tiempoMaximo: 180,
-      indicatorImage: '/images/pares-minimos/nivel6/indicador.png',
-      indicatorAudio: '/sounds/pares-minimos/facil/nivel6/indicador.mp3',
-      selectableImage: '/images/pares-minimos/nivel6/selector.png',
-      correctAudio: '/sounds/pares-minimos/facil/nivel6/correcto.mp3',
-      incorrectAudio: '/sounds/pares-minimos/facil/nivel6/incorrecto.mp3',
-      instructionsAudio: '/sounds/pares-minimos/facil/instrucciones/instrucciones6.mp3',
-      successAudio: '/sounds/feedback/success.mp3',
-      backgroundImage: '/images/pirate-island.png'
+      indicatorImage: '/images/paresminimos/facil/nivel6/barco.png',
+      indicatorAudio: '/sounds/paresminimos/facil/nivel6/boy.mp3',
+      selectableImage: '/images/paresminimos/facil/nivel6/palanca.gif',
+      correctAudio: '/sounds/paresminimos/facil/nivel6/boy.mp3',
+      incorrectAudio: '/sounds/paresminimos/facil/nivel6/toy.mp3',
+      instructionsAudio: '/sounds/paresminimos/facil/instrucciones/instrucciones6.mp3',
+      successAudio: '/sounds/paresminimos/facil/success/success6.mp3',
+      backgroundImage: '/images/paresminimos/facil/nivel6/fondo_6.jpeg'
     }),
     '7': createLevelConfigParesMinimos({
       tiempoMaximo: 180,
-      indicatorImage: '/images/pares-minimos/nivel7/indicador.png',
-      indicatorAudio: '/sounds/pares-minimos/facil/nivel7/indicador.mp3',
-      selectableImage: '/images/pares-minimos/nivel7/selector.png',
-      correctAudio: '/sounds/pares-minimos/facil/nivel7/correcto.mp3',
-      incorrectAudio: '/sounds/pares-minimos/facil/nivel7/incorrecto.mp3',
-      instructionsAudio: '/sounds/pares-minimos/facil/instrucciones/instrucciones7.mp3',
-      successAudio: '/sounds/feedback/success.mp3',
-      backgroundImage: '/images/pirate-island.png'
+      indicatorImage: '/images/paresminimos/facil/nivel7/tabla.png',
+      indicatorAudio: '/sounds/paresminimos/facil/nivel7/buy.mp3',
+      selectableImage: '/images/paresminimos/facil/nivel7/tabla2.gif',
+      correctAudio: '/sounds/paresminimos/facil/nivel7/buy.mp3',
+      incorrectAudio: '/sounds/paresminimos/facil/nivel7/tie.mp3',
+      instructionsAudio: '/sounds/paresminimos/facil/instrucciones/instrucciones7.mp3',
+      successAudio: '/sounds/paresminimos/facil/success/success7.mp3',
+      backgroundImage: '/images/paresminimos/facil/nivel7/fondo_7.jpeg'
     }),
     '8': createLevelConfigParesMinimos({
       tiempoMaximo: 180,
-      indicatorImage: '/images/pares-minimos/nivel8/indicador.png',
-      indicatorAudio: '/sounds/pares-minimos/facil/nivel8/indicador.mp3',
-      selectableImage: '/images/pares-minimos/nivel8/selector.png',
-      correctAudio: '/sounds/pares-minimos/facil/nivel8/correcto.mp3',
-      incorrectAudio: '/sounds/pares-minimos/facil/nivel8/incorrecto.mp3',
-      instructionsAudio: '/sounds/pares-minimos/facil/instrucciones/instrucciones8.mp3',
-      successAudio: '/sounds/feedback/success.mp3',
-      backgroundImage: '/images/pirate-island.png'
+      indicatorImage: '/images/paresminimos/facil/nivel8/tiburon.png',
+      indicatorAudio: '/sounds/paresminimos/facil/nivel8/ball.mp3',
+      selectableImage: '/images/paresminimos/facil/nivel8/tiburon2.gif',
+      correctAudio: '/sounds/paresminimos/facil/nivel8/ball.mp3',
+      incorrectAudio: '/sounds/paresminimos/facil/nivel8/tall.mp3',
+      instructionsAudio: '/sounds/paresminimos/facil/instrucciones/instrucciones8.mp3',
+      successAudio: '/sounds/paresminimos/facil/success/success8.mp3',
+      backgroundImage: '/images/paresminimos/facil/nivel8/fondo_8.jpeg'
     }),
     '9': createLevelConfigParesMinimos({
       tiempoMaximo: 180,
-      indicatorImage: '/images/pares-minimos/nivel9/indicador.png',
-      indicatorAudio: '/sounds/pares-minimos/facil/nivel9/indicador.mp3',
-      selectableImage: '/images/pares-minimos/nivel9/selector.png',
-      correctAudio: '/sounds/pares-minimos/facil/nivel9/correcto.mp3',
-      incorrectAudio: '/sounds/pares-minimos/facil/nivel9/incorrecto.mp3',
-      instructionsAudio: '/sounds/pares-minimos/facil/instrucciones/instrucciones9.mp3',
-      successAudio: '/sounds/feedback/success.mp3',
-      backgroundImage: '/images/pirate-island.png'
+      indicatorImage: '/images/paresminimos/facil/nivel9/botella1.png',
+      indicatorAudio: '/sounds/paresminimos/facil/nivel9/gag.mp3',
+      selectableImage: '/images/paresminimos/facil/nivel9/botella2.gif',
+      correctAudio: '/sounds/paresminimos/facil/nivel9/gag.mp3',
+      incorrectAudio: '/sounds/paresminimos/facil/nivel9/bag.mp3',
+      instructionsAudio: '/sounds/paresminimos/facil/instrucciones/instrucciones9.mp3',
+      successAudio: '/sounds/paresminimos/facil/success/success9.mp3',
+      backgroundImage: '/images/paresminimos/facil/nivel9/fondo_9.jpeg'
     }),
     '10': createLevelConfigParesMinimos({
       tiempoMaximo: 180,
-      indicatorImage: '/images/pares-minimos/nivel10/indicador.png',
-      indicatorAudio: '/sounds/pares-minimos/facil/nivel10/indicador.mp3',
-      selectableImage: '/images/pares-minimos/nivel10/selector.png',
-      correctAudio: '/sounds/pares-minimos/facil/nivel10/correcto.mp3',
-      incorrectAudio: '/sounds/pares-minimos/facil/nivel10/incorrecto.mp3',
-      instructionsAudio: '/sounds/pares-minimos/facil/instrucciones/instrucciones10.mp3',
-      successAudio: '/sounds/feedback/success.mp3',
-      backgroundImage: '/images/pirate-island.png'
+      indicatorImage: '/images/paresminimos/facil/nivel10/caña.png',
+      indicatorAudio: '/sounds/paresminimos/facil/nivel10/bald.mp3',
+      selectableImage: '/images/paresminimos/facil/nivel10/gusano.gif',
+      correctAudio: '/sounds/paresminimos/facil/nivel10/bald.mp3',
+      incorrectAudio: '/sounds/paresminimos/facil/nivel10/gold.mp3',
+      instructionsAudio: '/sounds/paresminimos/facil/instrucciones/instrucciones10.mp3',
+      successAudio: '/sounds/paresminimos/facil/success/success10.mp3',
+      backgroundImage: '/images/paresminimos/facil/nivel10/fondo_10.jpeg'
     })
   };
 

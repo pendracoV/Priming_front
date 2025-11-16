@@ -158,12 +158,12 @@ const createLevelConfigFacil = (config) => ({
 export const cognadosFacilNivel1 = createLevelConfigFacil({
   tiempoMaximo: 180,
   instructionsAudio: '/sounds/cognados/facil/instrucciones/instrucciones1.mp3',
-  backgroundImage: '/images/cognados/nivel1/fondo_isla.png',
-  
-  indicatorImage: '/images/cognados/nivel1/cocodrilo.png',
+  backgroundImage: '/images/cognados/facil/nivel1/fondo_isla.png',
+
+  indicatorImage: '/images/cognados/facil/nivel1/cocodrilo.png',
   indicatorAudio: '/sounds/cognados/facil/nivel1/lemon.mp3',
-  
-  selectableImage: '/images/cognados/nivel1/fish.gif',
+
+  selectableImage: '/images/cognados/facil/nivel1/fish.gif',
   
   correctAudio: '/sounds/cognados/facil/nivel1/lemon.mp3',
   incorrectAudio: '/sounds/cognados/facil/nivel1/limon.mp3',
@@ -174,13 +174,13 @@ export const cognadosFacilNivel1 = createLevelConfigFacil({
 export const cognadosFacilNivel2 = createLevelConfigFacil({
   tiempoMaximo: 180,
   instructionsAudio: '/sounds/cognados/facil/instrucciones/instrucciones2.mp3',
-  backgroundImage: '/images/cognados/nivel2/fondo_2.png',
-  
-  indicatorImage: '/images/cognados/nivel2/cuevas.png',
+  backgroundImage: '/images/cognados/facil/nivel2/fondo_2.png',
+
+  indicatorImage: '/images/cognados/facil/nivel2/cuevas.png',
   indicatorAudio: '/sounds/cognados/facil/nivel2/bananaE.mp3',
-  
-  selectableImage: '/images/cognados/nivel2/snake.gif',
-  
+
+  selectableImage: '/images/cognados/facil/nivel2/snake.gif',
+
   correctAudio: '/sounds/cognados/facil/nivel2/bananaE.mp3',
   incorrectAudio: '/sounds/cognados/facil/nivel2/bananaS.mp3',
 
@@ -191,12 +191,12 @@ export const cognadosFacilNivel3 = createLevelConfigFacil({
   tiempoMaximo: 180,
   instructionsAudio: '/sounds/cognados/facil/instrucciones/instrucciones3.mp3',
   backgroundImage: '/images/cognados/nivel3/fondo_3.png',
-  
-  indicatorImage: '/images/cognados/nivel3/concha.png',
+
+  indicatorImage: '/images/cognados/facil/nivel3/concha.png',
   indicatorAudio: '/sounds/cognados/facil/nivel3/papayaE.mp3',
-  
-  selectableImage: '/images/cognados/nivel3/concha.gif',
-  
+
+  selectableImage: '/images/cognados/facil/nivel3/concha.gif',
+
   correctAudio: '/sounds/cognados/facil/nivel3/papayaE.mp3',
   incorrectAudio: '/sounds/cognados/facil/nivel3/papayaS.mp3',
 
@@ -206,107 +206,114 @@ export const cognadosFacilNivel3 = createLevelConfigFacil({
 export const cognadosFacilNivel4 = createLevelConfigFacil({
   tiempoMaximo: 180,
   instructionsAudio: '/sounds/cognados/facil/instrucciones/instrucciones4.mp3',
-  backgroundImage: '/images/cognados/nivel4/fondo_4.jpg',
-  
-  indicatorImage: '/images/cognados/nivel4/frutas.png',
+  backgroundImage: '/images/cognados/facil/nivel4/fondo_4.jpg',
+
+  indicatorImage: '/images/cognados/facil/nivel4/frutas.png',
   indicatorAudio: '/sounds/cognados/facil/nivel4/crocodile.mp3',
-  
-  selectableImage: '/images/cognados/nivel4/fresas.gif',
-  
+
+  selectableImage: '/images/cognados/facil/nivel4/fresas.gif',
+
   correctAudio: '/sounds/cognados/facil/nivel4/crocodile.mp3',
   incorrectAudio: '/sounds/cognados/facil/nivel4/cocodrilo.mp3',
 
-  successAudio: '/sounds/cognados/facil/succes/success.mp3'
+  successAudio: '/sounds/cognados/facil/succes/success4.mp3'
 });
 
 export const cognadosFacilNivel5 = createLevelConfigFacil({
   tiempoMaximo: 180,
   instructionsAudio: '/sounds/cognados/facil/instrucciones/instrucciones5.mp3',
-  
-  indicatorImage: '/images/cognados/nivel5/unicornio.png',
-  indicatorAudio: '/sounds/cognados/facil/nivel5/indicador.mp3',
-  
-  selectableImage: '/images/cognados/nivel5/flower.png',
-  
-  correctAudio: '/sounds/cognados/facil/nivel5/correcto.mp3',
-  incorrectAudio: '/sounds/cognados/facil/nivel5/incorrecto.mp3',
+  backgroundImage: '/images/cognados/facil/nivel5/fondo_5.jpg',
 
-  successAudio: '/sounds/cognados/facil/succes/success.mp3'
+  indicatorImage: '/images/cognados/facil/nivel5/termo.png',
+  indicatorAudio: '/sounds/cognados/facil/nivel5/cocoE.mp3',
+
+  selectableImage: '/images/cognados/facil/nivel5/coco.gif',
+
+  correctAudio: '/sounds/cognados/facil/nivel5/cocoE.mp3',
+  incorrectAudio: '/sounds/cognados/facil/nivel5/cocoS.mp3',
+
+  successAudio: '/sounds/cognados/facil/succes/success5.mp3'
 });
 
 export const cognadosFacilNivel6 = createLevelConfigFacil({
   tiempoMaximo: 180,
   instructionsAudio: '/sounds/instrucciones/instrucciones6.mp3',
-  
-  indicatorImage: '/images/cognados/nivel6/phoenix.png',
-  indicatorAudio: '/sounds/cognados/facil/nivel6/indicador.mp3',
-  
-  selectableImage: '/images/cognados/nivel6/heart.png',
-  
-  correctAudio: '/sounds/cognados/facil/nivel6/correcto.mp3',
-  incorrectAudio: '/sounds/cognados/facil/nivel6/incorrecto.mp3',
+  backgroundImage: '/images/cognados/facil/nivel6/fondo_6.jpeg',
 
-  successAudio: '/sounds/cognados/facil/succes/success.mp3'
+  indicatorImage: '/images/cognados/facil/nivel6/Loro.png',
+  indicatorAudio: '/sounds/cognados/facil/nivel6/delfinE.mp3',
+
+  selectableImage: '/images/cognados/facil/nivel6/rama.gif',
+
+  correctAudio: '/sounds/cognados/facil/nivel6/delfinE.mp3',
+  incorrectAudio: '/sounds/cognados/facil/nivel6/delfinS.mp3',
+
+  successAudio: '/sounds/cognados/facil/succes/success6.mp3'
 });
 
 export const cognadosFacilNivel7 = createLevelConfigFacil({
   tiempoMaximo: 180,
   instructionsAudio: '/sounds/instrucciones/instrucciones7.mp3',
+  backgroundImage: '/images/cognados/facil/nivel7/fondo_7.jpeg',
   
-  indicatorImage: '/images/cognados/nivel7/mago.png',
-  indicatorAudio: '/sounds/cognados/facil/nivel7/indicador.mp3',
-  
-  selectableImage: '/images/cognados/nivel7/star.png',
-  
-  correctAudio: '/sounds/cognados/facil/nivel7/correcto.mp3',
-  incorrectAudio: '/sounds/cognados/facil/nivel7/incorrecto.mp3',
 
-  successAudio: '/sounds/cognados/facil/succes/success.mp3'
+  indicatorImage: '/images/cognados/facil/nivel7/mochila.png',
+  indicatorAudio: '/sounds/cognados/facil/nivel7/gorilaE.mp3',
+
+  selectableImage: '/images/cognados/facil/nivel7/hoja.gif',
+
+  correctAudio: '/sounds/cognados/facil/nivel7/gorilaE.mp3',
+  incorrectAudio: '/sounds/cognados/facil/nivel7/gorilaS.mp3',
+
+  successAudio: '/sounds/cognados/facil/succes/success7.mp3'
 });
 
 export const cognadosFacilNivel8 = createLevelConfigFacil({
   tiempoMaximo: 180,
   instructionsAudio: '/sounds/instrucciones/instrucciones8.mp3',
-  
-  indicatorImage: '/images/cognados/nivel8/elfo.png',
-  indicatorAudio: '/sounds/cognados/facil/nivel8/indicador.mp3',
-  
-  selectableImage: '/images/cognados/nivel8/tree.png',
-  
-  correctAudio: '/sounds/cognados/facil/nivel8/correcto.mp3',
-  incorrectAudio: '/sounds/cognados/facil/nivel8/incorrecto.mp3',
+  backgroundImage: '/images/cognados/facil/nivel8/fondo_8.jpeg',
 
-  successAudio: '/sounds/cognados/facil/succes/success.mp3'
+  indicatorImage: '/images/cognados/facil/nivel8/pinguino.png',
+  indicatorAudio: '/sounds/cognados/facil/nivel8/dinosaurioE.mp3',
+
+  selectableImage: '/images/cognados/facil/nivel8/sombrilla.gif',
+
+  correctAudio: '/sounds/cognados/facil/nivel8/dinosaurioE.mp3',
+  incorrectAudio: '/sounds/cognados/facil/nivel8/dinosaurioS.mp3',
+
+  successAudio: '/sounds/cognados/facil/succes/success8.mp3'
 });
 
 export const cognadosFacilNivel9 = createLevelConfigFacil({
   tiempoMaximo: 180,
   instructionsAudio: '/sounds/instrucciones/instrucciones9.mp3',
-  
-  indicatorImage: '/images/cognados/nivel9/titan.png',
-  indicatorAudio: '/sounds/cognados/facil/nivel9/indicador.mp3',
-  
-  selectableImage: '/images/cognados/nivel9/sun.png',
-  
-  correctAudio: '/sounds/cognados/facil/nivel9/correcto.mp3',
-  incorrectAudio: '/sounds/cognados/facil/nivel9/incorrecto.mp3',
+  backgroundImage: '/images/cognados/facil/nivel9/fondo_9.jpeg',
 
-  successAudio: '/sounds/cognados/facil/succes/success.mp3'
+  indicatorImage: '/images/cognados/facil/nivel9/dragon.png',
+  indicatorAudio: '/sounds/cognados/facil/nivel9/leonE.mp3',
+
+  selectableImage: '/images/cognados/facil/nivel9/roca.gif',
+
+  correctAudio: '/sounds/cognados/facil/nivel9/leonE.mp3',
+  incorrectAudio: '/sounds/cognados/facil/nivel9/leonS.mp3',
+
+  successAudio: '/sounds/cognados/facil/succes/success9.mp3'
 });
 
 export const cognadosFacilNivel10 = createLevelConfigFacil({
   tiempoMaximo: 240, 
   instructionsAudio: '/sounds/instrucciones/instrucciones10.mp3',
-  
-  indicatorImage: '/images/cognados/nivel10/guardian.png',
-  indicatorAudio: '/sounds/cognados/facil/nivel10/indicador.mp3',
-  
-  selectableImage: '/images/cognados/nivel10/moon.png',
-  
-  correctAudio: '/sounds/cognados/facil/nivel10/correcto.mp3',
-  incorrectAudio: '/sounds/cognados/facil/nivel10/incorrecto.mp3',
+  backgroundImage: '/images/cognados/facil/nivel10/fondo_10.jpeg',
 
-  successAudio: '/sounds/cognados/facil/succes/success.mp3'
+  indicatorImage: '/images/cognados/facil/nivel10/bolso.png',
+  indicatorAudio: '/sounds/cognados/facil/nivel10/jirafaE.mp3',
+
+  selectableImage: '/images/cognados/facil/nivel10/sabana.gif',
+
+  correctAudio: '/sounds/cognados/facil/nivel10/jirafaE.mp3',
+  incorrectAudio: '/sounds/cognados/facil/nivel10/jirafaS.mp3',
+
+  successAudio: '/sounds/cognados/facil/succes/success10.mp3'
 });
 
 /**

@@ -206,55 +206,55 @@ const baseGameSettings = {
     
     selectableImage: '/images/cognados/medio/nivel2/botella.gif',
     
-    successAudio: '/sounds/cognados/medio/succes/success1.mp3'
+    successAudio: '/sounds/cognados/medio/succes/success2.mp3'
   });
   
   export const cognadosMedioNivel3 = createLevelConfigMedio({
     tiempoMaximo: 150,
     instructionsAudio: '/sounds/cognados/medio/instrucciones/instrucciones3.mp3',
-    backgroundImage: '/images/cognados/medio/nivel3/fondo.png',
+    backgroundImage: '/images/cognados/medio/nivel3/fondo_3.jpeg',
     
-    indicator1Image: '/images/cognados/medio/nivel3/indicator1.png',
-    indicator1Audio: '/sounds/cognados/medio/nivel3/audio1.mp3',
+    indicator1Image: '/images/cognados/medio/nivel3/saco1.png',
+    indicator1Audio: '/sounds/cognados/medio/nivel3/cocodriloE.mp3',
     
-    indicator2Image: '/images/cognados/medio/nivel3/indicator2.png',
-    indicator2Audio: '/sounds/cognados/medio/nivel3/audio2.mp3',
+    indicator2Image: '/images/cognados/medio/nivel3/saco2.png',
+    indicator2Audio: '/sounds/cognados/medio/nivel3/cocodriloS.mp3',
     
-    selectableImage: '/images/cognados/medio/nivel3/selectable.png',
+    selectableImage: '/images/cognados/medio/nivel3/polvillo.gif',
     
-    successAudio: '/sounds/cognados/facil/succes/success.mp3'
+    successAudio: '/sounds/cognados/facil/succes/success3.mp3'
   });
   
   export const cognadosMedioNivel4 = createLevelConfigMedio({
     tiempoMaximo: 150,
     instructionsAudio: '/sounds/cognados/medio/instrucciones/instrucciones4.mp3',
-    backgroundImage: '/images/cognados/medio/nivel4/fondo.png',
+    backgroundImage: '/images/cognados/medio/nivel4/fondo_4.jpeg',
     
-    indicator1Image: '/images/cognados/medio/nivel4/indicator1.png',
-    indicator1Audio: '/sounds/cognados/medio/nivel4/audio1.mp3',
+    indicator1Image: '/images/cognados/medio/nivel4/puerta1.png',
+    indicator1Audio: '/sounds/cognados/medio/nivel4/limonE.mp3',
     
-    indicator2Image: '/images/cognados/medio/nivel4/indicator2.png',
-    indicator2Audio: '/sounds/cognados/medio/nivel4/audio2.mp3',
+    indicator2Image: '/images/cognados/medio/nivel4/puerta2.png',
+    indicator2Audio: '/sounds/cognados/medio/nivel4/limonS.mp3',
     
-    selectableImage: '/images/cognados/medio/nivel4/selectable.png',
+    selectableImage: '/images/cognados/medio/nivel4/llaves.gif',
     
-    successAudio: '/sounds/cognados/facil/succes/success.mp3'
+    successAudio: '/sounds/cognados/facil/succes/success4.mp3'
   });
   
   export const cognadosMedioNivel5 = createLevelConfigMedio({
     tiempoMaximo: 150,
     instructionsAudio: '/sounds/cognados/medio/instrucciones/instrucciones5.mp3',
-    backgroundImage: '/images/cognados/medio/nivel5/fondo.png',
+    backgroundImage: '/images/cognados/medio/nivel5/fondo_5.jpeg',
     
-    indicator1Image: '/images/cognados/medio/nivel5/indicator1.png',
-    indicator1Audio: '/sounds/cognados/medio/nivel5/audio1.mp3',
+    indicator1Image: '/images/cognados/medio/nivel5/closet1.png',
+    indicator1Audio: '/sounds/cognados/medio/nivel5/hipopotamoE.mp3',
     
-    indicator2Image: '/images/cognados/medio/nivel5/indicator2.png',
-    indicator2Audio: '/sounds/cognados/medio/nivel5/audio2.mp3',
+    indicator2Image: '/images/cognados/medio/nivel5/closet2.png',
+    indicator2Audio: '/sounds/cognados/medio/nivel5/hipopotamoS.mp3',
     
-    selectableImage: '/images/cognados/medio/nivel5/selectable.png',
+    selectableImage: '/images/cognados/medio/nivel5/diamante.gif',
     
-    successAudio: '/sounds/cognados/facil/succes/success.mp3'
+    successAudio: '/sounds/cognados/medio/succes/success5.mp3'
   });
   
   /**

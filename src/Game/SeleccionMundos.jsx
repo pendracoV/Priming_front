@@ -197,6 +197,8 @@ const SeleccionMundos = () => {
         localStorage.setItem(`accumulatedScore_${userId}`, String(accumulated_score));
         
         console.log(`🔄 Restaurando progreso (Cognados ${cognatesDifficulty}): Nivel ${current_level}, Puntaje ${accumulated_score}, UserId: ${userId}`);
+        // 🔑 Autorizar navegación desde selección de mundos
+        sessionStorage.setItem(`authorized_navigation_cognados_${cognatesDifficulty}_${current_level}`, 'true');
         navigate(`/nivel/cognados/${cognatesDifficulty}/${current_level}`);
       } else {
         // Si no tiene progreso, iniciar desde nivel 1
@@ -204,6 +206,8 @@ const SeleccionMundos = () => {
         localStorage.setItem(`accumulatedScore_${userId}`, '200');
         
         console.log(`🆕 Iniciando nuevo juego (Cognados ${cognatesDifficulty}): Nivel 1, UserId: ${userId}`);
+        // 🔑 Autorizar navegación desde selección de mundos
+        sessionStorage.setItem(`authorized_navigation_cognados_${cognatesDifficulty}_1`, 'true');
         navigate(`/nivel/cognados/${cognatesDifficulty}/1`);
       }
     } catch (error) {
@@ -212,6 +216,8 @@ const SeleccionMundos = () => {
       const userId = ninoInfo.id;
       localStorage.setItem(`lastLevel_${userId}`, '1');
       localStorage.setItem(`accumulatedScore_${userId}`, '200');
+      // 🔑 Autorizar navegación desde selección de mundos
+      sessionStorage.setItem(`authorized_navigation_cognados_${cognatesDifficulty}_1`, 'true');
       navigate(`/nivel/cognados/${cognatesDifficulty}/1`);
     } finally {
       setLoading(false);
@@ -248,12 +254,18 @@ const SeleccionMundos = () => {
         localStorage.setItem(`lastLevel_${userId}`, String(current_level));
         localStorage.setItem(`accumulatedScore_${userId}`, String(accumulated_score));
         
+        // ✅ Autorizar navegación al nivel guardado
+        sessionStorage.setItem(`authorized_navigation_pares_${pairsDifficulty}_${current_level}`, 'true');
+        
         console.log(`🔄 Restaurando progreso (Pares Mínimos ${pairsDifficulty}): Nivel ${current_level}, Puntaje ${accumulated_score}, UserId: ${userId}`);
         navigate(`/nivel/pares-minimos/${pairsDifficulty}/${current_level}`);
       } else {
         // Si no tiene progreso, iniciar desde nivel 1
         localStorage.setItem(`lastLevel_${userId}`, '1');
         localStorage.setItem(`accumulatedScore_${userId}`, '200');
+        
+        // ✅ Autorizar navegación al nivel 1
+        sessionStorage.setItem(`authorized_navigation_pares_${pairsDifficulty}_1`, 'true');
         
         console.log(`🆕 Iniciando nuevo juego (Pares Mínimos ${pairsDifficulty}): Nivel 1, UserId: ${userId}`);
         navigate(`/nivel/pares-minimos/${pairsDifficulty}/1`);
@@ -264,6 +276,10 @@ const SeleccionMundos = () => {
       const userId = ninoInfo.id;
       localStorage.setItem(`lastLevel_${userId}`, '1');
       localStorage.setItem(`accumulatedScore_${userId}`, '200');
+      
+      // ✅ Autorizar navegación al nivel 1 (fallback de error)
+      sessionStorage.setItem(`authorized_navigation_pares_${pairsDifficulty}_1`, 'true');
+      
       navigate(`/nivel/pares-minimos/${pairsDifficulty}/1`);
     } finally {
       setLoading(false);
