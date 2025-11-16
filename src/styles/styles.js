@@ -2,10 +2,17 @@
 import styled, { createGlobalStyle } from 'styled-components';
 
 export const GlobalStyle = createGlobalStyle`
+  /* Aplicar Rubik a todo el sitio */
   * {
-    font-family: 'Manrope', sans-serif;
+    font-family: 'Rubik', sans-serif !important;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    font-family: 'Rubik', sans-serif !important;
   }
 `;
+
 
 export const Container = styled.div`
     display: flex;
