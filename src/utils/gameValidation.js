@@ -115,7 +115,6 @@ export const validateLevelAccess = (user, gameType, dificultad, nivel) => {
     }
 
   } catch (error) {
-    console.error('Error parsing progress:', error);
     return {
       canAccess: false,
       reason: 'Error en progreso guardado, reiniciando desde nivel 1',
@@ -162,7 +161,6 @@ export const validateLevelState = (user, gameType, dificultad, nivel) => {
     );
 
     if (!hasAllFields) {
-      console.warn(`Estado incompleto para ${stateKey}, limpiando...`);
       localStorage.removeItem(stateKey);
       return { hasValidState: false, state: null, shouldRestore: false };
     }
@@ -172,27 +170,23 @@ export const validateLevelState = (user, gameType, dificultad, nivel) => {
     const sessionAge = Date.now() - state.sessionTimestamp;
     
     if (sessionAge > maxAge) {
-      console.warn(`Sesión expirada para ${stateKey} (${Math.round(sessionAge / 1000 / 60)} minutos), limpiando...`);
       localStorage.removeItem(stateKey);
       return { hasValidState: false, state: null, shouldRestore: false };
     }
 
     // ─── Validar que el Nivel Fue Iniciado ───
     if (!state.levelStarted) {
-      console.warn(`Nivel no iniciado en ${stateKey}, no restaurando...`);
       return { hasValidState: false, state: null, shouldRestore: false };
     }
 
     // ─── Validar Consistencia de Datos ───
     if (state.score < 0 || state.correctSelections < 0 || state.totalSelections < 0) {
-      console.warn(`Datos inconsistentes en ${stateKey}, limpiando...`);
       localStorage.removeItem(stateKey);
       return { hasValidState: false, state: null, shouldRestore: false };
     }
 
     // ─── Validar que No Se Haya Completado el Nivel ───
     if (state.correctSelections >= 8 && state.totalSelections >= 16) {
-      console.warn(`Nivel ya completado en ${stateKey}, limpiando...`);
       localStorage.removeItem(stateKey);
       return { hasValidState: false, state: null, shouldRestore: false };
     }
@@ -204,7 +198,6 @@ export const validateLevelState = (user, gameType, dificultad, nivel) => {
     };
 
   } catch (error) {
-    console.error(`Error validando estado para ${stateKey}:`, error);
     localStorage.removeItem(stateKey);
     return { hasValidState: false, state: null, shouldRestore: false };
   }
@@ -236,7 +229,6 @@ export const getLastAccessibleLevel = (user, gameType, dificultad) => {
     
     return Math.min(completedLevel + 1, maxLevels);
   } catch (error) {
-    console.error('Error parsing progress:', error);
     return 1;
   }
 };
@@ -262,7 +254,6 @@ export const getGameConfig = (gameType, dificultad) => {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 🧹 LIMPIEZA DE ESTADOS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /**
@@ -296,7 +287,6 @@ export const cleanupExpiredStates = (user) => {
   });
 
   if (cleanedCount > 0) {
-    console.log(`🧹 Limpiados ${cleanedCount} estados expirados para usuario ${user.id}`);
   }
 };
 
@@ -312,7 +302,6 @@ export const cleanLevelState = (user, gameType, dificultad, nivel) => {
 
   const stateKey = `gameState_${gameType}_${dificultad}_${nivel}_${user.id}`;
   localStorage.removeItem(stateKey);
-  console.log(`🗑️ Estado limpiado para ${stateKey}`);
 };
 
 /**
@@ -338,11 +327,9 @@ export const resetProgressForDifficulty = (user, gameType, dificultad) => {
     localStorage.removeItem(key);
   });
 
-  console.log(`🔄 Progreso reiniciado para ${gameType} ${dificultad} - usuario ${user.id}`);
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 🎯 VALIDACIÓN DE NAVEGACIÓN
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /**

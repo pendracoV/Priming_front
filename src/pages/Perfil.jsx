@@ -219,7 +219,6 @@ const Perfil = () => {
     // Estado para indicar si se está cargando o guardando datos
     const [loading, setLoading] = useState(false);
     
-    // Cargar datos del usuario al iniciar
     useEffect(() => {
         if (!user) {
             navigate("/login");
@@ -274,7 +273,6 @@ const Perfil = () => {
                 jornada: userData.jornada || "",
             });
         } catch (error) {
-            console.error("Error obteniendo datos del perfil:", error);
             
             // Si hay error de token, cerrar sesión
             if (error.response?.status === 401) {
@@ -301,7 +299,6 @@ const Perfil = () => {
     
     // Abrir modal de cambio de contraseña
     const openPasswordModal = () => {
-        // Resetear campos de contraseña
         setFormData(prev => ({
             ...prev,
             contrasena: "",
@@ -366,7 +363,6 @@ const Perfil = () => {
             // Actualizar datos del perfil
             fetchUserData();
         } catch (error) {
-            console.error("Error actualizando perfil:", error);
             setEditModalOpen(false);
             setErrorMessage(error.response?.data?.error || "Error al actualizar el perfil");
             setErrorModal(true);
@@ -411,7 +407,6 @@ const Perfil = () => {
                 confirmarContrasena: ""
             }));
         } catch (error) {
-            console.error("Error cambiando contraseña:", error);
             setPasswordModalOpen(false);
             setErrorMessage(error.response?.data?.error || "Error al cambiar la contraseña");
             setErrorModal(true);

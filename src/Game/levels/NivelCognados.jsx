@@ -44,7 +44,6 @@ const NivelCognados = () => {
   const [levelConfig, setLevelConfig] = useState(null);
   const previousLevelRef = useRef(nivel);
   
-  // 🔑 Obtener información del niño actual desde localStorage (NO del AuthContext)
   const [user, setUser] = useState(null);
   
   useEffect(() => {
@@ -53,33 +52,25 @@ const NivelCognados = () => {
       try {
         const ninoData = JSON.parse(currentNinoStr);
         setUser(ninoData);
-        console.log(`👦 Niño actual cargado: ${ninoData.nombre} (ID: ${ninoData.id})`);
       } catch (error) {
-        console.error('Error parseando currentNino:', error);
         navigate('/ninos-list');
       }
     } else {
-      console.error('❌ No hay niño en sesión');
       navigate('/ninos-list');
     }
   }, [navigate]);
 
-  // 🛡️ PROTECCIÓN CONTRA NAVEGACIÓN MANUAL ENTRE NIVELES
   useEffect(() => {
     const navigationKey = `authorized_navigation_cognados_${dificultad}_${nivel}`;
     const isAuthorized = sessionStorage.getItem(navigationKey);
     
-    // Si el nivel cambió desde el anterior render
     if (previousLevelRef.current && previousLevelRef.current !== nivel) {
       if (!isAuthorized) {
-        console.log('🚨 Navegación manual detectada - Bloqueando');
-        // Limpiar progreso del nivel actual
         if (user) {
           const userId = user.id;
           localStorage.removeItem(`progress_cognados_${dificultad}_${userId}`);
           localStorage.removeItem(`completed_levels_cognados_${dificultad}_${userId}`);
         }
-        // Recargar para reiniciar el nivel
         window.location.reload();
         return;
       } else {
@@ -87,10 +78,8 @@ const NivelCognados = () => {
       }
     }
     
-    // PRIMERA CARGA: Verificar autorización SIEMPRE
     if (!previousLevelRef.current) {
       if (!isAuthorized) {
-        console.log('🚨 Acceso directo sin autorización - Redirigiendo a selección de mundos');
         navigate('/seleccion-mundo');
         return;
       } else {
@@ -115,16 +104,11 @@ const NivelCognados = () => {
       };
       localStorage.setItem(`progress_cognados_${dificultad}_${userId}`, JSON.stringify(generalProgress));
       
-      // TAMBIÉN GUARDAR EN CLAVES GENÉRICAS PARA SaveProgressButton y validación
-      // 🔑 IMPORTANTE: Incluir userId para que cada niño tenga su propio progreso
       localStorage.setItem(`lastGameType_${userId}`, 'cognados');
       localStorage.setItem(`lastDifficulty_${userId}`, dificultad);
       localStorage.setItem(`lastLevel_${userId}`, String(completedLevel));
       localStorage.setItem(`accumulatedScore_${userId}`, String(finalScore));
       
-      console.log('✅ Progreso guardado en localStorage - Nivel:', completedLevel, 'Puntaje:', finalScore, 'UserId:', userId);
-      
-      // 💾 GUARDAR EN BASE DE DATOS
       try {
         const ninoService = (await import('../../api/ninoService')).default;
         await ninoService.saveProgresoEspecifico(userId, {
@@ -133,10 +117,7 @@ const NivelCognados = () => {
           current_level: completedLevel,
           accumulated_score: finalScore
         });
-        console.log('✅ Progreso guardado en base de datos');
       } catch (error) {
-        console.error('❌ Error guardando progreso en base de datos:', error);
-        // Continuar aunque falle el guardado en BD, el localStorage sirve como respaldo
       }
       
       const completedLevelsKey = `completed_levels_cognados_${dificultad}_${userId}`;
@@ -168,9 +149,6 @@ const NivelCognados = () => {
       const response = await ninoService.getProgresoEspecifico(user.id, 'cognados', dificultad);
       
       if (response.tiene_progreso && response.data) {
-        console.log('📥 Progreso cargado desde base de datos:', response.data);
-        
-        // Guardar en localStorage para sincronización
         const userId = user.id;
         localStorage.setItem(`lastGameType_${userId}`, 'cognados');
         localStorage.setItem(`lastDifficulty_${userId}`, dificultad);
@@ -180,7 +158,6 @@ const NivelCognados = () => {
         return response.data;
       }
     } catch (error) {
-      console.error('❌ Error cargando progreso desde base de datos:', error);
     }
     
     return null;
@@ -206,7 +183,6 @@ const NivelCognados = () => {
           }
         }
       } catch (error) {
-        console.error('Error reading completed levels:', error);
       }
       
       const savedProgress = localStorage.getItem(`progress_cognados_${dificultad}_${userId}`);
@@ -287,15 +263,12 @@ const NivelCognados = () => {
   const getSuccessAudio = () => levelConfig?.successAudio || '/sounds/cognados/facil/succes/success.mp3';
 
   const closeEndGameAlert = () => {
-    console.log('🔄 closeEndGameAlert - endGameType:', endGameType);
-    
     if (endGameType === 'success') {
       setShowEndGameAlert(false);
       const currentLevel = parseInt(nivel);
       const maxLevels = 10;
       
       if (currentLevel < maxLevels) {
-        // 🔑 Autorizar navegación al siguiente nivel
         const nextLevel = currentLevel + 1;
         sessionStorage.setItem(`authorized_navigation_cognados_${dificultad}_${nextLevel}`, 'true');
         navigate(`/nivel/cognados/${dificultad}/${nextLevel}`);
@@ -303,9 +276,6 @@ const NivelCognados = () => {
         navigate('/seleccion-mundo');
       }
     } else {
-      console.log('🔄 Reiniciando nivel...');
-      
-      // Limpiar audios y timeouts PRIMERO
       if (currentAudioRef.current) {
         currentAudioRef.current.pause();
         currentAudioRef.current.currentTime = 0;
@@ -316,12 +286,10 @@ const NivelCognados = () => {
         audioTimeoutRef.current = null;
       }
       
-      // Resetear estados inmediatamente
       setInstructionsCompleted(false);
       setIsPlayingInstructions(false);
       setShowEndGameAlert(false);
       
-      // Luego resetear el resto de estados
       resetAllStates();
       
       if (levelConfig) {
@@ -332,9 +300,7 @@ const NivelCognados = () => {
           selectables: shuffledSelectables
         }));
         
-        // Dar tiempo para que los estados se actualicen
         setTimeout(() => {
-          console.log('⏰ Timeout ejecutado - llamando playInitialInstructions');
           playInitialInstructions();
         }, 500);
       }
@@ -348,7 +314,6 @@ const NivelCognados = () => {
     const maxLevels = 10;
     
     if (currentLevel < maxLevels) {
-      // 🔑 Autorizar navegación al siguiente nivel
       const nextLevel = currentLevel + 1;
       sessionStorage.setItem(`authorized_navigation_cognados_${dificultad}_${nextLevel}`, 'true');
       navigate(`/nivel/cognados/${dificultad}/${nextLevel}`);
@@ -366,9 +331,6 @@ const NivelCognados = () => {
   };
 
   const restartLevel = () => {
-    console.log('🔄 restartLevel llamado');
-    
-    // Limpiar audios y timeouts PRIMERO
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       currentAudioRef.current.currentTime = 0;
@@ -379,11 +341,9 @@ const NivelCognados = () => {
       audioTimeoutRef.current = null;
     }
     
-    // Resetear estados de instrucciones inmediatamente
     setInstructionsCompleted(false);
     setIsPlayingInstructions(false);
     
-    // Resetear todos los estados del juego
     resetAllStates();
     
     if (levelConfig) {
@@ -394,9 +354,7 @@ const NivelCognados = () => {
         selectables: shuffledSelectables
       }));
       
-      // Dar tiempo para que los estados se actualicen
       setTimeout(() => {
-        console.log('⏰ restartLevel timeout - llamando playInitialInstructions');
         playInitialInstructions();
       }, 500);
     }
@@ -412,30 +370,25 @@ const NivelCognados = () => {
     }
     
     try {
-      // Detener y limpiar completamente el audio anterior
       if (currentAudioRef.current) {
         currentAudioRef.current.pause();
         currentAudioRef.current.currentTime = 0;
-        currentAudioRef.current.src = ''; // Liberar recurso
-        currentAudioRef.current.load(); // Resetear elemento audio
+        currentAudioRef.current.src = '';
+        currentAudioRef.current.load();
         currentAudioRef.current = null;
       }
   
-      // Limpiar timeout anterior
       if (audioTimeoutRef.current) {
         clearTimeout(audioTimeoutRef.current);
         audioTimeoutRef.current = null;
       }
   
-      // Crear nuevo audio
       const audio = new Audio(audioPath);
       currentAudioRef.current = audio;
       const audioSettings = levelConfig?.audioSettings;
       audio.volume = audioSettings?.masterVolume || 0.8;
       
-      // Listener para limpiar cuando termina naturalmente
       const handleEnded = () => {
-        console.log('🔊 Audio terminado naturalmente');
         if (currentAudioRef.current === audio) {
           currentAudioRef.current = null;
         }
@@ -464,7 +417,6 @@ const NivelCognados = () => {
       }, duration + 100);
       
     } catch (error) {
-      console.error('Error reproducing audio:', error);
       setIsPlayingAudio(false);
 
       if (isSuccessAudio) {
@@ -478,40 +430,26 @@ const NivelCognados = () => {
   };
 
   const playInitialInstructions = async () => {
-    console.log('🎵 playInitialInstructions llamado - isPlayingInstructions:', isPlayingInstructions, 'instructionsCompleted:', instructionsCompleted);
-    
-    // NO prevenir si estamos en un reinicio
     if (isPlayingInstructions && !instructionsCompleted) {
-      console.log('⏸️ Instrucciones ya reproduciéndose, evitando duplicado');
       return;
     }
     
-    console.log('▶️ Iniciando reproducción de instrucciones');
     setIsPlayingInstructions(true);
     const instructionsAudioPath = `/sounds/cognados/facil/instrucciones/instrucciones${nivel}.mp3`;
     
     try {
       await playAudioWithQueue(instructionsAudioPath, () => {
-        console.log('✅ Instrucciones completadas');
         setIsPlayingInstructions(false);
         setInstructionsCompleted(true);
       });
     } catch (error) {
-      console.error('Error reproducing instructions:', error);
       setIsPlayingInstructions(false);
       setInstructionsCompleted(true);
     }
   };
 
   const playIndicatorAudio = async (indicatorId) => {
-    // 🔴 Prevenir clicks múltiples y reproducción doble
     if (!levelConfig || !instructionsCompleted || showEndGameAlert || isPlayingAudio) {
-      console.log('🚫 Audio bloqueado:', { 
-        hasConfig: !!levelConfig, 
-        instructionsCompleted, 
-        showEndGameAlert, 
-        isPlayingAudio 
-      });
       return;
     }
   
@@ -519,21 +457,17 @@ const NivelCognados = () => {
     if (!indicator) return;
     
     if (isTraining) {
-      console.log('🎵 Reproduciendo audio de entrenamiento:', indicator.audio);
       await playAudioWithQueue(indicator.audio, () => {
         setAudioPlayed(prev => {
           const newCount = prev + 1;
           const trainingConfig = levelConfig?.trainingConfig;
           const requiredClicks = trainingConfig?.totalClicks || 10;
           
-          console.log(`✅ Audio de entrenamiento completado: ${newCount}/${requiredClicks}`);
-          
           if (newCount >= requiredClicks) {
             const gameSettings = levelConfig?.gameSettings;
             const pauseDuration = gameSettings?.pauseOnCorrect || 500;
             setTimeout(() => {
               setIsTraining(false);
-              console.log('🎯 Entrenamiento completado, iniciando juego');
             }, pauseDuration);
           }
           return newCount;
@@ -731,10 +665,8 @@ const NivelCognados = () => {
         timestamp: new Date().toISOString()
       };
       
-      // Guardar en localStorage
       localStorage.setItem(`progress_cognados_${dificultad}_${userId}`, JSON.stringify(generalProgress));
       
-      // 💾 GUARDAR EN BASE DE DATOS antes de ir a encuesta
       try {
         const ninoService = (await import('../../api/ninoService')).default;
         await ninoService.saveProgresoEspecifico(userId, {
@@ -743,9 +675,7 @@ const NivelCognados = () => {
           current_level: nivel,
           accumulated_score: score
         });
-        console.log(`✅ Progreso guardado en BD antes de ir a encuesta (Cognados ${dificultad})`);
       } catch (error) {
-        console.error('❌ Error guardando progreso en BD antes de encuesta:', error);
       }
     }
     
@@ -816,20 +746,18 @@ const NivelCognados = () => {
     }
   };
 
-  // 📥 Cargar progreso desde base de datos al iniciar
   useEffect(() => {
     const cargarProgreso = async () => {
       if (user && nivel) {
         const progressFromDB = await loadProgressFromDatabase();
         if (progressFromDB && progressFromDB.accumulated_score) {
-          console.log('🔄 Restaurando progreso: Nivel', progressFromDB.current_level, 'Puntaje', progressFromDB.accumulated_score);
           setScore(progressFromDB.accumulated_score);
         }
       }
     };
     
     cargarProgreso();
-  }, []); // Solo ejecutar al montar el componente
+  }, []);
 
   useEffect(() => {
     const injectAnimationCSS = () => {
@@ -929,7 +857,6 @@ const NivelCognados = () => {
           setHighlightedSelector(null);
           setShowSuccessAlert(false);
           setInstructionsCompleted(false); 
-          // NO resetear isPlayingInstructions aquí - dejarlo en su estado inicial
           setShowEndGameAlert(false);
           setEndGameMessage('');
           setEndGameType('');
@@ -950,7 +877,6 @@ const NivelCognados = () => {
           setHighlightedSelector(null);
           setShowSuccessAlert(false);
           setInstructionsCompleted(false);
-          // NO resetear isPlayingInstructions aquí - dejarlo en su estado inicial
           setShowEndGameAlert(false);
           setEndGameMessage('');
           setEndGameType('');
@@ -971,7 +897,6 @@ const NivelCognados = () => {
       setLastSelectedSelector(null);
       setHighlightedSelector(null);
       
-      // 🔴 IMPORTANTE: Detener todos los audios cuando sales de la pantalla
       if (currentAudioRef.current) {
         currentAudioRef.current.pause();
         currentAudioRef.current.currentTime = 0;
@@ -985,7 +910,6 @@ const NivelCognados = () => {
         audioTimeoutRef.current = null;
       }
       
-      // Resetear flags de audio
       setIsPlayingAudio(false);
       setIsPlayingInstructions(false);
     };
@@ -1194,7 +1118,7 @@ const NivelCognados = () => {
           {isPlayingInstructions && (
             <InstructionsOverlay>
               <InstructionsText>
-                🎧 Escuchando instrucciones...
+                Escuchando instrucciones...
                 <div style={{ 
                   fontSize: '16px', 
                   marginTop: '15px', 
@@ -1343,7 +1267,7 @@ const Indicator = styled.div`
     props.clickable ? 'pointer' : 'not-allowed'
   };
   transition: all 0.3s ease;
-  z-index: 200;
+  z-index: 1000;
   position: relative;
   opacity: ${props => 
     !props.clickable ? 0.5 :
@@ -1517,7 +1441,7 @@ const TrainingOverlay = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 100;
+  z-index: 50;
   pointer-events: none;
 `;
 

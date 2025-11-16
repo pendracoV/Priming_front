@@ -30,12 +30,10 @@ const NinosListPage = () => {
 
   // Función para limpiar localStorage de un niño específico
   const cleanNinoLocalStorage = (ninoId) => {
-    console.log(`🧹 Limpiando localStorage para niño ${ninoId}...`);
     localStorage.removeItem(`lastGameType_${ninoId}`);
     localStorage.removeItem(`lastDifficulty_${ninoId}`);
     localStorage.removeItem(`lastLevel_${ninoId}`);
     localStorage.removeItem(`accumulatedScore_${ninoId}`);
-    console.log(`✅ localStorage limpiado para niño ${ninoId}`);
   };
 
   useEffect(() => {
@@ -51,7 +49,6 @@ const NinosListPage = () => {
         
         const response = await evaluadorService.getNinosAsignados();
         
-        console.log('📦 Respuesta del backend:', response);
         
         // Procesamiento de datos
         let ninosData = [];
@@ -64,14 +61,12 @@ const NinosListPage = () => {
           ninosData = response.data;
         }
         
-        console.log('📋 Datos de niños procesados:', ninosData);
         
         // Normalización de datos y verificación de progreso OPTIMIZADA
         const ninosConProgreso = await Promise.all(ninosData.map(async (nino) => {
           const ninoId = nino.nino_id || nino.id;
           
           // Verificar si tiene progreso REAL solo en la base de datos
-          // NO confiar en localStorage porque puede tener datos residuales
           let tieneProgreso = false;
           
           try {
@@ -93,9 +88,7 @@ const NinosListPage = () => {
               tieneProgreso = allProgress.some(p => p && p.tiene_progreso && p.data);
             }
             
-            console.log(`🎮 Niño ${ninoId} (${nino.nino_nombre || nino.nombre}) - tiene progreso en BD: ${tieneProgreso}`);
           } catch (error) {
-            console.error(`Error verificando progreso para niño ${ninoId}:`, error);
           }
           
           return {
@@ -113,7 +106,6 @@ const NinosListPage = () => {
         setNinos(ninosConProgreso);
         setLoading(false);
       } catch (err) {
-        console.error("Error al obtener niños:", err);
         setError("No se pudo cargar la lista de niños. Por favor, intenta de nuevo más tarde.");
         setLoading(false);
         
@@ -176,11 +168,7 @@ const NinosListPage = () => {
         
         localStorage.setItem('currentNino', JSON.stringify(currentNinoData));
 
-        // Verificar si hay progreso guardado
         try {
-          console.log(`\n🔍 ========== INICIANDO VALIDACIÓN PARA NIÑO ${ninoId} (${selectedNino.nombre}) ==========`);
-          
-          // 🔑 Primero verificar si existe progreso en la base de datos
           const allProgress = await Promise.all([
             ninoService.getProgresoEspecifico(ninoId, 'cognados', 'facil').catch(() => null),
             ninoService.getProgresoEspecifico(ninoId, 'cognados', 'medio').catch(() => null),
@@ -190,77 +178,41 @@ const NinosListPage = () => {
             ninoService.getProgresoEspecifico(ninoId, 'pares-minimos', 'dificil').catch(() => null),
           ]);
           
-          console.log(`📊 Respuestas de BD para niño ${ninoId}:`, allProgress.map((p, i) => {
-            const tipos = ['cog-facil', 'cog-medio', 'cog-dificil', 'pm-facil', 'pm-medio', 'pm-dificil'];
-            return {
-              tipo: tipos[i],
-              tiene_progreso: p?.tiene_progreso || false,
-              data: p?.data || null
-            };
-          }));
-          
-          // Buscar cualquier progreso que tenga registro en BD (tiene_progreso = true)
           const validProgress = allProgress.filter(p => p && p.tiene_progreso && p.data);
           
-          console.log(`🎯 Progreso válido filtrado para niño ${ninoId}:`, validProgress.length, 'registros encontrados');
-          
           if (validProgress.length > 0) {
-            // Ordenar por fecha más reciente
             const latestProgress = validProgress.sort((a, b) => 
               new Date(b.data.last_played) - new Date(a.data.last_played)
             )[0];
             
             const progressData = latestProgress.data;
-            console.log(`📦 Progreso más reciente encontrado en backend para niño ${ninoId}:`, progressData);
             
-            // 🔑 Restaurar el estado del juego usando claves específicas del niño
             localStorage.setItem(`lastGameType_${ninoId}`, progressData.game_type);
             localStorage.setItem(`lastDifficulty_${ninoId}`, progressData.difficulty);
             localStorage.setItem(`lastLevel_${ninoId}`, progressData.current_level.toString());
             localStorage.setItem(`accumulatedScore_${ninoId}`, progressData.accumulated_score.toString());
             
-            console.log(`✅ ========== PROGRESO VÁLIDO ENCONTRADO PARA NIÑO ${ninoId} (${selectedNino.nombre}) ==========
-  🎮 gameType: ${progressData.game_type}
-  ⚡ difficulty: ${progressData.difficulty}
-  📊 level: ${progressData.current_level}
-  💰 score: ${progressData.accumulated_score}
-  🕐 última jugada: ${progressData.last_played}
-  🔑 Guardado en: lastGameType_${ninoId}, lastDifficulty_${ninoId}, lastLevel_${ninoId}, accumulatedScore_${ninoId}`);
-            
-            // Cerrar modal
             setShowPasswordModal(false);
             setSelectedNino(null);
             
-            // Redirigir al último nivel jugado usando la estructura correcta de rutas
             const route = `/nivel/${progressData.game_type}/${progressData.difficulty}/${progressData.current_level}`;
-            console.log(`🚀 NAVEGANDO A: ${route} para niño ${ninoId} (${selectedNino.nombre})`);
-            console.log(`========================================\n`);
-            
-            // Cerrar modal y navegar
             navigate(route);
             return;
           }
           
-          // ⚠️ NO HAY PROGRESO EN BD - Limpiar localStorage para evitar datos residuales
-          console.log(`🧹 No se encontró progreso en BD para niño ${ninoId}, limpiando localStorage...`);
           cleanNinoLocalStorage(ninoId);
-          
         } catch (progressError) {
-          console.log('❌ Error buscando progreso:', progressError);
         }
 
         // Si no hay progreso, ir a selección de mundos
-        console.log('⚠️ No se encontró progreso válido, redirigiendo a selección de mundos');
         setShowPasswordModal(false);
         setSelectedNino(null);
         navigate(`/seleccion-mundos?ninoId=${ninoId}`);
       } else {
         // Contraseña incorrecta
-        console.log('❌ Contraseña incorrecta para niño', ninoId);
         setValidationError('❌ Contraseña incorrecta. Por favor, intenta de nuevo.');
       }
     } catch (error) {
-      console.error('❌ Error validando contraseña:', error);
       setValidationError(error.message || '❌ Error al validar contraseña. Por favor, intenta nuevamente.');
     } finally {
       setIsValidating(false);

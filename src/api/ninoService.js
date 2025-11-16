@@ -36,7 +36,6 @@ const ninoService = {
 
       return data;
     } catch (error) {
-      console.error('Error en validarPassword:', error);
       throw error;
     }
   },
@@ -74,7 +73,6 @@ const ninoService = {
 
       return data;
     } catch (error) {
-      console.error('Error en getProgresoEspecifico:', error);
       throw error;
     }
   },
@@ -110,7 +108,6 @@ const ninoService = {
 
       return data;
     } catch (error) {
-      console.error('Error en saveProgresoEspecifico:', error);
       throw error;
     }
   },
@@ -143,7 +140,6 @@ const ninoService = {
 
       return data;
     } catch (error) {
-      console.error('Error en getNinoInfo:', error);
       throw error;
     }
   }

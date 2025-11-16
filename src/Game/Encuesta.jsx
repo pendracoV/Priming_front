@@ -183,7 +183,6 @@ const Encuesta = () => {
     try {
       setLoading(true);
 
-      // Cargar información del niño desde localStorage
       const currentNinoStr = localStorage.getItem('currentNino');
       
       if (!currentNinoStr) {
@@ -195,22 +194,15 @@ const Encuesta = () => {
       const nino = JSON.parse(currentNinoStr);
       setNinoInfo(nino);
 
-      // 🔑 Cargar progreso actual desde localStorage usando el ID del niño
       const gameType = localStorage.getItem(`lastGameType_${nino.id}`);
       const difficulty = localStorage.getItem(`lastDifficulty_${nino.id}`);
       const currentLevel = localStorage.getItem(`lastLevel_${nino.id}`);
       const accumulatedScore = localStorage.getItem(`accumulatedScore_${nino.id}`);
 
-      console.log('🔍 Cargando progreso en Encuesta para niño:', nino.id);
-      console.log('  - gameType:', gameType);
-      console.log('  - difficulty:', difficulty);
-      console.log('  - currentLevel:', currentLevel);
-      console.log('  - accumulatedScore:', accumulatedScore);
       
       // También verificar lastSavedProgress
       const savedProgress = localStorage.getItem('lastSavedProgress');
       if (savedProgress) {
-        console.log('  - lastSavedProgress:', JSON.parse(savedProgress));
       }
 
       if (gameType && difficulty && currentLevel) {
@@ -223,7 +215,6 @@ const Encuesta = () => {
       }
 
     } catch (error) {
-      console.error('Error cargando datos:', error);
       alert('Error cargando información');
     } finally {
       setLoading(false);
@@ -231,17 +222,13 @@ const Encuesta = () => {
   };
 
   const handleBackToMenu = () => {
-    // ⚠️ IMPORTANTE: Solo limpiamos currentNino y lastSavedProgress
     // Las claves genéricas con userId deben mantenerse para que la validación de contraseña 
     // pueda detectar el progreso de cada niño individualmente
-    console.log('🧹 Limpiando solo currentNino y lastSavedProgress');
-    console.log('✅ Manteniendo claves genéricas con userId para próxima validación');
     
     localStorage.removeItem('currentNino');
     localStorage.removeItem('lastSavedProgress');
     
     // Las claves con userId (lastGameType_X, lastDifficulty_X, etc.) se mantienen
-    console.log('📦 Claves de progreso por niño mantenidas en localStorage');
     
     navigate('/ninos-list');
   };

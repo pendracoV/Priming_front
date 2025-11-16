@@ -44,17 +44,14 @@ const NivelParesMinimos = () => {
   const instructionsTimeoutRef = useRef(null);
   const [levelConfig, setLevelConfig] = useState(null);
   
-  // 🔑 Obtener información del niño actual desde localStorage (NO del AuthContext)
   const [user, setUser] = useState(null);
 
-  // 🔒 PROTECCIÓN DE NAVEGACIÓN DESHABILITADA TEMPORALMENTE
   // useEffect(() => {
   //   const navigationKey = `authorized_navigation_pares_${dificultad}_${nivel}`;
   //   const isAuthorized = sessionStorage.getItem(navigationKey);
   //   
   //   if (previousLevelRef.current && previousLevelRef.current !== nivel) {
   //     if (!isAuthorized) {
-  //       console.log('🚨 Navegación manual detectada - Bloqueando');
   //       if (user) {
   //         const userId = user.id;
   //         localStorage.removeItem(`progress_pares-minimos_${dificultad}_${userId}`);
@@ -70,7 +67,6 @@ const NivelParesMinimos = () => {
   //   
   //   if (!previousLevelRef.current) {
   //     if (!isAuthorized) {
-  //       console.log('🚨 Acceso directo sin autorización - Redirigiendo a selección de mundos');
   //       navigate('/seleccion-mundo');
   //       return;
   //     } else {
@@ -86,18 +82,14 @@ const NivelParesMinimos = () => {
       try {
         const ninoData = JSON.parse(currentNinoStr);
         setUser(ninoData);
-        console.log(`👦 Niño actual cargado: ${ninoData.nombre} (ID: ${ninoData.id})`);
       } catch (error) {
-        console.error('Error parseando currentNino:', error);
         navigate('/ninos-list');
       }
     } else {
-      console.error('❌ No hay niño en sesión');
       navigate('/ninos-list');
     }
   }, [navigate]); 
 
-  // 📥 Función para cargar progreso desde base de datos
   const loadProgressFromDatabase = async () => {
     if (!user) return null;
     
@@ -106,7 +98,6 @@ const NivelParesMinimos = () => {
       const response = await ninoService.getProgresoEspecifico(user.id, 'pares-minimos', dificultad);
       
       if (response.tiene_progreso && response.data) {
-        console.log('📥 Progreso cargado desde base de datos (Pares Mínimos):', response.data);
         
         const userId = user.id;
         localStorage.setItem(`lastGameType_${userId}`, 'pares-minimos');
@@ -117,7 +108,6 @@ const NivelParesMinimos = () => {
         return response.data;
       }
     } catch (error) {
-      console.error('❌ Error cargando progreso desde base de datos:', error);
     }
     
     return null;
@@ -138,15 +128,12 @@ const NivelParesMinimos = () => {
       localStorage.setItem(`progress_pares-minimos_${dificultad}_${userId}`, JSON.stringify(generalProgress));
       
       // TAMBIÉN GUARDAR EN CLAVES GENÉRICAS PARA SaveProgressButton y validación
-      // 🔑 IMPORTANTE: Incluir userId para que cada niño tenga su propio progreso
       localStorage.setItem(`lastGameType_${userId}`, 'pares-minimos');
       localStorage.setItem(`lastDifficulty_${userId}`, dificultad);
       localStorage.setItem(`lastLevel_${userId}`, String(completedLevel));
       localStorage.setItem(`accumulatedScore_${userId}`, String(finalScore));
       
-      console.log('✅ Progreso guardado en localStorage (Pares Mínimos) - Nivel:', completedLevel, 'Puntaje:', finalScore, 'UserId:', userId);
       
-      // 💾 GUARDAR EN BASE DE DATOS
       try {
         const ninoService = (await import('../../api/ninoService')).default;
         await ninoService.saveProgresoEspecifico(userId, {
@@ -155,9 +142,7 @@ const NivelParesMinimos = () => {
           current_level: completedLevel,
           accumulated_score: finalScore
         });
-        console.log('✅ Progreso guardado en base de datos (Pares Mínimos)');
       } catch (error) {
-        console.error('❌ Error guardando progreso en base de datos:', error);
       }
       
       const completedLevelsKey = `completed_levels_pares-minimos_${dificultad}_${userId}`;
@@ -201,7 +186,6 @@ const NivelParesMinimos = () => {
           }
         }
       } catch (error) {
-        console.error('Error reading completed levels:', error);
       }
       
       const savedProgress = localStorage.getItem(`progress_pares-minimos_${dificultad}_${userId}`);
@@ -282,7 +266,6 @@ const NivelParesMinimos = () => {
   const getSuccessAudio = () => levelConfig?.successAudio || '/sounds/feedback/success.mp3';
 
   const closeEndGameAlert = () => {
-    console.log('🔄 closeEndGameAlert llamado - NivelParesMinimos');
     
     if (endGameType === 'success') {
       setShowEndGameAlert(false);
@@ -296,9 +279,7 @@ const NivelParesMinimos = () => {
         navigate('/seleccion-mundo');
       }
     } else {
-      console.log('❌ Reinicio por falla');
       
-      // 1️⃣ LIMPIAR PRIMERO - Detener cualquier audio y timeout activo
       if (currentAudioRef.current) {
         currentAudioRef.current.pause();
         currentAudioRef.current.currentTime = 0;
@@ -315,17 +296,13 @@ const NivelParesMinimos = () => {
         instructionsTimeoutRef.current = null;
       }
       
-      // 2️⃣ RESETEAR ESTADOS INMEDIATAMENTE (antes de cualquier timeout)
       setInstructionsCompleted(false);
       setIsPlayingInstructions(false);
       setShowEndGameAlert(false);
       
-      console.log('🔧 Estados reseteados');
       
-      // 3️⃣ Resetear el juego
       resetAllStates();
       
-      // 4️⃣ Mezclar selectables si es necesario
       if (levelConfig) {
         const shuffledSelectables = levelConfig.gameSettings?.shuffleSelectables ? 
           shuffleArray(levelConfig.selectables) : levelConfig.selectables;
@@ -334,11 +311,8 @@ const NivelParesMinimos = () => {
           selectables: shuffledSelectables
         }));
         
-        console.log('🔀 Selectables mezclados');
         
-        // 5️⃣ UN SOLO TIMEOUT de 500ms para reproducir instrucciones
         instructionsTimeoutRef.current = setTimeout(() => {
-          console.log('⏰ Timeout ejecutado, llamando playInitialInstructions');
           playInitialInstructions();
         }, 500);
       }
@@ -377,9 +351,7 @@ const NivelParesMinimos = () => {
   };
 
   const restartLevel = () => {
-    console.log('🔄 restartLevel llamado - NivelParesMinimos');
     
-    // 1️⃣ LIMPIAR PRIMERO - Detener cualquier audio y timeout activo
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       currentAudioRef.current.currentTime = 0;
@@ -396,16 +368,12 @@ const NivelParesMinimos = () => {
       instructionsTimeoutRef.current = null;
     }
     
-    // 2️⃣ RESETEAR ESTADOS INMEDIATAMENTE (antes de cualquier timeout)
     setInstructionsCompleted(false);
     setIsPlayingInstructions(false);
     
-    console.log('🔧 Estados reseteados en restartLevel');
     
-    // 3️⃣ Resetear el juego
     resetAllStates();
     
-    // 4️⃣ Mezclar selectables si es necesario
     if (levelConfig) {
       const shuffledSelectables = levelConfig.gameSettings?.shuffleSelectables ? 
         shuffleArray(levelConfig.selectables) : levelConfig.selectables;
@@ -414,11 +382,8 @@ const NivelParesMinimos = () => {
         selectables: shuffledSelectables
       }));
       
-      console.log('🔀 Selectables mezclados en restartLevel');
       
-      // 5️⃣ UN SOLO TIMEOUT de 500ms para reproducir instrucciones
       instructionsTimeoutRef.current = setTimeout(() => {
-        console.log('⏰ Timeout ejecutado en restartLevel, llamando playInitialInstructions');
         playInitialInstructions();
       }, 500);
     }
@@ -453,7 +418,6 @@ const NivelParesMinimos = () => {
       audio.volume = audioSettings?.masterVolume || 0.8;
       
       const handleEnded = () => {
-        console.log('🔊 Audio terminado naturalmente (Pares Mínimos)');
         if (currentAudioRef.current === audio) {
           currentAudioRef.current = null;
         }
@@ -482,7 +446,6 @@ const NivelParesMinimos = () => {
       }, duration + 100);
       
     } catch (error) {
-      console.error('Error reproducing audio:', error);
       setIsPlayingAudio(false);
 
       if (isSuccessAudio) {
@@ -496,33 +459,25 @@ const NivelParesMinimos = () => {
   };
 
   const playInitialInstructions = async () => {
-    console.log('🎵 playInitialInstructions llamado - NivelParesMinimos');
     
     // Solo prevenir si se está reproduciendo activamente
     if (isPlayingInstructions) {
-      console.log('🚫 Ya reproduciendo instrucciones');
       return;
     }
     
-    // ✅ Usar la ruta de instrucciones del levelConfig
     if (!levelConfig || !levelConfig.instructionsAudio) {
-      console.error('❌ No hay configuración de instrucciones disponible');
       setInstructionsCompleted(true);
       return;
     }
     
-    console.log('▶️ Iniciando reproducción de instrucciones');
-    console.log('📁 Ruta de audio:', levelConfig.instructionsAudio);
     setIsPlayingInstructions(true);
     
     try {
       await playAudioWithQueue(levelConfig.instructionsAudio, () => {
         setIsPlayingInstructions(false);
         setInstructionsCompleted(true);
-        console.log('✅ Instrucciones completadas - Pares Mínimos');
       });
     } catch (error) {
-      console.error('Error reproducing instructions:', error);
       setIsPlayingInstructions(false);
       setInstructionsCompleted(true);
     }
@@ -530,12 +485,6 @@ const NivelParesMinimos = () => {
 
   const playIndicatorAudio = async (indicatorId) => {
     if (!levelConfig || !instructionsCompleted || showEndGameAlert || isPlayingAudio) {
-      console.log('🚫 Audio bloqueado (Pares Mínimos):', { 
-        hasConfig: !!levelConfig, 
-        instructionsCompleted, 
-        showEndGameAlert, 
-        isPlayingAudio 
-      });
       return;
     }
   
@@ -543,21 +492,18 @@ const NivelParesMinimos = () => {
     if (!indicator) return;
     
     if (isTraining) {
-      console.log('🎵 Reproduciendo audio de entrenamiento (Pares Mínimos):', indicator.audio);
       await playAudioWithQueue(indicator.audio, () => {
         setAudioPlayed(prev => {
           const newCount = prev + 1;
           const trainingConfig = levelConfig?.trainingConfig;
           const requiredClicks = trainingConfig?.totalClicks || 10;
           
-          console.log(`✅ Audio de entrenamiento completado (Pares Mínimos): ${newCount}/${requiredClicks}`);
           
           if (newCount >= requiredClicks) {
             const gameSettings = levelConfig?.gameSettings;
             const pauseDuration = gameSettings?.pauseOnCorrect || 500;
             setTimeout(() => {
               setIsTraining(false);
-              console.log('🎯 Entrenamiento completado (Pares Mínimos), iniciando juego');
             }, pauseDuration);
           }
           return newCount;
@@ -668,7 +614,6 @@ const NivelParesMinimos = () => {
       const requiredAdditionalPoints = maxPossiblePoints * winCondition.minimumScorePercentage;
       const requiredFinalScore = scoreAtStartOfLevel + requiredAdditionalPoints;
       
-      console.log(`📊 Verificación 80%: Puntaje inicial: ${scoreAtStartOfLevel}, Puntos ganados: ${pointsGained}, Requeridos: ${requiredAdditionalPoints}, Puntaje actual: ${newScore}, Puntaje requerido: ${requiredFinalScore}`);
       
       if (newCorrectSelections === winCondition.requiredCorrect && newScore >= requiredFinalScore) {
         setShowSuccessAlert(true);
@@ -704,7 +649,6 @@ const NivelParesMinimos = () => {
     const requiredAdditionalPoints = maxPossiblePoints * winCondition.minimumScorePercentage;
     const requiredFinalScore = scoreAtStartOfLevel + requiredAdditionalPoints;
     
-    console.log(`📊 evaluateLevel - Puntaje inicial: ${scoreAtStartOfLevel}, Puntos ganados: ${pointsGained}, Requeridos: ${requiredAdditionalPoints}, Puntaje actual: ${currentScore}, Puntaje requerido: ${requiredFinalScore}`);
     
     if (currentCorrectSelections === winCondition.requiredCorrect && currentScore >= requiredFinalScore) {
       saveCompletedLevelProgress(nivel, currentScore);
@@ -765,7 +709,6 @@ const NivelParesMinimos = () => {
       // Guardar en localStorage
       localStorage.setItem(`progress_pares-minimos_${dificultad}_${userId}`, JSON.stringify(generalProgress));
       
-      // 💾 GUARDAR EN BASE DE DATOS antes de ir a encuesta
       try {
         const ninoService = (await import('../../api/ninoService')).default;
         await ninoService.saveProgresoEspecifico(userId, {
@@ -774,9 +717,7 @@ const NivelParesMinimos = () => {
           current_level: nivel,
           accumulated_score: score
         });
-        console.log(`✅ Progreso guardado en BD antes de ir a encuesta (Pares Mínimos ${dificultad})`);
       } catch (error) {
-        console.error('❌ Error guardando progreso en BD antes de encuesta:', error);
       }
     }
     
@@ -847,13 +788,11 @@ const NivelParesMinimos = () => {
     }
   };
 
-  // 📥 CARGA DE PROGRESO DESHABILITADA TEMPORALMENTE
   // useEffect(() => {
   //   const cargarProgreso = async () => {
   //     if (user && nivel) {
   //       const progressFromDB = await loadProgressFromDatabase();
   //       if (progressFromDB && progressFromDB.accumulated_score) {
-  //         console.log('🔄 Restaurando progreso (Pares Mínimos): Nivel', progressFromDB.current_level, 'Puntaje', progressFromDB.accumulated_score);
   //         setScore(progressFromDB.accumulated_score);
   //       }
   //     }
@@ -906,7 +845,6 @@ const NivelParesMinimos = () => {
   }, []);
 
   useEffect(() => {
-    console.log('🔍 useEffect ejecutándose - nivel:', nivel, 'dificultad:', dificultad);
     
     if (dificultad !== 'facil') {
       navigate('/seleccion-mundo');
@@ -914,7 +852,6 @@ const NivelParesMinimos = () => {
     }
 
     const config = getNivelConfigParesMinimos(nivel);
-    console.log('📦 Config obtenida para nivel', nivel, ':', config ? 'EXISTE' : 'NO EXISTE');
     
     if (config) {
       const selectables = config.gameSettings?.shuffleSelectables ? 
@@ -1023,10 +960,8 @@ const NivelParesMinimos = () => {
     };
   }, [dificultad, nivel]); // ✅ Solo depende de dificultad y nivel
 
-  // 🎵 useEffect separado para reproducir instrucciones cuando levelConfig esté listo
   useEffect(() => {
     if (levelConfig && !instructionsCompleted && !isPlayingInstructions) {
-      console.log('🎯 levelConfig cargado, preparando instrucciones...');
       const instructionsTimer = setTimeout(() => {
         playInitialInstructions();
       }, 500);
@@ -1417,7 +1352,7 @@ const Indicator = styled.div`
     props.clickable ? 'pointer' : 'not-allowed'
   };
   transition: all 0.3s ease;
-  z-index: 200;
+  z-index: 1000;
   position: relative;
   opacity: ${props => 
     !props.clickable ? 0.5 :
@@ -1434,9 +1369,27 @@ const Indicator = styled.div`
   }
   
   img {
-    width: 500px;
+    width: 300px;
     height: auto;
     filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.4));
+  }
+  
+  @media (max-width: 1024px) {
+    img {
+      width: 250px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    img {
+      width: 200px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    img {
+      width: 150px;
+    }
   }
 `;
 
@@ -1445,13 +1398,31 @@ const SelectablesContainer = styled.div`
   grid-template-columns: repeat(8, 1fr);
   grid-template-rows: repeat(2, 1fr);
   gap: 25px;
-  margin-top: 150px;
+  margin-top: 80px;
   width: 85%;
   max-width: 1300px;
   min-height: 100px;
   padding: 20px;
   justify-items: center;
   align-items: center;
+  
+  @media (max-width: 1024px) {
+    margin-top: 70px;
+    gap: 20px;
+    width: 90%;
+  }
+  
+  @media (max-width: 768px) {
+    margin-top: 60px;
+    gap: 15px;
+    width: 92%;
+  }
+  
+  @media (max-width: 480px) {
+    margin-top: 50px;
+    gap: 12px;
+    width: 95%;
+  }
 `;
 
 const Selectable = styled.div`
@@ -1494,6 +1465,24 @@ const Selectable = styled.div`
       props.disabled ? 'grayscale(1)' :
       props.selected ? 'grayscale(0.3)' : 'none'
     };
+  }
+  
+  @media (max-width: 1024px) {
+    img {
+      width: 85px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    img {
+      width: 75px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    img {
+      width: 60px;
+    }
   }
 `;
 
@@ -1591,7 +1580,7 @@ const TrainingOverlay = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 100;
+  z-index: 50;
   pointer-events: none;
 `;
 

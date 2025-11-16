@@ -27,6 +27,12 @@ export const Container = styled.div`
     left: 0;
     overflow: hidden;
     background: url('/images/image.png') no-repeat center center / cover;
+    
+    @media (max-width: 768px) {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+    }
 `;
 
 export const FormContainer = styled.div`
@@ -40,6 +46,15 @@ export const FormContainer = styled.div`
     align-items: center;
     padding: 50px;
     
+    @media (max-width: 768px) {
+        max-width: 90%;
+        padding: 30px 20px;
+    }
+    
+    @media (max-width: 480px) {
+        max-width: 95%;
+        padding: 20px 15px;
+    }
 `;
 // Agrega esto a tu archivo de estilos o directamente en el componente
 export const AsignarContainer = styled.div`
@@ -52,6 +67,10 @@ export const AsignarContainer = styled.div`
   overflow-y: auto;
   background: url('/images/image.png') no-repeat center center / cover;
   background-attachment: fixed;
+  
+  @media (max-width: 768px) {
+    background-attachment: scroll;
+  }
 `;
 
 export const AsignarFormContainer = styled.div`
@@ -66,6 +85,18 @@ export const AsignarFormContainer = styled.div`
   padding: 50px;
   margin: 80px auto 20px auto; // Espacio para el Navbar
   align-self: center;
+  
+  @media (max-width: 768px) {
+    max-width: 90%;
+    padding: 30px 20px;
+    margin: 80px auto 20px auto;
+  }
+  
+  @media (max-width: 480px) {
+    max-width: 95%;
+    padding: 20px 15px;
+    margin: 70px auto 20px auto;
+  }
 `;
 
 export const Container2 = styled.div`
@@ -89,18 +120,29 @@ export const Input = styled.input`
     font-size: 1rem;
     color: #f4f4f4;
     outline: none;
-    box-sizing: border-box; /* Importante para que el padding no afecte el ancho total */
+    box-sizing: border-box;
 
     &::placeholder {
         color: #f4f4f4;
         opacity: 0.5;
     }
+    
+    @media (max-width: 768px) {
+        font-size: 0.95rem;
+        padding: 0.65rem;
+    }
+    
+    @media (max-width: 480px) {
+        font-size: 0.9rem;
+        padding: 0.6rem;
+        margin: 0.4rem 0;
+    }
 `;
 
 export const Select = styled.select`
-    width: ${formControlWidth}; /* Exactamente el mismo ancho que Input */
+    width: ${formControlWidth};
     background: rgba(106, 106, 106);
-    padding: 0.75rem 2rem 0.75rem 0.75rem; /* Padding derecho para la flecha */
+    padding: 0.75rem 2rem 0.75rem 0.75rem;
     margin: 0.5rem 0;
     border: 1px solid #ccc;
     border-radius: 50px;
@@ -112,16 +154,27 @@ export const Select = styled.select`
     background-position: right 15px center;
     background-size: 16px;
     outline: none;
-    box-sizing: border-box; /* Importante para mantener consistencia en anchos */
+    box-sizing: border-box;
     
     option {
         background-color: rgba(106, 106, 106);
         color: #f4f4f4;
     }
+    
+    @media (max-width: 768px) {
+        font-size: 0.95rem;
+        padding: 0.65rem 2rem 0.65rem 0.65rem;
+    }
+    
+    @media (max-width: 480px) {
+        font-size: 0.9rem;
+        padding: 0.6rem 2rem 0.6rem 0.6rem;
+        margin: 0.4rem 0;
+    }
 `;
 
 export const Button = styled.button`
-    width: ${formControlWidth}; /* También ajustamos el botón al mismo ancho */
+    width: ${formControlWidth};
     padding: 0.75rem;
     margin: 1rem 0;
     background-color: #fc7500;
@@ -135,6 +188,18 @@ export const Button = styled.button`
 
     &:hover {
         background-color: #e56700;
+    }
+    
+    @media (max-width: 768px) {
+        font-size: 0.95rem;
+        padding: 0.65rem;
+        margin: 0.8rem 0;
+    }
+    
+    @media (max-width: 480px) {
+        font-size: 0.9rem;
+        padding: 0.6rem;
+        margin: 0.6rem 0;
     }
 `;
 
@@ -175,5 +240,19 @@ export const LogoutButton = styled(Button)`
     background-color: #ff4d4d; 
     &:hover {
         background-color: #cc0000; 
+    }
+    
+    @media (max-width: 768px) {
+        bottom: 15px;
+        left: 15px;
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
+    
+    @media (max-width: 480px) {
+        bottom: 10px;
+        left: 10px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
     }
 `;

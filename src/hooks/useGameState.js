@@ -70,7 +70,6 @@ export const useGameState = (gameType, dificultad, nivel, levelConfig) => {
             const progress = JSON.parse(savedProgress);
             return progress.accumulatedScore || 200;
           } catch (error) {
-            console.error('Error parsing progress:', error);
             return 200;
           }
         }
@@ -90,7 +89,6 @@ export const useGameState = (gameType, dificultad, nivel, levelConfig) => {
     if (savedState.gameType !== gameType || 
         savedState.difficulty !== dificultad || 
         savedState.level !== nivel) {
-      console.log('🚫 Estado guardado no corresponde al nivel actual');
       return false;
     }
     
@@ -98,13 +96,11 @@ export const useGameState = (gameType, dificultad, nivel, levelConfig) => {
     const maxAge = 4 * 60 * 60 * 1000; // 4 horas
     const sessionAge = Date.now() - savedState.sessionTimestamp;
     if (sessionAge > maxAge) {
-      console.log('⏰ Sesión expirada (más de 4 horas)');
       return false;
     }
     
     // Verificar que el nivel había sido iniciado
     if (!savedState.levelStarted) {
-      console.log('🚫 Nivel no había sido iniciado');
       return false;
     }
     
@@ -112,7 +108,6 @@ export const useGameState = (gameType, dificultad, nivel, levelConfig) => {
     if (typeof savedState.score !== 'number' || 
         typeof savedState.correctSelections !== 'number' ||
         typeof savedState.totalSelections !== 'number') {
-      console.log('🚫 Datos del estado inválidos');
       return false;
     }
     
@@ -132,7 +127,6 @@ export const useGameState = (gameType, dificultad, nivel, levelConfig) => {
     return Math.max(0, remaining);
   }, []);
 
-  // Cargar estado desde localStorage al montar el componente
   useEffect(() => {
     if (!user || !levelConfig) return;
 
@@ -147,7 +141,6 @@ export const useGameState = (gameType, dificultad, nivel, levelConfig) => {
           
           // Si el tiempo se agotó, limpiar estado y empezar fresh
           if (actualRemainingTime <= 0 && !savedState.isTraining && savedState.instructionsCompleted) {
-            console.log('⏰ Tiempo agotado en sesión guardada, reiniciando nivel');
             localStorage.removeItem(storageKey);
             setGameState(getInitialState());
             return;
@@ -162,7 +155,6 @@ export const useGameState = (gameType, dificultad, nivel, levelConfig) => {
           };
           
           setGameState(restoredState);
-          console.log(`🔄 Estado del juego restaurado para nivel ${nivel}:`, {
             score: restoredState.score,
             correctSelections: restoredState.correctSelections,
             remainingTime: restoredState.remainingTime,
@@ -172,17 +164,14 @@ export const useGameState = (gameType, dificultad, nivel, levelConfig) => {
           
           return;
         } else {
-          console.log('🗑️ Estado guardado inválido, limpiando...');
           localStorage.removeItem(storageKey);
         }
       }
     } catch (error) {
-      console.error('❌ Error cargando estado del juego:', error);
       localStorage.removeItem(storageKey);
     }
     
     // Si no hay estado válido, inicializar fresh
-    console.log(`🆕 Inicializando nivel ${nivel} desde cero`);
     setGameState(getInitialState());
   }, [storageKey, user, levelConfig, isValidSavedSession, calculateRemainingTime, getInitialState, nivel]);
 
@@ -203,9 +192,7 @@ export const useGameState = (gameType, dificultad, nivel, levelConfig) => {
 
     try {
       localStorage.setItem(storageKey, JSON.stringify(stateToSave));
-      console.log(`💾 Estado guardado (Score: ${state.score}, Tiempo: ${state.remainingTime}s)`);
     } catch (error) {
-      console.error('❌ Error guardando estado del juego:', error);
     }
   }, [storageKey, user]);
 
@@ -252,9 +239,7 @@ export const useGameState = (gameType, dificultad, nivel, levelConfig) => {
     
     try {
       localStorage.removeItem(storageKey);
-      console.log(`🗑️ Estado del juego limpiado para nivel ${nivel}`);
     } catch (error) {
-      console.error('❌ Error limpiando estado:', error);
     }
   }, [getInitialState, storageKey, nivel]);
 
@@ -262,9 +247,7 @@ export const useGameState = (gameType, dificultad, nivel, levelConfig) => {
   const clearGameState = useCallback(() => {
     try {
       localStorage.removeItem(storageKey);
-      console.log(`✅ Estado del juego limpiado tras completar nivel ${nivel}`);
     } catch (error) {
-      console.error('❌ Error limpiando estado tras completar:', error);
     }
   }, [storageKey, nivel]);
 

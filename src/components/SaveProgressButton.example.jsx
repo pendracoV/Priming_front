@@ -93,30 +93,24 @@ const NivelSinAutoGuardado = () => {
   );
 };
 
-// NOTAS IMPORTANTES:
-// 
 // 1. El botón siempre debe recibir:
 //    - currentLevel: número del nivel actual
 //    - accumulatedScore: puntaje acumulado del jugador
 //    - gameType: 'cognados' o 'pares-minimos'
 //    - difficulty: 'facil', 'medio', o 'dificil'
-//
 // 2. El parámetro autoSaveOnClick es opcional:
 //    - true (default): guarda en BD antes de navegar a encuesta
 //    - false: solo actualiza localStorage y navega
-//
 // 3. El botón siempre actualiza localStorage antes de navegar:
 //    - lastLevel
 //    - accumulatedScore
 //    - lastGameType
 //    - lastDifficulty
-//
 // 4. Posicionamiento:
 //    - El botón es fixed (posición fija)
 //    - Aparece en la esquina inferior derecha
 //    - No interfiere con el contenido del juego
 //    - Tiene z-index alto (999)
-//
 // 5. Estilos:
 //    - Botón circular con gradiente
 //    - Tooltip al pasar el mouse

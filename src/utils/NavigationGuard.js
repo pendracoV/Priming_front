@@ -23,7 +23,6 @@ export class NavigationGuard {
       if (this.isActive) return;
       
       this.isActive = true;
-      console.log(`🔒 Protección de navegación activada para ${this.currentPath}`);
       
       // 1. Bloquear botones atrás/adelante
       this.blockBrowserNavigation();
@@ -48,7 +47,6 @@ export class NavigationGuard {
       if (!this.isActive) return;
       
       this.isActive = false;
-      console.log(`🔓 Protección de navegación desactivada para ${this.currentPath}`);
       
       // Limpiar todos los listeners
       this.listeners.forEach(({ element, event, handler }) => {
@@ -135,7 +133,6 @@ export class NavigationGuard {
     monitorUrlChanges() {
       const urlWatcher = setInterval(() => {
         if (this.isActive && window.location.pathname !== this.currentPath) {
-          console.log(`🚫 URL no autorizada detectada: ${window.location.pathname}`);
           window.history.replaceState(null, '', this.currentPath);
           this.showNavigationBlockedMessage();
         }
@@ -284,7 +281,6 @@ export class NavigationGuard {
      * Muestra mensaje cuando se bloquea atajo de teclado
      */
     showKeyboardBlockedMessage(key) {
-      console.log(`⌨️ Atajo bloqueado: ${key}`);
       
       // Crear notificación más sutil para atajos de teclado
       const notification = document.createElement('div');
@@ -336,7 +332,6 @@ export class NavigationGuard {
      */
     saveCurrentState() {
       // Esta función se puede personalizar según las necesidades del juego
-      console.log(`💾 Guardando estado antes de cerrar: ${this.currentPath}`);
       
       // Aquí se puede integrar con el sistema de guardado del juego
       const event = new CustomEvent('saveGameState', {
@@ -356,12 +351,10 @@ export class NavigationGuard {
      */
     updateCurrentPath(newPath) {
       this.currentPath = newPath;
-      console.log(`🔄 Ruta actualizada a: ${newPath}`);
     }
   }
   
   // ═══════════════════════════════════════════════════════════════════════════════
-  // 🎯 FUNCIONES DE UTILIDAD
   // ═══════════════════════════════════════════════════════════════════════════════
   
   /**

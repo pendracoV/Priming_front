@@ -49,7 +49,6 @@ const NivelCognadoMedio = () => {
   const [levelConfig, setLevelConfig] = useState(null);
   const previousLevelRef = useRef(nivel);
 
-  // 🔑 Obtener información del niño actual desde localStorage (NO del AuthContext)
   const [user, setUser] = useState(null);
   
   useEffect(() => {
@@ -58,18 +57,14 @@ const NivelCognadoMedio = () => {
       try {
         const ninoData = JSON.parse(currentNinoStr);
         setUser(ninoData);
-        console.log(`👦 Niño actual cargado: ${ninoData.nombre} (ID: ${ninoData.id})`);
       } catch (error) {
-        console.error('Error parseando currentNino:', error);
         navigate('/ninos-list');
       }
     } else {
-      console.error('❌ No hay niño en sesión');
       navigate('/ninos-list');
     }
   }, [navigate]);
 
-  // �️ PROTECCIÓN CONTRA NAVEGACIÓN MANUAL ENTRE NIVELES
   useEffect(() => {
     const navigationKey = `authorized_navigation_cognados_medio_${nivel}`;
     const isAuthorized = sessionStorage.getItem(navigationKey);
@@ -77,7 +72,6 @@ const NivelCognadoMedio = () => {
     // Si el nivel cambió desde el anterior render
     if (previousLevelRef.current && previousLevelRef.current !== nivel) {
       if (!isAuthorized) {
-        console.log('🚨 Navegación manual detectada (cambio de nivel) - Bloqueando');
         // Limpiar progreso del nivel actual para forzar reinicio
         if (user) {
           const userId = user.id;
@@ -97,7 +91,6 @@ const NivelCognadoMedio = () => {
     if (!previousLevelRef.current) {
       // Si NO hay autorización, es navegación directa no permitida
       if (!isAuthorized) {
-        console.log('🚨 Acceso directo sin autorización - Redirigiendo a selección de mundos');
         // Redirigir a selección de mundos en lugar de recargar
         navigate('/seleccion-mundo');
         return;
@@ -110,7 +103,6 @@ const NivelCognadoMedio = () => {
     previousLevelRef.current = nivel;
   }, [nivel, user, navigate]);
 
-  // �📥 Función para cargar progreso desde base de datos
   const loadProgressFromDatabase = async () => {
     if (!user) return null;
     
@@ -119,7 +111,6 @@ const NivelCognadoMedio = () => {
       const response = await ninoService.getProgresoEspecifico(user.id, 'cognados', 'medio');
       
       if (response.tiene_progreso && response.data) {
-        console.log('📥 Progreso cargado desde base de datos (medio):', response.data);
         
         const userId = user.id;
         localStorage.setItem(`lastGameType_${userId}`, 'cognados');
@@ -130,7 +121,6 @@ const NivelCognadoMedio = () => {
         return response.data;
       }
     } catch (error) {
-      console.error('❌ Error cargando progreso desde base de datos:', error);
     }
     
     return null;
@@ -152,15 +142,12 @@ const NivelCognadoMedio = () => {
       localStorage.setItem(`progress_cognados_medio_${userId}`, JSON.stringify(generalProgress));
       
       // TAMBIÉN GUARDAR EN CLAVES GENÉRICAS PARA SaveProgressButton y validación
-      // 🔑 IMPORTANTE: Incluir userId para que cada niño tenga su propio progreso
       localStorage.setItem(`lastGameType_${userId}`, 'cognados');
       localStorage.setItem(`lastDifficulty_${userId}`, 'medio');
       localStorage.setItem(`lastLevel_${userId}`, String(completedLevel));
       localStorage.setItem(`accumulatedScore_${userId}`, String(finalScore));
       
-      console.log('✅ Progreso guardado en localStorage (medio) - Nivel:', completedLevel, 'Puntaje:', finalScore, 'UserId:', userId);
       
-      // 💾 GUARDAR EN BASE DE DATOS
       try {
         const ninoService = (await import('../../api/ninoService')).default;
         await ninoService.saveProgresoEspecifico(userId, {
@@ -169,9 +156,7 @@ const NivelCognadoMedio = () => {
           current_level: completedLevel,
           accumulated_score: finalScore
         });
-        console.log('✅ Progreso guardado en base de datos (medio)');
       } catch (error) {
-        console.error('❌ Error guardando progreso en base de datos:', error);
       }
       
       const completedLevelsKey = `completed_levels_cognados_medio_${userId}`;
@@ -215,7 +200,6 @@ const NivelCognadoMedio = () => {
           }
         }
       } catch (error) {
-        console.error('Error reading completed levels:', error);
       }
       
       const savedProgress = localStorage.getItem(`progress_cognados_medio_${userId}`);
@@ -298,7 +282,6 @@ const NivelCognadoMedio = () => {
 
   // Navigation Functions - MEJORADAS
   const closeEndGameAlert = () => {
-    console.log('🔄 closeEndGameAlert llamado - NivelCognadosMedio');
     
     if (endGameType === 'success') {
       setShowEndGameAlert(false);
@@ -306,7 +289,6 @@ const NivelCognadoMedio = () => {
       const maxLevels = 5; // Modo medio tiene 5 niveles
       
       if (currentLevel < maxLevels) {
-        // 🔑 Autorizar navegación al siguiente nivel
         const nextLevel = currentLevel + 1;
         sessionStorage.setItem(`authorized_navigation_cognados_medio_${nextLevel}`, 'true');
         navigate(`/nivel/cognados/medio/${nextLevel}`);
@@ -314,9 +296,7 @@ const NivelCognadoMedio = () => {
         navigate('/seleccion-mundo');
       }
     } else {
-      console.log('❌ Reinicio por falla');
       
-      // 1️⃣ LIMPIAR PRIMERO - Detener cualquier audio y timeout activo
       if (currentAudioRef.current) {
         currentAudioRef.current.pause();
         currentAudioRef.current.currentTime = 0;
@@ -333,17 +313,13 @@ const NivelCognadoMedio = () => {
         instructionsTimeoutRef.current = null;
       }
       
-      // 2️⃣ RESETEAR ESTADOS INMEDIATAMENTE (antes de cualquier timeout)
       setInstructionsCompleted(false);
       setIsPlayingInstructions(false);
       setShowEndGameAlert(false);
       
-      console.log('🔧 Estados reseteados');
       
-      // 3️⃣ Resetear el juego
       resetAllStates();
       
-      // 4️⃣ Mezclar selectables si es necesario
       if (levelConfig) {
         const shuffledSelectables = levelConfig.gameSettings?.shuffleSelectables ? 
           shuffleArray(levelConfig.selectables) : levelConfig.selectables;
@@ -352,11 +328,8 @@ const NivelCognadoMedio = () => {
           selectables: shuffledSelectables
         }));
         
-        console.log('🔀 Selectables mezclados');
         
-        // 5️⃣ UN SOLO TIMEOUT de 500ms para reproducir instrucciones
         instructionsTimeoutRef.current = setTimeout(() => {
-          console.log('⏰ Timeout ejecutado, llamando playInitialInstructions');
           playInitialInstructions();
         }, 500);
       }
@@ -370,7 +343,6 @@ const NivelCognadoMedio = () => {
     const maxLevels = 5;
     
     if (currentLevel < maxLevels) {
-      // 🔑 Autorizar navegación al siguiente nivel
       const nextLevel = currentLevel + 1;
       sessionStorage.setItem(`authorized_navigation_cognados_medio_${nextLevel}`, 'true');
       navigate(`/nivel/cognados/medio/${nextLevel}`);
@@ -388,9 +360,7 @@ const NivelCognadoMedio = () => {
   };
 
   const restartLevel = () => {
-    console.log('🔄 restartLevel llamado - NivelCognadosMedio');
     
-    // 1️⃣ LIMPIAR PRIMERO - Detener cualquier audio y timeout activo
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       currentAudioRef.current.currentTime = 0;
@@ -407,16 +377,12 @@ const NivelCognadoMedio = () => {
       instructionsTimeoutRef.current = null;
     }
     
-    // 2️⃣ RESETEAR ESTADOS INMEDIATAMENTE (antes de cualquier timeout)
     setInstructionsCompleted(false);
     setIsPlayingInstructions(false);
     
-    console.log('🔧 Estados reseteados en restartLevel');
     
-    // 3️⃣ Resetear el juego
     resetAllStates();
     
-    // 4️⃣ Mezclar selectables si es necesario
     if (levelConfig) {
       const shuffledSelectables = levelConfig.gameSettings?.shuffleSelectables ? 
         shuffleArray(levelConfig.selectables) : levelConfig.selectables;
@@ -425,11 +391,8 @@ const NivelCognadoMedio = () => {
         selectables: shuffledSelectables
       }));
       
-      console.log('🔀 Selectables mezclados en restartLevel');
       
-      // 5️⃣ UN SOLO TIMEOUT de 500ms para reproducir instrucciones
       instructionsTimeoutRef.current = setTimeout(() => {
-        console.log('⏰ Timeout ejecutado en restartLevel, llamando playInitialInstructions');
         playInitialInstructions();
       }, 500);
     }
@@ -469,7 +432,6 @@ const NivelCognadoMedio = () => {
       
       // Listener para limpiar cuando termina naturalmente
       const handleEnded = () => {
-        console.log('🔊 Audio terminado naturalmente (medio)');
         if (currentAudioRef.current === audio) {
           currentAudioRef.current = null;
         }
@@ -498,7 +460,6 @@ const NivelCognadoMedio = () => {
       }, duration + 100);
       
     } catch (error) {
-      console.error('Error reproducing audio:', error);
       setIsPlayingAudio(false);
 
       if (isSuccessAudio) {
@@ -512,15 +473,12 @@ const NivelCognadoMedio = () => {
   };
 
   const playInitialInstructions = async () => {
-    console.log('🎵 playInitialInstructions llamado - NivelCognadosMedio');
     
     // Solo prevenir si se está reproduciendo activamente (no si ya completó)
     if (isPlayingInstructions && !instructionsCompleted) {
-      console.log('🚫 Ya reproduciendo instrucciones');
       return;
     }
     
-    console.log('▶️ Iniciando reproducción de instrucciones');
     setIsPlayingInstructions(true);
     const instructionsAudioPath = `/sounds/cognados/medio/instrucciones/instrucciones${nivel}.mp3`;
     
@@ -528,10 +486,8 @@ const NivelCognadoMedio = () => {
       await playAudioWithQueue(instructionsAudioPath, () => {
         setIsPlayingInstructions(false);
         setInstructionsCompleted(true);
-        console.log('✅ Instrucciones completadas');
       });
     } catch (error) {
-      console.error('Error reproducing instructions:', error);
       setIsPlayingInstructions(false);
       setInstructionsCompleted(true);
     }
@@ -539,14 +495,7 @@ const NivelCognadoMedio = () => {
 
   // FUNCIONES DE JUEGO MODIFICADAS PARA MODO MEDIO
   const playIndicatorAudio = async (indicatorId) => {
-    // 🔴 Prevenir clicks múltiples y reproducción doble
     if (!levelConfig || !instructionsCompleted || showEndGameAlert || isPlayingAudio) {
-      console.log('🚫 Audio bloqueado:', { 
-        hasConfig: !!levelConfig, 
-        instructionsCompleted, 
-        showEndGameAlert, 
-        isPlayingAudio 
-      });
       return;
     }
   
@@ -564,13 +513,11 @@ const NivelCognadoMedio = () => {
         return;
       }
       
-      console.log('🎵 Reproduciendo audio de entrenamiento (medio):', indicator.audio);
       await playAudioWithQueue(indicator.audio, () => {
         setTrainingClicks(prev => {
           const newClicks = { ...prev };
           newClicks[indicatorKey] = prev[indicatorKey] + 1;
           
-          console.log(`✅ Audio de entrenamiento completado: indicator${indicatorId} = ${newClicks[indicatorKey]}/5`);
           
           // Verificar si ambos indicadores tienen exactamente 5 clicks
           if (newClicks.indicator1 === 5 && newClicks.indicator2 === 5) {
@@ -578,7 +525,6 @@ const NivelCognadoMedio = () => {
             const pauseDuration = gameSettings?.pauseOnCorrect || 500;
             setTimeout(() => {
               setIsTraining(false);
-              console.log('🎯 Entrenamiento medio completado, iniciando juego');
             }, pauseDuration);
           }
           return newClicks;
@@ -800,7 +746,6 @@ const NivelCognadoMedio = () => {
       // Guardar en localStorage
       localStorage.setItem(`progress_cognados_medio_${userId}`, JSON.stringify(generalProgress));
       
-      // 💾 GUARDAR EN BASE DE DATOS antes de ir a encuesta
       try {
         const ninoService = (await import('../../api/ninoService')).default;
         await ninoService.saveProgresoEspecifico(userId, {
@@ -809,9 +754,7 @@ const NivelCognadoMedio = () => {
           current_level: nivel,
           accumulated_score: score
         });
-        console.log('✅ Progreso guardado en BD antes de ir a encuesta (Cognados Medio)');
       } catch (error) {
-        console.error('❌ Error guardando progreso en BD antes de encuesta:', error);
       }
     }
     
@@ -883,13 +826,11 @@ const NivelCognadoMedio = () => {
     }
   };
 
-  // 📥 Cargar progreso desde base de datos al iniciar
   useEffect(() => {
     const cargarProgreso = async () => {
       if (user && nivel) {
         const progressFromDB = await loadProgressFromDatabase();
         if (progressFromDB && progressFromDB.accumulated_score) {
-          console.log('🔄 Restaurando progreso (medio): Nivel', progressFromDB.current_level, 'Puntaje', progressFromDB.accumulated_score);
           setScore(progressFromDB.accumulated_score);
         }
       }
@@ -1042,7 +983,6 @@ const NivelCognadoMedio = () => {
       setCurrentActiveIndicator(null);
       setSelectedSelectorForComparison(null);
       
-      // 🔴 IMPORTANTE: Detener todos los audios cuando sales de la pantalla
       if (currentAudioRef.current) {
         currentAudioRef.current.pause();
         currentAudioRef.current.currentTime = 0;
@@ -1458,8 +1398,9 @@ const IndicatorsContainer = styled.div`
   margin-bottom: 5px; 
   position: relative;
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   align-items: center;
+  gap: 15px;
   z-index: 1;
   padding: 0 10%;
 `;
@@ -1470,7 +1411,7 @@ const Indicator = styled.div`
     props.clickable ? 'pointer' : 'not-allowed'
   };
   transition: all 0.3s ease;
-  z-index: 200;
+  z-index: 1000;
   position: relative;
   opacity: ${props => 
     !props.clickable ? 0.5 :
@@ -1498,6 +1439,24 @@ const Indicator = styled.div`
     height: auto;
     filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.4));
   }
+  
+  @media (max-width: 1024px) {
+    img {
+      width: 300px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    img {
+      width: 250px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    img {
+      width: 180px;
+    }
+  }
 `;
 
 const TrainingClicksIndicator = styled.div`
@@ -1522,7 +1481,7 @@ const SelectablesContainer = styled.div`
   grid-template-columns: ${props => props.gameMode === 'medio' ? 'none' : 'repeat(8, 1fr)'};
   grid-template-rows: ${props => props.gameMode === 'medio' ? 'none' : 'repeat(2, 1fr)'};
   gap: ${props => props.gameMode === 'medio' ? '60px' : '50px'};
-  margin-top: 60px;
+  margin-top: 130px;
   margin-bottom: 40px;
   width: 90%;
   max-width: ${props => props.gameMode === 'medio' ? '1000px' : '5000px'};
@@ -1546,6 +1505,60 @@ const SelectablesContainer = styled.div`
       width: 100%;
     }
   `}
+  
+  @media (max-width: 1024px) {
+    margin-top: 100px;
+    gap: ${props => props.gameMode === 'medio' ? '50px' : '40px'};
+    
+    ${props => props.gameMode === 'medio' && `
+      > div:first-child {
+        gap: 40px;
+        padding-left: 50px;
+      }
+      
+      > div:last-child {
+        gap: 40px;
+      }
+    `}
+  }
+  
+  @media (max-width: 768px) {
+    width: 95%;
+    margin-top: 80px;
+    margin-bottom: 30px;
+    gap: ${props => props.gameMode === 'medio' ? '40px' : '30px'};
+    padding: 15px;
+    
+    ${props => props.gameMode === 'medio' && `
+      > div:first-child {
+        gap: 30px;
+        padding-left: 30px;
+      }
+      
+      > div:last-child {
+        gap: 30px;
+      }
+    `}
+  }
+  
+  @media (max-width: 480px) {
+    width: 98%;
+    margin-top: 60px;
+    margin-bottom: 20px;
+    gap: ${props => props.gameMode === 'medio' ? '30px' : '20px'};
+    padding: 10px;
+    
+    ${props => props.gameMode === 'medio' && `
+      > div:first-child {
+        gap: 20px;
+        padding-left: 20px;
+      }
+      
+      > div:last-child {
+        gap: 20px;
+      }
+    `}
+  }
 `;
 
 const Selectable = styled.div`
@@ -1588,6 +1601,24 @@ const Selectable = styled.div`
       props.disabled ? 'grayscale(1)' :
       props.selected ? 'grayscale(0.3)' : 'none'
     };
+  }
+  
+  @media (max-width: 1024px) {
+    img {
+      width: ${props => props.gameMode === 'medio' ? '110px' : '90px'};
+    }
+  }
+  
+  @media (max-width: 768px) {
+    img {
+      width: ${props => props.gameMode === 'medio' ? '100px' : '80px'};
+    }
+  }
+  
+  @media (max-width: 480px) {
+    img {
+      width: ${props => props.gameMode === 'medio' ? '80px' : '65px'};
+    }
   }
 `;
 
@@ -1685,7 +1716,7 @@ const TrainingOverlay = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 100;
+  z-index: 50;
   pointer-events: none;
 `;
 

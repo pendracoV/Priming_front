@@ -205,7 +205,6 @@ const AsignarEvaluador = () => {
             jornada: nino.jornada,
         };
 
-        console.log("📩 Datos enviados al backend:", datosEnviados);
 
         try {
             const res = await axios.post(
@@ -232,7 +231,6 @@ const AsignarEvaluador = () => {
             });
             setErrors({});
         } catch (error) {
-            console.error("❌ Error asignando acompañante:", error);
             setModalOpen(false);
             
             // Manejar errores específicos según códigos del backend
