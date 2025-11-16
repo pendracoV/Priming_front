@@ -1,38 +1,162 @@
-// AdminUserCreate.jsx
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../components/Modal';
 import axios from 'axios';
 import API_URL from '../api/config';
+import { FaChild, FaUserTie, FaUserCog } from 'react-icons/fa';
 
 const api = axios.create({ baseURL: API_URL });
 
+// === ESTILOS ===
 const Container = styled.div`
-  max-width: 400px;
+  max-width: 500px;
   margin: 40px auto;
-  padding: 20px;
-  border-radius: 8px;
-  background-color: #f8f9fa;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-`;
-const Title = styled.h2` text-align: center; margin-bottom: 1.5rem; `;
-const Form = styled.form` display: flex; flex-direction: column; `;
-const Label = styled.label` font-weight: bold; margin-bottom: 5px; `;
-const Input = styled.input`
-  padding: 8px; margin-bottom: 15px;
-  border: 1px solid #ccc; border-radius: 4px;
-`;
-const Select = styled.select`
-  padding: 8px; margin-bottom: 15px;
-  border: 1px solid #ccc; border-radius: 4px;
-`;
-const Button = styled.button`
-  padding: 10px; background: #007bff; color: white;
-  border: none; border-radius: 4px; cursor: pointer;
-  &:hover { background: #0056b3; }
+  padding: 35px;
+  border-radius: 18px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  font-family: 'Rubik', sans-serif;
 `;
 
+const Title = styled.h2`
+  text-align: center;
+  margin-bottom: 1.8rem;
+  font-weight: 700;
+  color: #212529;
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+`;
+
+const FieldGroup = styled.div`
+  margin-bottom: 1.2rem;
+  display: flex;
+  flex-direction: column;
+`;
+
+const Label = styled.label`
+  font-weight: 600;
+  color: #212529;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+  text-align: left;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d0d7de;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  color: #212529;
+
+  &:focus {
+    outline: none;
+    border-color: #0090E7;
+    box-shadow: 0 0 0 3px rgba(0, 144, 231, 0.15);
+  }
+`;
+
+const Select = styled.select`
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d0d7de;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  color: #212529;
+
+  &:focus {
+    outline: none;
+    border-color: #0090E7;
+    box-shadow: 0 0 0 3px rgba(0, 144, 231, 0.15);
+  }
+`;
+
+const Button = styled.button`
+  margin-top: 10px;
+  width: 100%;
+  background: #0090E7;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #007acc;
+  }
+`;
+
+const ErrorText = styled.small`
+  color: #E74C3C;
+  font-size: 0.8rem;
+  margin-top: 4px;
+`;
+
+
+const UserTypeSelector = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin: 25px 0 35px 0;
+  flex-wrap: wrap;
+`;
+
+const userColors = {
+  niño: '#FFA62B',
+  evaluador: '#28C76F',
+  administrador: '#0090E7',
+};
+
+const UserTypeCircle = styled.div`
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: ${({ $active, $type }) => ($active ? userColors[$type] : '#f3f3f3')};
+  color: ${({ $active }) => ($active ? '#fff' : '#333')};
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: ${({ $active, $type }) =>
+    $active ? `0 0 12px ${userColors[$type]}80` : '0 2px 6px rgba(0,0,0,0.1)'};
+  transition: all 0.25s ease;
+  padding: 8px;
+
+  svg {
+    font-size: 1.8rem;
+    margin-bottom: 6px;
+  }
+
+  span {
+    font-size: 0.75rem;
+    display: block;
+    line-height: 1.2;
+    word-break: break-word;
+    white-space: normal;
+    max-width: 80px;
+  }
+
+  &:hover {
+    transform: scale(1.07);
+    background: ${({ $active, $type }) =>
+      $active ? userColors[$type] : '#e8e8e8'};
+  }
+`;
+
+// === COMPONENTE PRINCIPAL ===
 export default function AdminUserCreate() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -40,11 +164,9 @@ export default function AdminUserCreate() {
     correo_electronico: '',
     contrasena: '',
     tipo_usuario: 'niño',
-    // Evaluador
     codigo: '',
     tipo: '',
     tipo_documento: '',
-    // Niño
     edad: '',
     grado: '',
     colegio: '',
@@ -53,7 +175,10 @@ export default function AdminUserCreate() {
 
   const [modal, setModal] = useState({ isOpen: false });
   const [errors, setErrors] = useState({});
-  const [passwordValidation, setPasswordValidation] = useState({ hasUpperCase: false, hasNumber: false });
+  const [passwordValidation, setPasswordValidation] = useState({
+    hasUpperCase: false,
+    hasNumber: false,
+  });
 
   useEffect(() => {
     const { contrasena } = form;
@@ -81,9 +206,9 @@ export default function AdminUserCreate() {
     if (!form.contrasena.trim()) newErrors.contrasena = 'La contraseña es obligatoria';
 
     if (form.contrasena && !passwordValidation.hasUpperCase)
-      newErrors.contrasena = 'La contraseña debe contener al menos una letra mayúscula';
+      newErrors.contrasena = 'Debe contener al menos una letra mayúscula';
     if (form.contrasena && !passwordValidation.hasNumber)
-      newErrors.contrasena = 'La contraseña debe contener al menos un número';
+      newErrors.contrasena = 'Debe contener al menos un número';
 
     if (form.tipo_usuario === 'evaluador') {
       if (!form.codigo.trim()) newErrors.codigo = 'El código es obligatorio';
@@ -105,17 +230,16 @@ export default function AdminUserCreate() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) {
-      showModal('Error de validación', 'Por favor, corrige los errores del formulario.', 'error');
+      showModal('Error de validación', 'Por favor, corrige los errores.', 'error');
       return;
     }
 
     try {
       showModal('Procesando', 'Creando usuario...', 'info');
-
-      const payload = { ...form }; // Enviamos todos los campos, backend usará solo los que necesite
+      const payload = { ...form };
       const response = await api.post('/register', payload);
-
       closeModal();
+
       showModal('Usuario creado', `✅ Usuario creado con éxito (ID: ${response.data.id})`, 'success', () => {
         closeModal();
         setForm({
@@ -139,88 +263,129 @@ export default function AdminUserCreate() {
     }
   };
 
+  const icons = {
+    niño: <FaChild />,
+    evaluador: <FaUserTie />,
+    administrador: <FaUserCog />,
+  };
+
   return (
     <>
       <Container>
         <Title>Crear Nuevo Usuario</Title>
+
+        {/* Selector visual de tipo de usuario con íconos */}
+        <UserTypeSelector>
+          {['niño', 'evaluador', 'administrador'].map((type) => (
+            <UserTypeCircle
+              key={type}
+              $type={type}
+              $active={form.tipo_usuario === type}
+              onClick={() => setForm((prev) => ({ ...prev, tipo_usuario: type }))}
+            >
+              {icons[type]}
+              <span>{type.charAt(0).toUpperCase() + type.slice(1)}</span>
+            </UserTypeCircle>
+          ))}
+        </UserTypeSelector>
+
+        {/* FORMULARIO */}
         <Form onSubmit={handleSubmit}>
-          <Label>Nombre</Label>
-          <Input name="nombre" value={form.nombre} onChange={handleChange} />
-          {errors.nombre && <small style={{ color: 'red' }}>{errors.nombre}</small>}
+          <FieldGroup>
+            <Label>Nombre</Label>
+            <Input name="nombre" value={form.nombre} onChange={handleChange} />
+            {errors.nombre && <ErrorText>{errors.nombre}</ErrorText>}
+          </FieldGroup>
 
-          <Label>Correo Electrónico</Label>
-          <Input type="email" name="correo_electronico" value={form.correo_electronico} onChange={handleChange} />
-          {errors.correo_electronico && <small style={{ color: 'red' }}>{errors.correo_electronico}</small>}
+          <FieldGroup>
+            <Label>Correo Electrónico</Label>
+            <Input
+              type="email"
+              name="correo_electronico"
+              value={form.correo_electronico}
+              onChange={handleChange}
+            />
+            {errors.correo_electronico && <ErrorText>{errors.correo_electronico}</ErrorText>}
+          </FieldGroup>
 
-          <Label>Contraseña</Label>
-          <Input type="password" name="contrasena" value={form.contrasena} onChange={handleChange} />
-          {errors.contrasena && <small style={{ color: 'red' }}>{errors.contrasena}</small>}
-
-          <Label>Tipo de Usuario</Label>
-          <Select name="tipo_usuario" value={form.tipo_usuario} onChange={handleChange}>
-            <option value="niño">Niño</option>
-            <option value="evaluador">Evaluador</option>
-            <option value="administrador">Administrador</option>
-          </Select>
+          <FieldGroup>
+            <Label>Contraseña</Label>
+            <Input type="password" name="contrasena" value={form.contrasena} onChange={handleChange} />
+            {errors.contrasena && <ErrorText>{errors.contrasena}</ErrorText>}
+          </FieldGroup>
 
           {form.tipo_usuario === 'niño' && (
             <>
-              <Label>Edad</Label>
-              <Select name="edad" value={form.edad} onChange={handleChange}>
-                <option value="">Seleccione edad</option>
-                <option value="5">5 años</option>
-                <option value="6">6 años</option>
-                <option value="7">7 años</option>
-              </Select>
-              {errors.edad && <small style={{ color: 'red' }}>{errors.edad}</small>}
+              <FieldGroup>
+                <Label>Edad</Label>
+                <Select name="edad" value={form.edad} onChange={handleChange}>
+                  <option value="">Seleccione edad</option>
+                  <option value="5">5 años</option>
+                  <option value="6">6 años</option>
+                  <option value="7">7 años</option>
+                </Select>
+                {errors.edad && <ErrorText>{errors.edad}</ErrorText>}
+              </FieldGroup>
 
-              <Label>Grado</Label>
-              <Select name="grado" value={form.grado} onChange={handleChange}>
-                <option value="">Seleccione grado</option>
-                <option value="0">Grado 0</option>
-                <option value="1">Grado 1</option>
-                <option value="2">Grado 2</option>
-                <option value="3">Grado 3</option>
-              </Select>
-              {errors.grado && <small style={{ color: 'red' }}>{errors.grado}</small>}
+              <FieldGroup>
+                <Label>Grado</Label>
+                <Select name="grado" value={form.grado} onChange={handleChange}>
+                  <option value="">Seleccione grado</option>
+                  <option value="0">Grado 0</option>
+                  <option value="1">Grado 1</option>
+                  <option value="2">Grado 2</option>
+                  <option value="3">Grado 3</option>
+                </Select>
+                {errors.grado && <ErrorText>{errors.grado}</ErrorText>}
+              </FieldGroup>
 
-              <Label>Colegio</Label>
-              <Input name="colegio" value={form.colegio} onChange={handleChange} />
-              {errors.colegio && <small style={{ color: 'red' }}>{errors.colegio}</small>}
+              <FieldGroup>
+                <Label>Colegio</Label>
+                <Input name="colegio" value={form.colegio} onChange={handleChange} />
+                {errors.colegio && <ErrorText>{errors.colegio}</ErrorText>}
+              </FieldGroup>
 
-              <Label>Jornada</Label>
-              <Select name="jornada" value={form.jornada} onChange={handleChange}>
-                <option value="">Seleccione jornada</option>
-                <option value="mañana">Mañana</option>
-                <option value="tarde">Tarde</option>
-                <option value="continua">Continua</option>
-              </Select>
-              {errors.jornada && <small style={{ color: 'red' }}>{errors.jornada}</small>}
+              <FieldGroup>
+                <Label>Jornada</Label>
+                <Select name="jornada" value={form.jornada} onChange={handleChange}>
+                  <option value="">Seleccione jornada</option>
+                  <option value="mañana">Mañana</option>
+                  <option value="tarde">Tarde</option>
+                  <option value="continua">Continua</option>
+                </Select>
+                {errors.jornada && <ErrorText>{errors.jornada}</ErrorText>}
+              </FieldGroup>
             </>
           )}
 
           {form.tipo_usuario === 'evaluador' && (
             <>
-              <Label>Código</Label>
-              <Input name="codigo" value={form.codigo} onChange={handleChange} />
-              {errors.codigo && <small style={{ color: 'red' }}>{errors.codigo}</small>}
+              <FieldGroup>
+                <Label>Código</Label>
+                <Input name="codigo" value={form.codigo} onChange={handleChange} />
+                {errors.codigo && <ErrorText>{errors.codigo}</ErrorText>}
+              </FieldGroup>
 
-              <Label>Tipo de Evaluador</Label>
-              <Select name="tipo" value={form.tipo} onChange={handleChange}>
-                <option value="">Seleccione tipo</option>
-                <option value="Docente">Docente</option>
-                <option value="Estudiante">Estudiante</option>
-                <option value="Egresado">Egresado</option>
-              </Select>
-              {errors.tipo && <small style={{ color: 'red' }}>{errors.tipo}</small>}
+              <FieldGroup>
+                <Label>Tipo de Evaluador</Label>
+                <Select name="tipo" value={form.tipo} onChange={handleChange}>
+                  <option value="">Seleccione tipo</option>
+                  <option value="Docente">Docente</option>
+                  <option value="Estudiante">Estudiante</option>
+                  <option value="Egresado">Egresado</option>
+                </Select>
+                {errors.tipo && <ErrorText>{errors.tipo}</ErrorText>}
+              </FieldGroup>
 
-              <Label>Tipo de Documento</Label>
-              <Select name="tipo_documento" value={form.tipo_documento} onChange={handleChange}>
-                <option value="">Seleccione documento</option>
-                <option value="TI">Tarjeta de Identidad</option>
-                <option value="CC">Cédula de Ciudadanía</option>
-              </Select>
-              {errors.tipo_documento && <small style={{ color: 'red' }}>{errors.tipo_documento}</small>}
+              <FieldGroup>
+                <Label>Tipo de Documento</Label>
+                <Select name="tipo_documento" value={form.tipo_documento} onChange={handleChange}>
+                  <option value="">Seleccione documento</option>
+                  <option value="TI">Tarjeta de Identidad</option>
+                  <option value="CC">Cédula de Ciudadanía</option>
+                </Select>
+                {errors.tipo_documento && <ErrorText>{errors.tipo_documento}</ErrorText>}
+              </FieldGroup>
             </>
           )}
 

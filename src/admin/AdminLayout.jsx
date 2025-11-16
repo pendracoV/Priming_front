@@ -4,38 +4,50 @@ import { Outlet } from 'react-router-dom';
 import AdminSidebar from './AdminSidebar';
 import styled, { createGlobalStyle } from 'styled-components';
 
-// Global style para toda la app (solo en el layout de admin)
 const GlobalStyle = createGlobalStyle`
+  @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700&display=swap');
+
   body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Rubik', sans-serif;
+    background-color: #F4F5FA;
     margin: 0;
     padding: 0;
+    color: #212529;
   }
 `;
 
 const LayoutContainer = styled.div`
   display: flex;
-  height: 100vh; /* ocupa toda la altura de la ventana */
   width: 100%;
-  margin: 0;
-  padding: 0;
+  height: 100vh;
+  overflow: hidden;
 `;
 
 const SidebarArea = styled.div`
-  width: 250px; /* ancho fijo de la sidebar */
-  background-color: #1f2937; /* fondo oscuro estilo Tailwind gray-800 */
-  color: white;
+  width: 250px;
   display: flex;
   flex-direction: column;
-  height: 100%; /* ocupa toda la altura del layout */
 `;
 
-const ContentArea = styled.div`
-  flex: 1; /* ocupa todo el espacio restante */
-  background-color: #f3f6fb;
-  padding: 2em;
-  width: 100%;
-  overflow-y: auto; /* scroll vertical si el contenido es largo */
+
+const MainContent = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+`;
+
+const Header = styled.header`
+  background-color: #fff;
+  padding: 15px 25px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+`;
+
+const ContentArea = styled.main`
+  flex: 1;
+  padding: 25px;
+  overflow-y: auto;
 `;
 
 export default function AdminLayout() {
@@ -46,9 +58,14 @@ export default function AdminLayout() {
         <SidebarArea>
           <AdminSidebar />
         </SidebarArea>
-        <ContentArea>
-          <Outlet />
-        </ContentArea>
+
+        <MainContent>
+          <Header>Panel de Administración</Header>
+
+          <ContentArea>
+            <Outlet />
+          </ContentArea>
+        </MainContent>
       </LayoutContainer>
     </>
   );
