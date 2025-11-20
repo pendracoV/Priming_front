@@ -1533,21 +1533,20 @@ const StatusIndicator = styled.div`
 `;
 
 const InstructionsOverlay = styled.div`
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   background-color: rgba(0, 0, 0, 0.8);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 200;
+  z-index: 999;
 `;
 
 const InstructionsText = styled.div`
-  margin-top: 280px;
   background-color: rgba(20, 20, 60, 0.95);
   color: white;
   padding: 40px;
