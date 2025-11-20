@@ -131,7 +131,7 @@ const Login = () => {
         } else if (rol === 'niño') {
           navigate("/juegos");
         } else if (rol === 'administrador') {
-          navigate("/admin/crear-usuario");
+          navigate("/admin");
         } else {
           navigate("/perfil");
         }

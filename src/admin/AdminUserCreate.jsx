@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import Modal from '../components/Modal';
 import axios from 'axios';
+import Swal from "sweetalert2";
 import API_URL from '../api/config';
 import { FaChild, FaUserTie, FaUserCog } from 'react-icons/fa';
 
@@ -102,7 +102,6 @@ const ErrorText = styled.small`
   margin-top: 4px;
 `;
 
-
 const UserTypeSelector = styled.div`
   display: flex;
   justify-content: center;
@@ -118,8 +117,8 @@ const userColors = {
 };
 
 const UserTypeCircle = styled.div`
-  width: 100px;
-  height: 100px;
+  width: 105px;
+  height: 105px;
   border-radius: 50%;
   display: flex;
   flex-direction: column;
@@ -136,16 +135,13 @@ const UserTypeCircle = styled.div`
   padding: 8px;
 
   svg {
-    font-size: 1.8rem;
+    font-size: 1.9rem;
     margin-bottom: 6px;
   }
 
   span {
     font-size: 0.75rem;
-    display: block;
     line-height: 1.2;
-    word-break: break-word;
-    white-space: normal;
     max-width: 80px;
   }
 
@@ -156,9 +152,10 @@ const UserTypeCircle = styled.div`
   }
 `;
 
-// === COMPONENTE PRINCIPAL ===
+// === COMPONENTE ===
 export default function AdminUserCreate() {
   const navigate = useNavigate();
+
   const [form, setForm] = useState({
     nombre: '',
     correo_electronico: '',
@@ -173,13 +170,13 @@ export default function AdminUserCreate() {
     jornada: '',
   });
 
-  const [modal, setModal] = useState({ isOpen: false });
   const [errors, setErrors] = useState({});
   const [passwordValidation, setPasswordValidation] = useState({
     hasUpperCase: false,
     hasNumber: false,
   });
 
+  // Validación dinámica de contraseña
   useEffect(() => {
     const { contrasena } = form;
     setPasswordValidation({
@@ -194,17 +191,12 @@ export default function AdminUserCreate() {
     setErrors((prev) => ({ ...prev, [name]: null }));
   };
 
-  const showModal = (title, message, type, onConfirm = null, confirmText = 'Aceptar', showCancel = false) => {
-    setModal({ isOpen: true, title, message, type, onConfirm: onConfirm || closeModal, confirmText, showCancel });
-  };
-  const closeModal = () => setModal((prev) => ({ ...prev, isOpen: false }));
-
   const validateForm = () => {
     const newErrors = {};
+
     if (!form.nombre.trim()) newErrors.nombre = 'El nombre es obligatorio';
     if (!form.correo_electronico.trim()) newErrors.correo_electronico = 'El correo electrónico es obligatorio';
     if (!form.contrasena.trim()) newErrors.contrasena = 'La contraseña es obligatoria';
-
     if (form.contrasena && !passwordValidation.hasUpperCase)
       newErrors.contrasena = 'Debe contener al menos una letra mayúscula';
     if (form.contrasena && !passwordValidation.hasNumber)
@@ -217,10 +209,10 @@ export default function AdminUserCreate() {
     }
 
     if (form.tipo_usuario === 'niño') {
-      if (!form.edad.trim()) newErrors.edad = 'La edad es obligatoria';
-      if (!form.grado.trim()) newErrors.grado = 'El grado es obligatorio';
+      if (!form.edad) newErrors.edad = 'La edad es obligatoria';
+      if (!form.grado) newErrors.grado = 'El grado es obligatorio';
       if (!form.colegio.trim()) newErrors.colegio = 'El colegio es obligatorio';
-      if (!form.jornada.trim()) newErrors.jornada = 'La jornada es obligatoria';
+      if (!form.jornada) newErrors.jornada = 'La jornada es obligatoria';
     }
 
     setErrors(newErrors);
@@ -229,37 +221,61 @@ export default function AdminUserCreate() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!validateForm()) {
-      showModal('Error de validación', 'Por favor, corrige los errores.', 'error');
+      Swal.fire({
+        title: "Error de validación",
+        text: "Revisa los campos obligatorios",
+        icon: "error",
+        confirmButtonColor: "#0090E7",
+      });
       return;
     }
 
     try {
-      showModal('Procesando', 'Creando usuario...', 'info');
-      const payload = { ...form };
-      const response = await api.post('/register', payload);
-      closeModal();
-
-      showModal('Usuario creado', `✅ Usuario creado con éxito (ID: ${response.data.id})`, 'success', () => {
-        closeModal();
-        setForm({
-          nombre: '',
-          correo_electronico: '',
-          contrasena: '',
-          tipo_usuario: 'niño',
-          codigo: '',
-          tipo: '',
-          tipo_documento: '',
-          edad: '',
-          grado: '',
-          colegio: '',
-          jornada: '',
-        });
+      Swal.fire({
+        title: "Creando usuario...",
+        text: "Por favor espera",
+        icon: "info",
+        showConfirmButton: false,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
       });
+
+      const response = await api.post('/register', form);
+
+      Swal.close();
+
+      Swal.fire({
+        title: "Usuario creado correctamente",
+        icon: "success",
+        confirmButtonColor: "#0090E7",
+      });
+
+      // Limpiar formulario
+      setForm({
+        nombre: '',
+        correo_electronico: '',
+        contrasena: '',
+        tipo_usuario: 'niño',
+        codigo: '',
+        tipo: '',
+        tipo_documento: '',
+        edad: '',
+        grado: '',
+        colegio: '',
+        jornada: '',
+      });
+
     } catch (err) {
-      closeModal();
-      const errorMsg = err.response?.data?.error || 'Error al crear usuario';
-      showModal('Error', errorMsg, 'error');
+      Swal.close();
+
+      Swal.fire({
+        title: "Error",
+        text: err.response?.data?.error || "No se pudo crear el usuario",
+        icon: "error",
+        confirmButtonColor: "#0090E7",
+      });
     }
   };
 
@@ -270,139 +286,139 @@ export default function AdminUserCreate() {
   };
 
   return (
-    <>
-      <Container>
-        <Title>Crear Nuevo Usuario</Title>
+    <Container>
+      <Title>Crear Nuevo Usuario</Title>
 
-        {/* Selector visual de tipo de usuario con íconos */}
-        <UserTypeSelector>
-          {['niño', 'evaluador', 'administrador'].map((type) => (
-            <UserTypeCircle
-              key={type}
-              $type={type}
-              $active={form.tipo_usuario === type}
-              onClick={() => setForm((prev) => ({ ...prev, tipo_usuario: type }))}
-            >
-              {icons[type]}
-              <span>{type.charAt(0).toUpperCase() + type.slice(1)}</span>
-            </UserTypeCircle>
-          ))}
-        </UserTypeSelector>
+      {/* Selector visual de tipo */}
+      <UserTypeSelector>
+        {['niño', 'evaluador', 'administrador'].map((type) => (
+          <UserTypeCircle
+            key={type}
+            $type={type}
+            $active={form.tipo_usuario === type}
+            onClick={() => setForm((prev) => ({ ...prev, tipo_usuario: type }))}
+          >
+            {icons[type]}
+            <span>{type.charAt(0).toUpperCase() + type.slice(1)}</span>
+          </UserTypeCircle>
+        ))}
+      </UserTypeSelector>
 
-        {/* FORMULARIO */}
-        <Form onSubmit={handleSubmit}>
-          <FieldGroup>
-            <Label>Nombre</Label>
-            <Input name="nombre" value={form.nombre} onChange={handleChange} />
-            {errors.nombre && <ErrorText>{errors.nombre}</ErrorText>}
-          </FieldGroup>
+      {/* FORMULARIO */}
+      <Form onSubmit={handleSubmit}>
+        
+        <FieldGroup>
+          <Label>Nombre</Label>
+          <Input name="nombre" value={form.nombre} onChange={handleChange} />
+          {errors.nombre && <ErrorText>{errors.nombre}</ErrorText>}
+        </FieldGroup>
 
-          <FieldGroup>
-            <Label>Correo Electrónico</Label>
-            <Input
-              type="email"
-              name="correo_electronico"
-              value={form.correo_electronico}
-              onChange={handleChange}
-            />
-            {errors.correo_electronico && <ErrorText>{errors.correo_electronico}</ErrorText>}
-          </FieldGroup>
+        <FieldGroup>
+          <Label>Correo Electrónico</Label>
+          <Input
+            type="email"
+            name="correo_electronico"
+            value={form.correo_electronico}
+            onChange={handleChange}
+          />
+          {errors.correo_electronico && <ErrorText>{errors.correo_electronico}</ErrorText>}
+        </FieldGroup>
 
-          <FieldGroup>
-            <Label>Contraseña</Label>
-            <Input type="password" name="contrasena" value={form.contrasena} onChange={handleChange} />
-            {errors.contrasena && <ErrorText>{errors.contrasena}</ErrorText>}
-          </FieldGroup>
+        <FieldGroup>
+          <Label>Contraseña</Label>
+          <Input
+            type="password"
+            name="contrasena"
+            value={form.contrasena}
+            onChange={handleChange}
+          />
+          {errors.contrasena && <ErrorText>{errors.contrasena}</ErrorText>}
+        </FieldGroup>
 
-          {form.tipo_usuario === 'niño' && (
-            <>
-              <FieldGroup>
-                <Label>Edad</Label>
-                <Select name="edad" value={form.edad} onChange={handleChange}>
-                  <option value="">Seleccione edad</option>
-                  <option value="5">5 años</option>
-                  <option value="6">6 años</option>
-                  <option value="7">7 años</option>
-                </Select>
-                {errors.edad && <ErrorText>{errors.edad}</ErrorText>}
-              </FieldGroup>
+        {/* Campos del niño */}
+        {form.tipo_usuario === 'niño' && (
+          <>
+            <FieldGroup>
+              <Label>Edad</Label>
+              <Select name="edad" value={form.edad} onChange={handleChange}>
+                <option value="">Seleccione edad</option>
+                <option value="5">5 años</option>
+                <option value="6">6 años</option>
+                <option value="7">7 años</option>
+              </Select>
+              {errors.edad && <ErrorText>{errors.edad}</ErrorText>}
+            </FieldGroup>
 
-              <FieldGroup>
-                <Label>Grado</Label>
-                <Select name="grado" value={form.grado} onChange={handleChange}>
-                  <option value="">Seleccione grado</option>
-                  <option value="0">Grado 0</option>
-                  <option value="1">Grado 1</option>
-                  <option value="2">Grado 2</option>
-                  <option value="3">Grado 3</option>
-                </Select>
-                {errors.grado && <ErrorText>{errors.grado}</ErrorText>}
-              </FieldGroup>
+            <FieldGroup>
+              <Label>Grado</Label>
+              <Select name="grado" value={form.grado} onChange={handleChange}>
+                <option value="">Seleccione grado</option>
+                <option value="0">Grado 0</option>
+                <option value="1">Grado 1</option>
+                <option value="2">Grado 2</option>
+                <option value="3">Grado 3</option>
+              </Select>
+              {errors.grado && <ErrorText>{errors.grado}</ErrorText>}
+            </FieldGroup>
 
-              <FieldGroup>
-                <Label>Colegio</Label>
-                <Input name="colegio" value={form.colegio} onChange={handleChange} />
-                {errors.colegio && <ErrorText>{errors.colegio}</ErrorText>}
-              </FieldGroup>
+            <FieldGroup>
+              <Label>Colegio</Label>
+              <Input name="colegio" value={form.colegio} onChange={handleChange} />
+              {errors.colegio && <ErrorText>{errors.colegio}</ErrorText>}
+            </FieldGroup>
 
-              <FieldGroup>
-                <Label>Jornada</Label>
-                <Select name="jornada" value={form.jornada} onChange={handleChange}>
-                  <option value="">Seleccione jornada</option>
-                  <option value="mañana">Mañana</option>
-                  <option value="tarde">Tarde</option>
-                  <option value="continua">Continua</option>
-                </Select>
-                {errors.jornada && <ErrorText>{errors.jornada}</ErrorText>}
-              </FieldGroup>
-            </>
-          )}
+            <FieldGroup>
+              <Label>Jornada</Label>
+              <Select name="jornada" value={form.jornada} onChange={handleChange}>
+                <option value="">Seleccione jornada</option>
+                <option value="mañana">Mañana</option>
+                <option value="tarde">Tarde</option>
+                <option value="Continua">Continua</option>
+              </Select>
+              {errors.jornada && <ErrorText>{errors.jornada}</ErrorText>}
+            </FieldGroup>
+          </>
+        )}
 
-          {form.tipo_usuario === 'evaluador' && (
-            <>
-              <FieldGroup>
-                <Label>Código</Label>
-                <Input name="codigo" value={form.codigo} onChange={handleChange} />
-                {errors.codigo && <ErrorText>{errors.codigo}</ErrorText>}
-              </FieldGroup>
+        {/* Campos del evaluador */}
+        {form.tipo_usuario === 'evaluador' && (
+          <>
+            <FieldGroup>
+              <Label>Código</Label>
+              <Input name="codigo" value={form.codigo} onChange={handleChange} />
+              {errors.codigo && <ErrorText>{errors.codigo}</ErrorText>}
+            </FieldGroup>
 
-              <FieldGroup>
-                <Label>Tipo de Evaluador</Label>
-                <Select name="tipo" value={form.tipo} onChange={handleChange}>
-                  <option value="">Seleccione tipo</option>
-                  <option value="Docente">Docente</option>
-                  <option value="Estudiante">Estudiante</option>
-                  <option value="Egresado">Egresado</option>
-                </Select>
-                {errors.tipo && <ErrorText>{errors.tipo}</ErrorText>}
-              </FieldGroup>
+            <FieldGroup>
+              <Label>Tipo de Evaluador</Label>
+              <Select name="tipo" value={form.tipo} onChange={handleChange}>
+                <option value="">Seleccione tipo</option>
+                <option value="Docente">Docente</option>
+                <option value="Estudiante">Estudiante</option>
+                <option value="Egresado">Egresado</option>
+              </Select>
+              {errors.tipo && <ErrorText>{errors.tipo}</ErrorText>}
+            </FieldGroup>
 
-              <FieldGroup>
-                <Label>Tipo de Documento</Label>
-                <Select name="tipo_documento" value={form.tipo_documento} onChange={handleChange}>
-                  <option value="">Seleccione documento</option>
-                  <option value="TI">Tarjeta de Identidad</option>
-                  <option value="CC">Cédula de Ciudadanía</option>
-                </Select>
-                {errors.tipo_documento && <ErrorText>{errors.tipo_documento}</ErrorText>}
-              </FieldGroup>
-            </>
-          )}
+            <FieldGroup>
+              <Label>Tipo de Documento</Label>
+              <Select
+                name="tipo_documento"
+                value={form.tipo_documento}
+                onChange={handleChange}
+              >
+                <option value="">Seleccione documento</option>
+                <option value="TI">Tarjeta de Identidad</option>
+                <option value="CC">Cédula de Ciudadanía</option>
+              </Select>
+              {errors.tipo_documento && <ErrorText>{errors.tipo_documento}</ErrorText>}
+            </FieldGroup>
+          </>
+        )}
 
-          <Button type="submit">Crear Usuario</Button>
-        </Form>
-      </Container>
+        <Button type="submit">Crear Usuario</Button>
 
-      <Modal
-        isOpen={modal.isOpen}
-        onClose={closeModal}
-        title={modal.title}
-        onConfirm={modal.onConfirm}
-        confirmText={modal.confirmText}
-        showCancel={modal.showCancel}
-      >
-        {modal.message}
-      </Modal>
-    </>
+      </Form>
+    </Container>
   );
 }

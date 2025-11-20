@@ -1,23 +1,40 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import styled from 'styled-components';
-import Navbar from '../components/Navbar';
-import { GlobalStyle } from '../styles/styles';
-import GameBackground from '../components/GameBackground';
-import ninoService from '../api/ninoService';
-import Loading from '../components/Loading';
-import fondoEncuesta from '../../public/images/Background.png';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import styled from "styled-components";
+import Navbar from "../components/Navbar";
+import { GlobalStyle } from "../styles/styles";
+import GameBackground from "../components/GameBackground";
+import fondoEncuesta from "../../public/images/Background.png";
+import Loading from "../components/Loading";
+import Modal from "../components/Modal";
+
+const API_URL = import.meta.env.VITE_API_URL || "";
+
+/* ============================
+   ESTILOS
+   ============================ */
+
+const PageWrapper = styled.div`
+  height: 100vh;
+  overflow: hidden; /* La pantalla no scrollea */
+`;
 
 const Container = styled.div`
   background: rgba(0, 0, 0, 0.85);
   padding: 2.5rem;
   border-radius: 15px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   max-width: 900px;
-  margin: 0 auto;
+  margin: 2rem auto;
   color: #f4f4f4;
-  font-family: 'Manrope', sans-serif;
+  font-family: "Manrope", sans-serif;
   border: 1px solid rgba(255, 255, 255, 0.1);
+
+  /* SOLO el contenedor hace scroll */
+  max-height: 75vh;
+  overflow-y: auto;
+
+  scrollbar-width: thin;
+  scrollbar-color: #fc7500 #333;
 `;
 
 const Header = styled.div`
@@ -39,10 +56,10 @@ const SuccessBadge = styled.div`
   align-items: center;
   gap: 0.5rem;
   background: rgba(76, 175, 80, 0.15);
-  color: #4CAF50;
+  color: #4caf50;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
-  margin: 1.5rem 0 1rem 0;
+  margin: 1.5rem 0 1rem;
   font-size: 1rem;
   font-weight: 600;
   border: 1px solid rgba(76, 175, 80, 0.3);
@@ -52,287 +69,287 @@ const ContentGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.5rem;
-  
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 1fr;
-  }
 `;
 
 const Card = styled.div`
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  padding: 1.5rem;
-  transition: all 0.3s;
-  
-  &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  }
+  border-radius: 12px;
+  padding: 1.2rem;
+  margin-bottom: 1rem;
 `;
 
 const CardTitle = styled.h3`
-  font-size: 1.25rem;
-  margin: 0 0 1.25rem 0;
   color: #fc7500;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-`;
-
-const InfoRow = styled.div`
+  margin-bottom: 0.5rem;
+  cursor: pointer;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  
-  &:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-  }
+  user-select: none;
 `;
 
-const Label = styled.span`
-  font-weight: 600;
-  color: rgba(244, 244, 244, 0.7);
-  font-size: 0.95rem;
-`;
-
-const Value = styled.span`
-  color: #f4f4f4;
-  font-weight: 500;
-  font-size: 0.95rem;
-  text-align: right;
-`;
-
-const HighlightValue = styled(Value)`
-  background: rgba(252, 117, 0, 0.2);
-  padding: 0.25rem 0.75rem;
-  border-radius: 6px;
-  color: #fc7500;
-  font-weight: 700;
+const TextArea = styled.textarea`
+  width: 100%;
+  min-height: 100px;
+  resize: vertical;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  padding: 0.8rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  font-family: inherit;
 `;
 
 const ButtonContainer = styled.div`
   display: flex;
-  gap: 1rem;
   justify-content: center;
   margin-top: 2rem;
   padding-top: 2rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 `;
 
-const Button = styled.button`
+const PrimaryButton = styled.button`
+  background: #fc7500;
   padding: 0.875rem 2rem;
   border: none;
   border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-family: 'Manrope', sans-serif;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  }
-`;
-
-const PrimaryButton = styled(Button)`
-  background: #fc7500;
   color: white;
-  
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+
   &:hover {
     background: #e56700;
   }
 `;
 
-const SecondaryButton = styled(Button)`
-  background: rgba(255, 255, 255, 0.1);
-  color: #f4f4f4;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  
-  &:hover {
-    background: rgba(255, 255, 255, 0.15);
-  }
-`;
-
-const FullWidthCard = styled(Card)`
-  grid-column: 1 / -1;
-`;
+/* ============================
+   COMPONENTE PRINCIPAL
+   ============================ */
 
 const Encuesta = () => {
-  const [ninoInfo, setNinoInfo] = useState(null);
-  const [progreso, setProgreso] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [ninoInfo, setNinoInfo] = useState(null);
+  const [encuestaId, setEncuestaId] = useState(null);
+  const [progreso, setProgreso] = useState(null);
+
+  const [modal, setModal] = useState({
+    open: false,
+    title: "",
+    message: "",
+  });
+
+  const [formData, setFormData] = useState({
+    resumen_examen_mental: "",
+    antecedentes_clinicos: "",
+    diagnostico_aprendizaje: "",
+    problemas_academicos: "",
+    problemas_lectoescritura: "",
+    evaluacion_pretest: "",
+    evaluacion_postest: "",
+    observaciones_sesion: "",
+    observacion_conductual: "",
+    recomendaciones: "",
+    indicadores_logro: "",
+  });
+
+  const [openSection, setOpenSection] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    loadNinoData();
+    loadData();
   }, []);
 
-  const loadNinoData = async () => {
-    try {
-      setLoading(true);
+  const toggleSection = (key) => {
+    setOpenSection(openSection === key ? null : key);
+  };
 
-      const currentNinoStr = localStorage.getItem('currentNino');
-      
-      if (!currentNinoStr) {
-        alert('No hay sesión activa');
-        navigate('/ninos-list');
-        return;
-      }
+  const loadData = async () => {
+    try {
+      const currentNinoStr = localStorage.getItem("currentNino");
+      if (!currentNinoStr) return navigate("/ninos-list");
 
       const nino = JSON.parse(currentNinoStr);
       setNinoInfo(nino);
 
-      const gameType = localStorage.getItem(`lastGameType_${nino.id}`);
-      const difficulty = localStorage.getItem(`lastDifficulty_${nino.id}`);
-      const currentLevel = localStorage.getItem(`lastLevel_${nino.id}`);
-      const accumulatedScore = localStorage.getItem(`accumulatedScore_${nino.id}`);
+      const token = localStorage.getItem("token");
 
-      
-      // También verificar lastSavedProgress
-      const savedProgress = localStorage.getItem('lastSavedProgress');
-      if (savedProgress) {
+      // Buscar encuesta asociada al niño
+      const res = await fetch(`${API_URL}/encuestas/nino/${nino.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.length > 0) {
+          setEncuestaId(data[0].id);
+        }
       }
 
-      if (gameType && difficulty && currentLevel) {
+      // Cargar progreso del juego
+      const type = localStorage.getItem(`lastGameType_${nino.id}`);
+      const diff = localStorage.getItem(`lastDifficulty_${nino.id}`);
+      const lvl = localStorage.getItem(`lastLevel_${nino.id}`);
+      const score = localStorage.getItem(`accumulatedScore_${nino.id}`);
+
+      if (type && diff && lvl) {
         setProgreso({
-          game_type: gameType,
-          difficulty: difficulty,
-          current_level: parseInt(currentLevel),
-          accumulated_score: parseInt(accumulatedScore) || 200
+          game_type: type,
+          difficulty: diff,
+          current_level: parseInt(lvl),
+          accumulated_score: parseInt(score || 0),
         });
       }
-
-    } catch (error) {
-      alert('Error cargando información');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleBackToMenu = () => {
-    // Las claves genéricas con userId deben mantenerse para que la validación de contraseña 
-    // pueda detectar el progreso de cada niño individualmente
-    
-    localStorage.removeItem('currentNino');
-    localStorage.removeItem('lastSavedProgress');
-    
-    // Las claves con userId (lastGameType_X, lastDifficulty_X, etc.) se mantienen
-    
-    navigate('/ninos-list');
+  /* ============================
+     GUARDAR REPORTE CLÍNICO
+     ============================ */
+
+  const handleSubmit = async () => {
+    if (!encuestaId) {
+      return setModal({
+        open: true,
+        title: "Error",
+        message: "No existe encuesta asociada.",
+      });
+    }
+
+    const token = localStorage.getItem("token");
+
+    const body = {
+      nino_id: ninoInfo.id,
+      ...formData,
+      ...(progreso || {}),
+      last_played: new Date().toISOString(),
+    };
+
+    const res = await fetch(`${API_URL}/encuestas/${encuestaId}/resultados`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (res.ok) {
+      setModal({
+        open: true,
+        title: "Éxito",
+        message: "Reporte guardado correctamente.",
+        onConfirm: () => navigate("/ninos-list"),
+      });
+    } else {
+      setModal({
+        open: true,
+        title: "Error",
+        message: "Hubo un problema al guardar el reporte.",
+      });
+    }
   };
+
+  /* ============================
+     CARGANDO
+     ============================ */
 
   if (loading) {
     return (
-      <>
+      <PageWrapper>
         <GlobalStyle />
         <Navbar />
-        <GameBackground maxWidth="1200px" backgroundImage={fondoEncuesta}>
+        <GameBackground backgroundImage={fondoEncuesta}>
           <Loading />
         </GameBackground>
-      </>
+      </PageWrapper>
     );
   }
 
-  const getGameTypeName = (type) => {
-    return type === 'cognados' ? 'Cognados' : 'Pares Mínimos';
-  };
-
-  const getDifficultyName = (diff) => {
-    const names = { facil: 'Fácil', medio: 'Medio', dificil: 'Difícil' };
-    return names[diff] || diff;
-  };
+  /* ============================
+     RENDER
+     ============================ */
 
   return (
-    <>
+    <PageWrapper>
       <GlobalStyle />
       <Navbar />
+
       <GameBackground maxWidth="1200px" backgroundImage={fondoEncuesta}>
         <Container>
           <Header>
-            <Title>📊 Progreso Guardado</Title>
+            <Title>📋 Reporte Clínico</Title>
             <SuccessBadge>
-              <span>✓</span>
-              <span>Información guardada exitosamente</span>
+              <span>✓</span> Datos cargados correctamente
             </SuccessBadge>
           </Header>
 
           <ContentGrid>
-            {ninoInfo && (
+            {/* Información del estudiante */}
+            <Card>
+              <h3 style={{ color: "#fc7500", marginBottom: "1rem" }}>
+                👤 Información del Estudiante
+              </h3>
+              <p><b>Nombre:</b> {ninoInfo?.nombre}</p>
+              <p><b>Edad:</b> {ninoInfo?.edad}</p>
+              <p><b>Grado:</b> {ninoInfo?.grado}</p>
+              <p><b>Colegio:</b> {ninoInfo?.colegio}</p>
+              <p><b>Encuesta:</b> {encuestaId || "No encontrada"}</p>
+            </Card>
+
+            {/* Progreso del juego */}
+            {progreso && (
               <Card>
-                <CardTitle>
-                  <span>👤</span>
-                  <span>Información del Estudiante</span>
-                </CardTitle>
-                <InfoRow>
-                  <Label>Nombre:</Label>
-                  <Value>{ninoInfo.nombre}</Value>
-                </InfoRow>
-                <InfoRow>
-                  <Label>Edad:</Label>
-                  <Value>{ninoInfo.edad} años</Value>
-                </InfoRow>
-                <InfoRow>
-                  <Label>Grado:</Label>
-                  <Value>{ninoInfo.grado}</Value>
-                </InfoRow>
-                <InfoRow>
-                  <Label>Colegio:</Label>
-                  <Value>{ninoInfo.colegio}</Value>
-                </InfoRow>
-                <InfoRow>
-                  <Label>Jornada:</Label>
-                  <Value>{ninoInfo.jornada}</Value>
-                </InfoRow>
+                <h3 style={{ color: "#fc7500", marginBottom: "1rem" }}>
+                  🎮 Progreso del Juego
+                </h3>
+                <p><b>Tipo:</b> {progreso.game_type}</p>
+                <p><b>Dificultad:</b> {progreso.difficulty}</p>
+                <p><b>Nivel:</b> {progreso.current_level}</p>
+                <p><b>Puntaje:</b> {progreso.accumulated_score}</p>
               </Card>
             )}
 
-            {progreso && (
-              <Card>
-                <CardTitle>
-                  <span>🎮</span>
-                  <span>Progreso del Juego</span>
+            {/* Formulario dinámico */}
+            {Object.keys(formData).map((key) => (
+              <Card key={key}>
+                <CardTitle onClick={() => toggleSection(key)}>
+                  {key.replace(/_/g, " ").toUpperCase()}
+                  <span>{openSection === key ? "▲" : "▼"}</span>
                 </CardTitle>
-                <InfoRow>
-                  <Label>Tipo de Juego:</Label>
-                  <Value>{getGameTypeName(progreso.game_type)}</Value>
-                </InfoRow>
-                <InfoRow>
-                  <Label>Dificultad:</Label>
-                  <Value>{getDifficultyName(progreso.difficulty)}</Value>
-                </InfoRow>
-                <InfoRow>
-                  <Label>Nivel Alcanzado:</Label>
-                  <HighlightValue>Nivel {progreso.current_level}</HighlightValue>
-                </InfoRow>
-                <InfoRow>
-                  <Label>Puntaje Total:</Label>
-                  <HighlightValue>{progreso.accumulated_score} pts</HighlightValue>
-                </InfoRow>
+
+                {openSection === key && (
+                  <TextArea
+                    value={formData[key]}
+                    onChange={(e) =>
+                      setFormData({ ...formData, [key]: e.target.value })
+                    }
+                  />
+                )}
               </Card>
-            )}
+            ))}
           </ContentGrid>
 
           <ButtonContainer>
-            <PrimaryButton onClick={handleBackToMenu}>
-              <span>🏠</span>
-              <span>Volver a Lista de Niños</span>
+            <PrimaryButton onClick={handleSubmit}>
+              💾 Guardar Reporte Clínico
             </PrimaryButton>
           </ButtonContainer>
         </Container>
       </GameBackground>
-    </>
+
+      <Modal
+        isOpen={modal.open}
+        title={modal.title}
+        onClose={() => setModal({ ...modal, open: false })}
+        onConfirm={modal.onConfirm || (() => setModal({ ...modal, open: false }))}
+      >
+        <p>{modal.message}</p>
+      </Modal>
+    </PageWrapper>
   );
 };
 
