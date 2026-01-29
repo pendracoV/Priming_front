@@ -1335,17 +1335,16 @@ const TimeText = styled.span`
 // NUEVO: Container para los tres indicadores (modo difícil)
 const IndicatorsContainer = styled.div`
   width: 100%;
-  height: 150px;
-  margin-top: 200px;
-  margin-bottom: 5px; 
-  position: relative;
+  height: clamp(110px, 16vh, 150px);
+  margin-top: clamp(100px, 18vh, 160px);
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 15px;
-  z-index: 1;
+
   padding: 0 10%;
 `;
+
 
 const Indicator = styled.div`
   cursor: ${props => 
@@ -1360,7 +1359,7 @@ const Indicator = styled.div`
     props.disabled ? 0.7 : 1
   };
   padding: 0px;
-  margin: 0px;
+  margin: 20px;
   
   ${props => props.active && `
     filter: drop-shadow(0 0 25px rgba(252, 117, 0, 0.8));
@@ -1379,12 +1378,28 @@ const Indicator = styled.div`
   }
   
   img {
-    width: 280px;
+    width: clamp(60px, 7vw, 100px);
+    max-height: clamp(60px, 10vh, 100px);
     height: auto;
-    filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.4));
-    display: block;
-    margin: 0;
-    padding: 0;
+  }
+
+  
+  @media (max-width: 1024px) {
+    img {
+      width: 300px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    img {
+      width: 250px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    img {
+      width: 180px;
+    }
   }
 `;
 
@@ -1405,31 +1420,27 @@ const TrainingClicksIndicator = styled.div`
 const SelectablesContainer = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  gap: 30px;
-  margin-top: 280px;
-  margin-bottom: 40px;
-  width: 90%;
+
+  /* 👇 CLAVE: usamos viewport, no píxeles */
+  margin-top: clamp(140px, 22vh, 220px);
+  margin-bottom: clamp(20px, 4vh, 40px);
+
+  gap: clamp(16px, 3vh, 28px);
+
+  width: 100%;
   max-width: 1000px;
-  padding: 20px;
-  
-  > div:first-child {
+  padding: 0 5vw;
+
+  > div {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 25px;
-    width: 100%;
-  }
-  
-  > div:last-child {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 25px;
+    gap: clamp(12px, 2.5vw, 24px);
     width: 100%;
   }
 `;
+
 
 const Selectable = styled.div`
   cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
@@ -1464,16 +1475,11 @@ const Selectable = styled.div`
   }
   
   img {
-    width: ${props => props.gameMode === 'dificil' ? '100px' : '100px'};
+    width: clamp(100px, 7vw, 180px);
+    max-height: 14vh;
     height: auto;
-    max-height: ${props => props.gameMode === 'dificil' ? '100px' : 'auto'};
-    object-fit: contain;
-    transition: all 0.2s ease;
-    filter: ${props => 
-      props.disabled ? 'grayscale(1)' :
-      props.selected ? 'grayscale(0.3)' : 'none'
-    };
   }
+
 `;
 
 const NavigationButtons = styled.div`

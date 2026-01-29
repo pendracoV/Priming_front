@@ -1251,9 +1251,9 @@ const TimeText = styled.span`
 
 const IslandContainer = styled.div`
   width: 100%;
-  height: 200px;
-  margin-top: 250px;
-  margin-bottom: 80px; 
+  height: clamp(90px, 16vh, 180px);
+  margin-top: clamp(100px, 18vh, 200px);
+  margin-bottom: clamp(20px, 4vh, 60px); 
   position: relative;
   display: flex;
   justify-content: center;

@@ -1331,6 +1331,7 @@ const GameContainer = styled.div`
   height: 100vh;
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
   align-items: center;
   overflow: hidden;
   margin: 0;
@@ -1393,8 +1394,8 @@ const TimeText = styled.span`
 // NUEVO: Container para los dos indicadores
 const IndicatorsContainer = styled.div`
   width: 100%;
-  height: 200px;
-  margin-top: 200px;
+  height: auto;
+  margin-top: 30px;
   margin-bottom: 5px; 
   position: relative;
   display: flex;
@@ -1435,7 +1436,7 @@ const Indicator = styled.div`
   }
   
   img {
-    width: 350px;
+    width: clamp(160px, 18vh, 200px);
     height: auto;
     filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.4));
   }
@@ -1480,9 +1481,9 @@ const SelectablesContainer = styled.div`
   justify-content: center;
   grid-template-columns: ${props => props.gameMode === 'medio' ? 'none' : 'repeat(8, 1fr)'};
   grid-template-rows: ${props => props.gameMode === 'medio' ? 'none' : 'repeat(2, 1fr)'};
-  gap: ${props => props.gameMode === 'medio' ? '60px' : '50px'};
-  margin-top: 130px;
-  margin-bottom: 40px;
+  gap: ${props => props.gameMode === 'medio' ? '40px' : '40px'};
+  margin-top: 40px;
+  margin-bottom: 10px;
   width: 90%;
   max-width: ${props => props.gameMode === 'medio' ? '1000px' : '5000px'};
   padding: 20px;
@@ -1494,7 +1495,7 @@ const SelectablesContainer = styled.div`
       align-items: center;
       gap: 50px;
       width: 100%;
-      padding-left: 70px;
+      padding-left: 20px;
     }
     
     > div:last-child {
@@ -1594,30 +1595,22 @@ const Selectable = styled.div`
   }
   
   img {
-    width: ${props => props.gameMode === 'medio' ? '120px' : '100px'};
+    width: min(16vh, 120px);
     height: auto;
-    transition: all 0.2s ease;
-    filter: ${props => 
-      props.disabled ? 'grayscale(1)' :
-      props.selected ? 'grayscale(0.3)' : 'none'
-    };
+    max-height: 16vh;
   }
-  
-  @media (max-width: 1024px) {
+
+  @media (max-height: 700px) {
     img {
-      width: ${props => props.gameMode === 'medio' ? '110px' : '90px'};
+      width: min(14vh, 140px);
+      max-height: 14vh;
     }
   }
-  
-  @media (max-width: 768px) {
+
+  @media (max-height: 600px) {
     img {
-      width: ${props => props.gameMode === 'medio' ? '100px' : '80px'};
-    }
-  }
-  
-  @media (max-width: 480px) {
-    img {
-      width: ${props => props.gameMode === 'medio' ? '80px' : '65px'};
+      width: min(14vh, 90px);
+      max-height: 14vh;
     }
   }
 `;
@@ -1705,7 +1698,7 @@ const InstructionsText = styled.div`
 `;
 
 const TrainingOverlay = styled.div`
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
@@ -1721,7 +1714,7 @@ const TrainingOverlay = styled.div`
 
 const TrainingText = styled.div`
   background-color: rgba(20, 20, 60, 0.95);
-  margin-top: 280px;
+  margin-top: 0px;
   color: white;
   padding: 30px;
   border-radius: 20px;
